@@ -309,6 +309,18 @@ class ProtocolHandler {
     }
   }
 
+  async fetchModNameFromAPI(modId) {
+    try {
+      const apiUrl = `https://gamebanana.com/apiv11/Mod/${modId}?_csvProperties=_sName`;
+      const response = await this.fetchWithTimeout(apiUrl, 10000);
+      const data = JSON.parse(response);
+      return data._sName || null;
+    } catch (error) {
+      console.error("Failed to fetch mod name from API:", error.message);
+      return null;
+    }
+  }
+
   async proceedWithInstall(downloadId) {
     const installData = this.pendingInstalls?.get(downloadId);
     if (!installData) {
@@ -324,6 +336,11 @@ class ProtocolHandler {
         downloadId,
       });
 
+      let modName = null;
+      if (modId) {
+        modName = await this.fetchModNameFromAPI(modId);
+      }
+
       const filePath = await this.downloadMod(downloadUrl, downloadId);
 
       if (!filePath) {
@@ -333,7 +350,7 @@ class ProtocolHandler {
 
       console.log("Downloaded to:", filePath);
 
-      const modName = await this.installMod(filePath, downloadId);
+      const installedModName = await this.installMod(filePath, downloadId, modId, modName);
 
       try {
         fs.unlinkSync(filePath);
@@ -342,23 +359,22 @@ class ProtocolHandler {
       }
 
       let modFolderPath = null;
-      if (modId && modName) {
+      if (modId && installedModName) {
         const modsPath = sharedStore.get("modsPath");
 
         if (modsPath) {
-          modFolderPath = path.join(modsPath, modName);
+          modFolderPath = path.join(modsPath, installedModName);
           await this.fetchAndSaveModMetadata(modId, modFolderPath);
         }
       }
 
       this.sendToRenderer("mod-install-success", {
         url: downloadUrl,
-        modName: modName,
+        modName: installedModName,
         downloadId,
         folderPath: modFolderPath,
       });
 
-      // Clean up pending install
       this.pendingInstalls.delete(downloadId);
     } catch (error) {
       console.error("Error during installation:", error);
@@ -368,7 +384,6 @@ class ProtocolHandler {
         error: error.message 
       });
 
-      // Clean up pending install
       this.pendingInstalls.delete(downloadId);
     }
   }
@@ -576,7 +591,7 @@ class ProtocolHandler {
       });
     });
   }
-  async installMod(zipPath, downloadId) {
+  async installMod(zipPath, downloadId, modId = null, modNameFromAPI = null) {
     if (!fs.existsSync(zipPath)) {
       throw new Error(`Archive file does not exist: ${zipPath}`);
     }
@@ -645,6 +660,41 @@ class ProtocolHandler {
       }
     } catch (err) {
       console.warn("Failed to cleanup temp directory:", err.message);
+    }
+
+    const installedModPath = path.join(modsPath, installedModName);
+    if (/^mod-\d+$/.test(installedModName) && fs.existsSync(installedModPath)) {
+      let newName = null;
+      
+      if (modNameFromAPI) {
+        newName = modNameFromAPI;
+      } else if (modId) {
+        newName = await this.fetchModNameFromAPI(modId);
+      }
+      
+      if (!newName) {
+        const ModUtils = require("./mod-utils");
+        const modInfo = ModUtils.readModInfo(installedModPath);
+        if (modInfo) {
+          newName = modInfo.s_name || modInfo.display_name;
+        }
+      }
+      
+      if (newName) {
+        const sanitizedName = newName.replace(/[<>:"/\\|?*]/g, '_').trim();
+        if (sanitizedName && sanitizedName !== installedModName) {
+          const newModPath = path.join(modsPath, sanitizedName);
+          if (!fs.existsSync(newModPath)) {
+            try {
+              fs.renameSync(installedModPath, newModPath);
+              console.log(`Mod renamed from ${installedModName} to ${sanitizedName}`);
+              installedModName = sanitizedName;
+            } catch (renameErr) {
+              console.warn(`Failed to rename mod: ${renameErr.message}`);
+            }
+          }
+        }
+      }
     }
 
     console.log("Mod installed successfully");

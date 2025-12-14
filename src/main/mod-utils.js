@@ -582,10 +582,9 @@ class ModUtils {
     }
 
     /**
-     * Detect file conflicts between active mods
      * @param {Array<Object>} activeMods - Array of active mod objects
      * @param {Array<string>} whitelistPatterns - Patterns to exclude from conflict detection
-     * @returns {Promise<Array<Object>>} Array of conflict objects with filePath and mods
+     * @returns {Promise<Array<Object>>} Array of conflict objects with filePath and mods 
      */
     static async detectConflicts(activeMods, whitelistPatterns = []) {
         const conflicts = [];
@@ -617,7 +616,6 @@ class ModUtils {
                     } else if (entry.isFile()) {
                         const normalizedPath = relPath.replace(/\\/g, '/');
                         
-                        // Accessing map safely without race conditions since node is single threaded for JS execution
                         if (!fileToMods.has(normalizedPath)) {
                             fileToMods.set(normalizedPath, []);
                         }
@@ -636,7 +634,6 @@ class ModUtils {
             }
         };
 
-        // Scan all mods in parallel
         await Promise.all(activeMods.map(async (mod, modIndex) => {
             if (mod.path && fs.existsSync(mod.path)) {
                 await scanMod(mod.path, '', modIndex, mod.name, mod.path);
@@ -682,7 +679,6 @@ class ModUtils {
             let extracted = false;
             let lastError = null;
 
-            // Try 7-Zip first (supports zip, rar, 7z, etc.)
             if (process.platform === "win32") {
                 try {
                     await this.extract7Zip(archivePath, targetPath);
@@ -694,7 +690,6 @@ class ModUtils {
                 }
             }
 
-            // Try system unzip (for zip files on non-Windows)
             if (!extracted && process.platform !== "win32" && (ext === '.zip')) {
                 try {
                     await this.extractUnzip(archivePath, targetPath);
@@ -706,7 +701,6 @@ class ModUtils {
                 }
             }
 
-            // Fallback to adm-zip for zip files
             if (!extracted && ext === '.zip') {
                 try {
                     const zip = new AdmZip(archivePath);
@@ -829,7 +823,6 @@ class ModUtils {
             let extractedItems = [];
             let modFolderName = null;
 
-            // If it's an archive, extract it first
             if (isArchive) {
                 console.log("Installing mod from archive:", sourcePath);
                 tempExtractDir = path.join(
@@ -845,7 +838,6 @@ class ModUtils {
                 extractedItems = fs.readdirSync(tempExtractDir);
                 console.log("Extracted items:", extractedItems);
 
-                // Determine mod folder name
                 if (
                     extractedItems.length === 1 &&
                     fs.statSync(path.join(tempExtractDir, extractedItems[0])).isDirectory()
@@ -855,7 +847,6 @@ class ModUtils {
                     modFolderName = path.basename(sourcePath, ext);
                 }
             } else if (isDirectory) {
-                // If it's a directory, use it directly
                 console.log("Installing mod from directory:", sourcePath);
                 modFolderName = path.basename(sourcePath);
             } else {
@@ -864,30 +855,25 @@ class ModUtils {
 
             const finalModPath = path.join(modsPath, modFolderName);
 
-            // Remove existing mod if it exists
             if (fs.existsSync(finalModPath)) {
                 console.log("Mod already exists, removing old version");
                 fs.rmSync(finalModPath, { recursive: true, force: true });
             }
 
-            // Copy or move the mod
             if (isArchive) {
                 const sourceModPath = path.join(tempExtractDir, modFolderName);
                 if (fs.existsSync(sourceModPath)) {
                     console.log("Copying mod from temp to mods folder...");
                     this.copyRecursiveSync(sourceModPath, finalModPath);
                 } else {
-                    // Multiple items extracted, copy all
                     console.log("Copying multiple items to mods folder...");
                     this.copyRecursiveSync(tempExtractDir, finalModPath);
                 }
             } else {
-                // For directories, move instead of copy to avoid duplication
                 console.log("Moving mod directory to mods folder...");
                 fs.renameSync(sourcePath, finalModPath);
             }
 
-            // Cleanup temp directory
             if (tempExtractDir && fs.existsSync(tempExtractDir)) {
                 try {
                     fs.rmSync(tempExtractDir, { recursive: true, force: true });
@@ -896,13 +882,35 @@ class ModUtils {
                 }
             }
 
-            // Delete original archive file after successful installation
             if (isArchive && fs.existsSync(sourcePath)) {
                 try {
                     fs.unlinkSync(sourcePath);
                     console.log("Deleted original archive file");
                 } catch (err) {
                     console.warn("Failed to delete original archive:", err.message);
+                }
+            }
+
+            if (/^mod-\d+$/.test(modFolderName) && fs.existsSync(finalModPath)) {
+                const modInfo = this.readModInfo(finalModPath);
+                if (modInfo) {
+                    const newName = modInfo.s_name || modInfo.display_name;
+                    if (newName) {
+                        const sanitizedName = newName.replace(/[<>:"/\\|?*]/g, '_').trim();
+                        if (sanitizedName && sanitizedName !== modFolderName) {
+                            const newModPath = path.join(modsPath, sanitizedName);
+                            if (!fs.existsSync(newModPath)) {
+                                try {
+                                    fs.renameSync(finalModPath, newModPath);
+                                    console.log(`Mod renamed from ${modFolderName} to ${sanitizedName}`);
+                                    modFolderName = sanitizedName;
+                                    finalModPath = newModPath;
+                                } catch (renameErr) {
+                                    console.warn(`Failed to rename mod: ${renameErr.message}`);
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

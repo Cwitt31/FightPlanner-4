@@ -2,6 +2,7 @@ class StatusBarManager {
   constructor() {
     this.updateInterval = null;
     this.currentTab = null;
+    this.preservedStatus = null;
   }
 
   t(key, params = {}) {
@@ -15,8 +16,22 @@ class StatusBarManager {
     const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
     if (!statusText) return;
 
-    if (this.hasModalOpen()) {
-      return;
+    const modalOpen = this.hasModalOpen();
+    const hasActiveDownloads = this.checkActiveDownloads();
+
+    if (modalOpen) {
+      if (!hasActiveDownloads) {
+        this.preserveCurrentStatus();
+        return;
+      }
+      this.preservedStatus = null;
+    } else {
+      if (this.preservedStatus && !hasActiveDownloads) {
+        const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+        if (statusText && statusText.textContent === this.t("statusBar.ready") || statusText.textContent === "Ready" || statusText.textContent === "Prêt") {
+          this.restorePreservedStatus();
+        }
+      }
     }
 
     const validTabs = ["social", "downloads", "tools", "plugins", "settings", "characters", "stages", "fightplanner"];
@@ -25,9 +40,11 @@ class StatusBarManager {
       if (validTabs.includes(tabName)) {
         this.currentTab = tabName;
       } else if (tabName.startsWith("statusBar.") || tabName.includes("...") || tabName.includes("…")) {
-        this.animateStatusChange(statusText, () => {
-          statusText.textContent = this.t(tabName);
-        });
+        if (!this.preservedStatus && (!modalOpen || hasActiveDownloads)) {
+          this.animateStatusChange(statusText, () => {
+            this.setStatusText(this.t(tabName));
+          });
+        }
         return;
       }
     }
@@ -41,45 +58,53 @@ class StatusBarManager {
       this.updateInterval = null;
     }
 
-    const hasActiveDownloads = this.checkActiveDownloads();
+    if (this.preservedStatus && (!hasActiveDownloads || modalOpen)) {
+      return;
+    }
 
     if (hasActiveDownloads) {
       this.updateDownloadsStatus(statusText);
     } else {
-      this.animateStatusChange(statusText, () => {
-        const tab = this.currentTab;
-        switch (tab) {
-          case "social":
-            this.updateSocialStatus(statusText);
-            break;
-          case "downloads":
-            this.updateDownloadsStatus(statusText);
-            break;
-          case "tools":
-            this.updateToolsStatus(statusText);
-            break;
-          case "plugins":
-            this.updatePluginsStatus(statusText);
-            break;
-          case "settings":
-            this.updateSettingsStatus(statusText);
-            break;
-          case "characters":
-            this.updateCharactersStatus(statusText);
-            break;
-          case "stages":
-            this.updateStagesStatus(statusText);
-            break;
-          default:
-            if (!this.currentTab) {
-              return;
-            }
-        }
-      });
+      if (!this.preservedStatus) {
+        this.animateStatusChange(statusText, () => {
+          const tab = this.currentTab;
+          switch (tab) {
+            case "social":
+              this.updateSocialStatus(statusText);
+              break;
+            case "downloads":
+              this.updateDownloadsStatus(statusText);
+              break;
+            case "tools":
+              this.updateToolsStatus(statusText);
+              break;
+            case "plugins":
+              this.updatePluginsStatus(statusText);
+              break;
+            case "settings":
+              this.updateSettingsStatus(statusText);
+              break;
+            case "characters":
+              this.updateCharactersStatus(statusText);
+              break;
+            case "stages":
+              this.updateStagesStatus(statusText);
+              break;
+            default:
+              if (!this.currentTab) {
+                return;
+              }
+          }
+        });
+      }
     }
   }
 
   animateStatusChange(statusText, callback) {
+    if (this.preservedStatus || (this.hasModalOpen() && !this.checkActiveDownloads())) {
+      return;
+    }
+
     const isReducedAnimations = document.body.classList.contains("reduced-animations");
     const isNoAnimations = document.body.classList.contains("no-animations");
 
@@ -139,6 +164,44 @@ class StatusBarManager {
     return false;
   }
 
+  preserveCurrentStatus() {
+    const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+    if (statusText) {
+      const currentStatus = statusText.textContent || statusText.innerHTML;
+      if (currentStatus && currentStatus.trim() && currentStatus !== this.t("statusBar.ready") && currentStatus !== "Ready" && currentStatus !== "Prêt") {
+        this.preservedStatus = currentStatus;
+      }
+    }
+  }
+
+  restorePreservedStatus() {
+    if (this.preservedStatus && !this.checkActiveDownloads() && !this.hasModalOpen()) {
+      const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+      if (statusText) {
+        statusText.textContent = this.preservedStatus;
+        this.preservedStatus = null;
+      } else {
+        this.preservedStatus = null;
+      }
+    }
+  }
+
+  setStatusText(content, useInnerHTML = false) {
+    if (this.preservedStatus) {
+      return false;
+    }
+    const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+    if (statusText) {
+      if (useInnerHTML) {
+        statusText.innerHTML = content;
+      } else {
+        statusText.textContent = content;
+      }
+      return true;
+    }
+    return false;
+  }
+
   checkActiveDownloads() {
     // Check for FTP transfer first
     if (window.downloadManager && window.downloadManager.ftpTransfer) {
@@ -155,25 +218,30 @@ class StatusBarManager {
   }
 
   checkAndUpdateForDownloads() {
-    if (this.hasModalOpen()) {
+    const modalOpen = this.hasModalOpen();
+    const hasActiveDownloads = this.checkActiveDownloads();
+
+    if (modalOpen && !hasActiveDownloads) {
+      this.preserveCurrentStatus();
       return;
     }
     
     const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
     if (!statusText) return;
 
-    const hasActiveDownloads = this.checkActiveDownloads();
-
     if (hasActiveDownloads) {
+      this.preservedStatus = null;
       this.animateStatusChange(statusText, () => {
         this.updateDownloadsStatus(statusText);
       });
-    } else if (this.currentTab) {
+    } else if (this.currentTab && !modalOpen) {
       if (statusText.classList.contains("status-downloading")) {
         statusText.classList.remove("status-downloading");
         statusText.offsetHeight;
       }
       this.updateStatus(this.currentTab);
+    } else if (!modalOpen && this.preservedStatus) {
+      this.restorePreservedStatus();
     }
   }
 
@@ -184,6 +252,10 @@ class StatusBarManager {
           clearInterval(this.updateInterval);
           this.updateInterval = null;
         }
+        return;
+      }
+
+      if (this.preservedStatus) {
         return;
       }
 
@@ -238,23 +310,23 @@ class StatusBarManager {
                 ).length;
               }
 
-              statusText.textContent = this.t("statusBar.socialModsShared", {
+              this.setStatusText(this.t("statusBar.socialModsShared", {
                 count: myMods.length,
                 plural: myMods.length !== 1 ? "s" : "",
                 friends: friendsCount,
                 friendsPlural: friendsCount !== 1 ? "s" : ""
-              });
+              }));
             } else {
-              statusText.textContent = this.t("statusBar.socialConnected");
+              this.setStatusText(this.t("statusBar.socialConnected"));
             }
           } catch (e) {
-            statusText.textContent = this.t("statusBar.socialConnected");
+            this.setStatusText(this.t("statusBar.socialConnected"));
           }
         } else {
-          statusText.textContent = this.t("statusBar.socialNotConnected");
+          this.setStatusText(this.t("statusBar.socialNotConnected"));
         }
       } catch (error) {
-        statusText.textContent = this.t("statusBar.socialReady");
+        this.setStatusText(this.t("statusBar.socialReady"));
       }
     };
 
@@ -270,6 +342,10 @@ class StatusBarManager {
     let lastReceivedBytes = new Map();
 
     const updateStatus = () => {
+      if (this.preservedStatus && !this.checkActiveDownloads()) {
+        return;
+      }
+
       if (this.hasModalOpen() && !this.checkActiveDownloads()) {
         return;
       }
@@ -295,11 +371,12 @@ class StatusBarManager {
           }
           statusContent += dots;
           
-          statusText.innerHTML = statusContent;
-          
-          if (!statusText.classList.contains("status-downloading")) {
-            statusText.classList.add("status-downloading");
-          }
+            if (this.setStatusText(statusContent, true)) {
+              const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+              if (statusText && !statusText.classList.contains("status-downloading")) {
+                statusText.classList.add("status-downloading");
+              }
+            }
           
           setTimeout(() => updateStatus(), 200);
           return;
@@ -383,10 +460,11 @@ class StatusBarManager {
             statusContent += dots;
             if (animIndicator) statusContent += animIndicator;
 
-            statusText.innerHTML = statusContent;
-
-            if (!statusText.classList.contains("status-downloading")) {
-              statusText.classList.add("status-downloading");
+            if (this.setStatusText(statusContent, true)) {
+              const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+              if (statusText && !statusText.classList.contains("status-downloading")) {
+                statusText.classList.add("status-downloading");
+              }
             }
 
             lastUpdateTime = currentTime;
@@ -404,20 +482,20 @@ class StatusBarManager {
             }
 
             if (this.currentTab !== "downloads") {
-              if (!this.hasModalOpen()) {
+              if (!this.hasModalOpen() && !this.preservedStatus) {
                 this.updateStatus(this.currentTab);
               }
               return;
             }
 
-            if (!this.hasModalOpen()) {
+            if (!this.hasModalOpen() && !this.preservedStatus) {
               if (completedCount > 0) {
-                statusText.textContent = this.t("statusBar.downloadsCompleted", {
+                this.setStatusText(this.t("statusBar.downloadsCompleted", {
                   count: completedCount,
                   plural: completedCount !== 1 ? "s" : ""
-                });
+                }));
               } else {
-                statusText.textContent = this.t("statusBar.downloadsNoActive");
+                this.setStatusText(this.t("statusBar.downloadsNoActive"));
               }
             }
           }
@@ -434,14 +512,14 @@ class StatusBarManager {
           }
 
           if (this.currentTab !== "downloads") {
-            if (!this.hasModalOpen()) {
+            if (!this.hasModalOpen() && !this.preservedStatus) {
               this.updateStatus(this.currentTab);
             }
             return;
           }
 
-          if (!this.hasModalOpen()) {
-            statusText.textContent = this.t("statusBar.downloadsReady");
+          if (!this.hasModalOpen() && !this.preservedStatus) {
+            this.setStatusText(this.t("statusBar.downloadsReady"));
           }
         }
       } catch (error) {
@@ -449,14 +527,14 @@ class StatusBarManager {
         statusText.classList.remove("status-downloading");
 
         if (this.currentTab !== "downloads") {
-          if (!this.hasModalOpen()) {
+          if (!this.hasModalOpen() && !this.preservedStatus) {
             this.updateStatus(this.currentTab);
           }
           return;
         }
 
-        if (!this.hasModalOpen()) {
-          statusText.textContent = "Downloads • Ready";
+        if (!this.hasModalOpen() && !this.preservedStatus) {
+          this.setStatusText("Downloads • Ready");
         }
       }
     };
@@ -487,12 +565,12 @@ class StatusBarManager {
           const completedCount =
             window.downloadManager?.completedDownloads?.length || 0;
           if (completedCount > 0) {
-            statusText.textContent = this.t("statusBar.downloadsCompleted", {
+            this.setStatusText(this.t("statusBar.downloadsCompleted", {
               count: completedCount,
               plural: completedCount !== 1 ? "s" : ""
-            });
+            }));
           } else {
-            statusText.textContent = this.t("statusBar.downloadsNoActive");
+            this.setStatusText(this.t("statusBar.downloadsNoActive"));
           }
         }
       }
@@ -531,6 +609,10 @@ class StatusBarManager {
         return;
       }
 
+      if (this.preservedStatus) {
+        return;
+      }
+
       try {
         if (window.modManager && window.modManager.mods) {
           const mods = window.modManager.mods;
@@ -542,16 +624,16 @@ class StatusBarManager {
           ).length;
           const totalMods = mods.length;
 
-          statusText.textContent = this.t("statusBar.modsEnabled", {
+          this.setStatusText(this.t("statusBar.modsEnabled", {
             enabled: enabledMods,
             total: totalMods,
             plural: totalMods !== 1 ? "s" : ""
-          });
+          }));
         } else {
-          statusText.textContent = this.t("statusBar.modsReady");
+          this.setStatusText(this.t("statusBar.modsReady"));
         }
       } catch (error) {
-        statusText.textContent = this.t("statusBar.modsReady");
+        this.setStatusText(this.t("statusBar.modsReady"));
       }
     };
 
@@ -573,6 +655,10 @@ class StatusBarManager {
         return;
       }
 
+      if (this.preservedStatus) {
+        return;
+      }
+
       try {
         if (window.pluginManager) {
           const plugins = window.pluginManager.plugins || [];
@@ -580,16 +666,16 @@ class StatusBarManager {
             (p) => p.enabled !== false
           ).length;
 
-          statusText.textContent = this.t("statusBar.pluginsEnabled", {
+          this.setStatusText(this.t("statusBar.pluginsEnabled", {
             enabled: enabledPlugins,
             total: plugins.length,
             plural: plugins.length !== 1 ? "s" : ""
-          });
+          }));
         } else {
-          statusText.textContent = this.t("statusBar.pluginsReady");
+          this.setStatusText(this.t("statusBar.pluginsReady"));
         }
       } catch (error) {
-        statusText.textContent = this.t("statusBar.pluginsReady");
+        this.setStatusText(this.t("statusBar.pluginsReady"));
       }
     };
 
@@ -601,7 +687,7 @@ class StatusBarManager {
    * Update status for Settings tab
    */
   updateSettingsStatus(statusText) {
-    statusText.textContent = this.t("statusBar.settings");
+    this.setStatusText(this.t("statusBar.settings"));
   }
 
   /**
@@ -617,23 +703,27 @@ class StatusBarManager {
         return;
       }
 
+      if (this.preservedStatus) {
+        return;
+      }
+
       try {
         if (window.charactersManager && window.charactersManager.characters) {
           const characters = window.charactersManager.characters;
           const count = characters instanceof Map ? characters.size : (Array.isArray(characters) ? characters.length : 0);
           if (count > 0) {
-            statusText.textContent = this.t("statusBar.charactersAvailable", {
+            this.setStatusText(this.t("statusBar.charactersAvailable", {
               count: count,
               plural: count !== 1 ? "s" : ""
-            });
+            }));
           } else {
-            statusText.textContent = this.t("statusBar.charactersReady");
+            this.setStatusText(this.t("statusBar.charactersReady"));
           }
         } else {
-          statusText.textContent = this.t("statusBar.charactersReady");
+          this.setStatusText(this.t("statusBar.charactersReady"));
         }
       } catch (error) {
-        statusText.textContent = this.t("statusBar.charactersReady");
+        this.setStatusText(this.t("statusBar.charactersReady"));
       }
     };
 
@@ -641,14 +731,23 @@ class StatusBarManager {
     this.updateInterval = setInterval(updateStatus, 10000);
   }
   updateStagesStatus(statusText) {
-    statusText.textContent = this.t("statusBar.stages");
+    this.setStatusText(this.t("statusBar.stages"));
+  }
+
+  updateCheckingConflictsStatus() {
+    const statusRight = document.querySelector(".bottom-text-right");
+    if (!statusRight) return;
+
+    statusRight.innerHTML = '';
+    const checkingText = document.createElement("span");
+    checkingText.textContent = this.t("statusBar.checkingConflicts");
+    statusRight.appendChild(checkingText);
   }
 
   updateConflictStatus(conflictCount) {
     const statusRight = document.querySelector(".bottom-text-right");
     if (!statusRight) return;
 
-    // Clear existing content
     statusRight.innerHTML = '';
 
     if (conflictCount > 0) {
@@ -658,6 +757,9 @@ class StatusBarManager {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
+        if (window.statusBarManager) {
+          window.statusBarManager.preserveCurrentStatus();
+        }
         if (window.conflictModalManager) {
           window.conflictModalManager.showConflictModal();
         }
@@ -675,9 +777,11 @@ class StatusBarManager {
       clearInterval(this.updateInterval);
       this.updateInterval = null;
     }
-    const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
-    if (statusText && !this.currentTab) {
-      statusText.textContent = this.t("statusBar.ready");
+    if (!this.preservedStatus) {
+      const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+      if (statusText && !this.currentTab) {
+        statusText.textContent = this.t("statusBar.ready");
+      }
     }
     const statusRight = document.querySelector(".bottom-text-right");
     if (statusRight) {

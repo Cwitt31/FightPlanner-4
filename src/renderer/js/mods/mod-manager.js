@@ -561,8 +561,7 @@ class ModManager {
     this.isCheckingConflicts = true;
 
     if (window.statusBarManager) {
-      const t = (key) => window.i18n && window.i18n.t ? window.i18n.t(key) : key;
-      window.statusBarManager.updateStatus(t("statusBar.checkingConflicts"));
+      window.statusBarManager.updateCheckingConflictsStatus();
     }
 
     try {
@@ -573,11 +572,18 @@ class ModManager {
       if (window.statusBarManager) {
         if (result.totalConflicts > 0) {
           window.statusBarManager.updateConflictStatus(result.totalConflicts);
-        }
-        if (window.statusBarManager.currentTab) {
-          window.statusBarManager.updateStatus(window.statusBarManager.currentTab);
         } else {
-          window.statusBarManager.updateStatus("tools");
+          const statusRight = document.querySelector(".bottom-text-right");
+          if (statusRight) {
+            statusRight.innerHTML = '';
+          }
+        }
+        if (!window.statusBarManager.checkActiveDownloads()) {
+          if (window.statusBarManager.currentTab) {
+            window.statusBarManager.updateStatus(window.statusBarManager.currentTab);
+          } else {
+            window.statusBarManager.updateStatus("tools");
+          }
         }
       }
 
@@ -585,6 +591,19 @@ class ModManager {
     } catch (error) {
       console.error("Error checking conflicts:", error);
       this.isCheckingConflicts = false;
+      if (window.statusBarManager) {
+        const statusRight = document.querySelector(".bottom-text-right");
+        if (statusRight) {
+          statusRight.innerHTML = '';
+        }
+        if (!window.statusBarManager.checkActiveDownloads()) {
+          if (window.statusBarManager.currentTab) {
+            window.statusBarManager.updateStatus(window.statusBarManager.currentTab);
+          } else {
+            window.statusBarManager.updateStatus("tools");
+          }
+        }
+      }
       return { success: false, error: error.message };
     }
   }

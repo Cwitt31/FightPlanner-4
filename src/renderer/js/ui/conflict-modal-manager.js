@@ -20,6 +20,10 @@ class ConflictModalManager {
 
     if (!modal || !summaryEl || !container) return;
 
+    if (window.statusBarManager) {
+      window.statusBarManager.preserveCurrentStatus();
+    }
+
     const conflicts = window.modManager.conflicts;
 
     const t = (key, params = {}) => {
@@ -123,6 +127,13 @@ class ConflictModalManager {
     }
     if (window.modalManager && !keepOverlay) {
       window.modalManager.hideOverlay();
+    }
+    if (window.statusBarManager && !keepOverlay) {
+      setTimeout(() => {
+        if (!window.statusBarManager.hasModalOpen()) {
+          window.statusBarManager.restorePreservedStatus();
+        }
+      }, 350);
     }
   }
 
