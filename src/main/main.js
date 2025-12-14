@@ -195,18 +195,18 @@ if (!gotTheLock) {
   app.whenReady().then(async () => {
     registerAllHandlers(ipcMain, discordRPC);
 
-    console.log('🔄 Checking for FightPlanner 3 settings...');
+    console.log('Checking for FightPlanner 3 settings...');
     const migrationResult = await migrateFromV3();
 
     if (migrationResult.migrated) {
-      console.log('✅ Settings migrated from FightPlanner 3');
-      console.log('📦 Migrated:', Object.keys(migrationResult.settings || {}).join(', '));
+      console.log('Settings migrated from FightPlanner 3');
+      console.log('Migrated:', Object.keys(migrationResult.settings || {}).join(', '));
     }
 
     const hasLaunchedBefore = await store.get('hasLaunchedBefore');
 
     if (!hasLaunchedBefore) {
-      console.log('🎉 First launch - opening tutorial only');
+      console.log('First launch - opening tutorial only');
       await store.set('hasLaunchedBefore', true);
 
       const tempWindow = new BrowserWindow({
@@ -221,7 +221,7 @@ if (!gotTheLock) {
       tutWindow.on('closed', () => {
         tempWindow.close();
 
-        console.log('✓ Tutorial completed. Opening main app...');
+        console.log('omg he finish the tutorial lets gooo, go to the main app');
         createWindow({ animate: true });
       });
     } else {

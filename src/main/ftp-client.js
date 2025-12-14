@@ -6,7 +6,6 @@ const path = require('path');
 class FTPClient {
   constructor() {
     this.client = new ftp.Client();
-    // Force IPv4 passive mode (avoid EPSV issues with Switch FTP)
     this.client.prepareTransfer = enterPassiveModeIPv4;
   }
 
@@ -17,7 +16,7 @@ class FTPClient {
         port: port,
         user: user,
         password: password,
-        secure: false, // Switch FTP is not secure
+        secure: false,
       });
       console.log(`Connected to FTP server at ${host}:${port}`);
       return true;
@@ -38,7 +37,6 @@ class FTPClient {
 
   async uploadDirectory(localPath, remotePath) {
     try {
-      // Normalize remote path to use forward slashes
       remotePath = remotePath.replace(/\\/g, '/');
       console.log(`Uploading directory: ${localPath} -> ${remotePath}`);
       
@@ -47,23 +45,19 @@ class FTPClient {
         throw new Error(`${localPath} is not a directory`);
       }
 
-      // Upload all files recursively
       const files = fs.readdirSync(localPath);
       let uploadedCount = 0;
 
       for (const file of files) {
         const localFilePath = path.join(localPath, file);
-        // Ensure forward slashes in remote path
         let remoteFilePath = `${remotePath}/${file}`;
         
         const fileStats = fs.statSync(localFilePath);
         
         if (fileStats.isDirectory()) {
-          // Recursively upload subdirectories
           const count = await this.uploadDirectory(localFilePath, remoteFilePath);
           uploadedCount += count;
         } else if (fileStats.isFile()) {
-          // Ensure parent directory exists before uploading
           const remoteDir = remotePath;
           try {
             await this.client.ensureDir(remoteDir);
@@ -71,7 +65,6 @@ class FTPClient {
             console.warn(`Could not ensure dir ${remoteDir}, continuing...`);
           }
           
-          // Upload file
           await this.client.uploadFrom(localFilePath, remoteFilePath);
           uploadedCount++;
           console.log(`Uploaded: ${remoteFilePath}`);

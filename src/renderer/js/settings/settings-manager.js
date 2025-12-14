@@ -100,6 +100,17 @@ class SettingsManager {
       console.log("Browse plugins button listener attached");
     }
 
+    const exportModsListBtn = document.getElementById("export-mods-list-btn");
+    if (exportModsListBtn && !exportModsListBtn.dataset.listenerAttached) {
+      exportModsListBtn.addEventListener("click", async () => {
+        if (window.modManager) {
+          await window.modManager.exportModsList();
+        }
+      });
+      exportModsListBtn.dataset.listenerAttached = "true";
+      console.log("Export mods list button listener attached");
+    }
+
     const browseEmulator = document.getElementById("browse-emulator-path");
     if (browseEmulator && !browseEmulator.dataset.listenerAttached) {
       browseEmulator.addEventListener("click", () => this.browseEmulatorPath());

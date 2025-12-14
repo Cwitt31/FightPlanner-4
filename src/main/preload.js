@@ -137,4 +137,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("start-intro-animation", (event, data) => callback(data)),
 
   getAvailableDrives: () => ipcRenderer.invoke("get-available-drives"),
+
+  saveFileDialog: (defaultPath, filters) =>
+    ipcRenderer.invoke("save-file-dialog", defaultPath, filters),
+  writeFile: (filePath, content) =>
+    ipcRenderer.invoke("write-file", filePath, content),
 });

@@ -22,6 +22,7 @@
   "tools": {
     "search": "Search mods...",
     "refreshMods": "Refresh Mods",
+    "exportMods": "Export Mod List",
     "allCategories": "All Categories",
     "details": "Details",
     "selectMod": "Select a mod to view details",
@@ -99,6 +100,10 @@
     "pluginsFolder": "Plugins Folder Path",
     "pluginsFolderPlaceholder": "Select plugins folder...",
     "pluginsFolderHint": "Select the folder containing your .nro plugin files",
+    "exportModList": "Export Mod List",
+    "exportModListTitle": "Export Enabled Mods",
+    "exportModListDesc": "Export all enabled mods to a text file, grouped by character",
+    "exportModListHint": "Creates a text file listing all enabled mods, organized by character, making it easy to share your mod list",
     "emulatorType": "Emulator Type",
     "emulatorTypeYuzu": "Yuzu",
     "emulatorTypeRyujinx": "Ryujinx",
@@ -215,6 +220,13 @@
     },
     "alert": {
       "title": "Message"
+    },
+    "exportFormat": {
+      "title": "Export Format",
+      "question": "Choose the export format:",
+      "txt": "Text (.txt)",
+      "md": "Markdown (.md)",
+      "modsLoaded": "{{count}} mods loaded"
     },
     "changeSlot": {
       "title": "Change Character Slot",
@@ -457,6 +469,9 @@
     "infoTomlSaved": "Info.toml saved successfully",
     "failedToSaveInfoToml": "Failed to save info.toml: {{error}}",
     "failedToStartInstallation": "Failed to start installation",
+    "noEnabledModsToExport": "No enabled mods to export",
+    "modListExportedSuccessfully": "Mod list exported successfully to: {{filePath}}",
+    "failedToExportModList": "Failed to export mod list: {{error}}",
     "downloadStarted": "Download started...",
     "modInstalledSuccess": "Mod installed successfully! 🎉",
     "installationFailed": "Installation failed: {{error}}",

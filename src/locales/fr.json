@@ -99,6 +99,10 @@
     "pluginsFolder": "Chemin du Dossier Plugins",
     "pluginsFolderPlaceholder": "Sélectionner un dossier plugins...",
     "pluginsFolderHint": "Sélectionnez le dossier contenant vos fichiers .nro de plugins",
+    "exportModList": "Exporter la Liste de Mods",
+    "exportModListTitle": "Exporter les Mods Activés",
+    "exportModListDesc": "Exporter tous les mods activés dans un fichier texte, groupés par personnage",
+    "exportModListHint": "Crée un fichier texte listant tous les mods activés, organisés par personnage, facilitant le partage de votre liste de mods",
     "emulatorType": "Type d'Émulateur",
     "emulatorTypeYuzu": "Yuzu",
     "emulatorTypeRyujinx": "Ryujinx",
@@ -199,6 +203,13 @@
     },
     "alert": {
       "title": "Message"
+    },
+    "exportFormat": {
+      "title": "Format d'Export",
+      "question": "Choisissez le format d'export :",
+      "txt": "Texte (.txt)",
+      "md": "Markdown (.md)",
+      "modsLoaded": "{{count}} mods chargés"
     },
     "changeSlot": {
       "title": "Changer le Slot de Personnage",
@@ -457,6 +468,9 @@
     "infoTomlSaved": "Info.toml enregistré avec succès",
     "failedToSaveInfoToml": "Échec de l'enregistrement d'info.toml : {{error}}",
     "failedToStartInstallation": "Échec du démarrage de l'installation",
+    "noEnabledModsToExport": "Aucun mod activé à exporter",
+    "modListExportedSuccessfully": "Liste de mods exportée avec succès vers : {{filePath}}",
+    "failedToExportModList": "Échec de l'export de la liste de mods : {{error}}",
     "downloadStarted": "Téléchargement démarré...",
     "modInstalledSuccess": "Mod installé avec succès ! 🎉",
     "installationFailed": "Échec de l'installation : {{error}}",

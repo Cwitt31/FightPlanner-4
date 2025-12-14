@@ -128,9 +128,43 @@ function registerFileHandlers(ipcMain) {
       return createErrorResponse(ErrorCodes.FILE_READ_ERROR, error.message);
     }
   });
+
+  ipcMain.handle('save-file-dialog', async (event, defaultPath, filters) => {
+    try {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      const result = await dialog.showSaveDialog(win, {
+        defaultPath: defaultPath,
+        filters: filters || [
+          { name: 'Text Files', extensions: ['txt'] },
+          { name: 'All Files', extensions: ['*'] }
+        ]
+      });
+
+      if (result.canceled) {
+        return { success: false, canceled: true };
+      }
+
+      return { success: true, filePath: result.filePath };
+    } catch (error) {
+      handleError(error, 'save-file-dialog');
+      return createErrorResponse(ErrorCodes.FILE_WRITE_ERROR, error.message);
+    }
+  });
+
+  ipcMain.handle('write-file', async (event, filePath, content) => {
+    try {
+      fs.writeFileSync(filePath, content, 'utf8');
+      return { success: true };
+    } catch (error) {
+      handleError(error, 'write-file');
+      return createErrorResponse(ErrorCodes.FILE_WRITE_ERROR, error.message);
+    }
+  });
 }
 
 module.exports = { registerFileHandlers };
+
+
 
 
 

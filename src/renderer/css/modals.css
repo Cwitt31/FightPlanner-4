@@ -277,26 +277,26 @@
 }
 
 .modal-btn-primary {
-    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+    background: var(--accent-color);
     color: var(--text-inverse);
     border: none;
 }
 
 .modal-btn-primary:hover {
-    background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent-color) 100%);
+    background: var(--accent-hover);
     box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.3);
     transform: translateY(-2px);
     color: var(--text-inverse);
 }
 
 .modal-btn-danger {
-    background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-hover) 100%);
+    background: var(--danger-color);
     color: var(--text-inverse);
     border: none;
 }
 
 .modal-btn-danger:hover {
-    background: linear-gradient(135deg, var(--danger-hover) 0%, var(--danger-color) 100%);
+    background: var(--danger-hover);
     box-shadow: 0 4px 12px rgba(var(--danger-rgb), 0.3);
     transform: translateY(-2px);
     color: var(--text-inverse);

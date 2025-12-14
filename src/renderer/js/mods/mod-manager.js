@@ -588,6 +588,229 @@ class ModManager {
       return { success: false, error: error.message };
     }
   }
+
+  async askExportFormat() {
+    return new Promise((resolve) => {
+      const t = (key, params = {}) => {
+        return window.i18n && window.i18n.t ? window.i18n.t(key, params) : key;
+      };
+
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.id = 'export-format-modal';
+      modal.style.display = 'block';
+      
+      modal.innerHTML = `
+        <div class="modal-header">
+          <h3><i class="bi bi-file-earmark-text"></i> ${t("modals.exportFormat.title")}</h3>
+          <button class="modal-close" id="export-format-close-btn">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>${t("modals.exportFormat.question")}</p>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn modal-btn-cancel" id="export-format-cancel-btn">
+            <i class="bi bi-x-lg"></i> ${t("common.cancel")}
+          </button>
+          <button class="modal-btn modal-btn-primary" id="export-format-txt-btn">
+            <i class="bi bi-filetype-txt"></i> ${t("modals.exportFormat.txt")}
+          </button>
+          <button class="modal-btn modal-btn-primary" id="export-format-md-btn">
+            <i class="bi bi-filetype-md"></i> ${t("modals.exportFormat.md")}
+          </button>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+      if (window.modalManager) {
+        window.modalManager.showOverlay();
+      }
+
+      const closeModal = (format = null) => {
+        modal.style.display = 'none';
+        modal.remove();
+        if (window.modalManager) {
+          window.modalManager.hideOverlay();
+        }
+        resolve(format);
+      };
+
+      document.getElementById('export-format-close-btn').addEventListener('click', () => closeModal(null));
+      document.getElementById('export-format-cancel-btn').addEventListener('click', () => closeModal(null));
+      document.getElementById('export-format-txt-btn').addEventListener('click', () => closeModal('txt'));
+      document.getElementById('export-format-md-btn').addEventListener('click', () => closeModal('md'));
+    });
+  }
+
+  async exportModsList() {
+    if (!window.electronAPI || !window.electronAPI.saveFileDialog || !window.electronAPI.writeFile) {
+      console.error("Electron API not available for file operations");
+      return;
+    }
+
+    // Get all enabled mods
+    const enabledMods = this.mods.filter(mod => mod.status === "active");
+
+    if (enabledMods.length === 0) {
+      if (window.toastManager) {
+        window.toastManager.show("warning", "toasts.noEnabledModsToExport", 3000);
+      }
+      return;
+    }
+
+    // Ask for export format
+    const format = await this.askExportFormat();
+    if (!format) {
+      return; // User cancelled
+    }
+
+    // Group mods by character
+    const modsByCharacter = new Map();
+    const modsWithoutCharacter = [];
+
+    for (const mod of enabledMods) {
+      if (!mod.folderPath) {
+        modsWithoutCharacter.push(mod);
+        continue;
+      }
+
+      try {
+        // Get mod info
+        const modInfo = await window.electronAPI.getModInfo(mod.folderPath);
+        const modName = modInfo?.display_name || mod.name;
+        const modUrl = modInfo?.url || "";
+
+        // Scan for characters
+        const fighters = await window.electronAPI.scanModForFighters(mod.folderPath);
+
+        if (fighters && fighters.length > 0) {
+          fighters.forEach(rawFighterId => {
+            const fighterId = window.resolveFolderName ?
+              window.resolveFolderName(rawFighterId) :
+              rawFighterId.toLowerCase();
+
+            const charInfo = window.SSBU_CHARACTERS ? window.SSBU_CHARACTERS[fighterId] : null;
+            const charName = charInfo ? charInfo.name : rawFighterId;
+
+            if (!modsByCharacter.has(charName)) {
+              modsByCharacter.set(charName, []);
+            }
+
+            modsByCharacter.get(charName).push({
+              name: modName,
+              url: modUrl
+            });
+          });
+        } else {
+          // Mod doesn't have character folders, add to "Other" category
+          if (!modsByCharacter.has("Other")) {
+            modsByCharacter.set("Other", []);
+          }
+          modsByCharacter.get("Other").push({
+            name: modName,
+            url: modUrl
+          });
+        }
+      } catch (error) {
+        console.error(`Error processing mod ${mod.name}:`, error);
+        modsWithoutCharacter.push(mod);
+      }
+    }
+
+    // Build the content based on format
+    const t = (key, params = {}) => {
+      return window.i18n && window.i18n.t ? window.i18n.t(key, params) : key;
+    };
+
+    let content = '';
+    const isMarkdown = format === 'md';
+
+    if (isMarkdown) {
+      content = `# ${t("modals.exportFormat.modsLoaded", { count: enabledMods.length })}\n\n`;
+    } else {
+      content = `${enabledMods.length} mods loaded\n\n`;
+    }
+
+    // Sort characters alphabetically
+    const sortedCharacters = Array.from(modsByCharacter.keys()).sort((a, b) => {
+      if (a === "Other") return 1;
+      if (b === "Other") return -1;
+      return a.localeCompare(b);
+    });
+
+    // Write mods grouped by character
+    for (const charName of sortedCharacters) {
+      const mods = modsByCharacter.get(charName);
+      
+      // Format character name based on format
+      if (isMarkdown) {
+        content += `## ${charName}\n\n`;
+      } else {
+        content += `${charName}\n`;
+      }
+
+      // Remove duplicates (same mod name)
+      const uniqueMods = [];
+      const seenNames = new Set();
+      for (const mod of mods) {
+        if (!seenNames.has(mod.name)) {
+          seenNames.add(mod.name);
+          uniqueMods.push(mod);
+        }
+      }
+
+      uniqueMods.forEach((mod) => {
+        if (mod.url) {
+          if (isMarkdown) {
+            content += `- ${mod.name} (${mod.url})\n`;
+          } else {
+            content += `${mod.name} (${mod.url}),\n`;
+          }
+        } else {
+          if (isMarkdown) {
+            content += `- ${mod.name}\n`;
+          } else {
+            content += `${mod.name},\n`;
+          }
+        }
+      });
+
+      content += "\n";
+    }
+
+    // Save to file
+    try {
+      const extension = format === 'md' ? 'md' : 'txt';
+      const fileName = `mods_list.${extension}`;
+      const filters = format === 'md' 
+        ? [
+            { name: "Markdown Files", extensions: ["md"] },
+            { name: "Text Files", extensions: ["txt"] },
+            { name: "All Files", extensions: ["*"] }
+          ]
+        : [
+            { name: "Text Files", extensions: ["txt"] },
+            { name: "Markdown Files", extensions: ["md"] },
+            { name: "All Files", extensions: ["*"] }
+          ];
+
+      const result = await window.electronAPI.saveFileDialog(fileName, filters);
+
+      if (result.success && result.filePath) {
+        await window.electronAPI.writeFile(result.filePath, content);
+        if (window.toastManager) {
+          window.toastManager.show("success", "toasts.modListExportedSuccessfully", 4000, { filePath: result.filePath });
+        }
+      }
+    } catch (error) {
+      console.error("Error exporting mod list:", error);
+      if (window.toastManager) {
+        window.toastManager.show("error", "toasts.failedToExportModList", 4000, { error: error.message });
+      }
+    }
+  }
 }
 
 if (typeof window !== "undefined") {
