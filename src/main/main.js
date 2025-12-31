@@ -19,7 +19,6 @@ if (!fs.existsSync(logsDir)) {
 const logFilePath = path.join(logsDir, `app-${new Date().toISOString().split('T')[0]}.log`);
 const logStream = fs.createWriteStream(logFilePath, { flags: 'a' });
 
-// Intercept console logs and write to file + send to renderer
 const originalConsoleLog = console.log;
 const originalConsoleWarn = console.warn;
 const originalConsoleError = console.error;
@@ -81,7 +80,7 @@ function createWindow(options = {}) {
     frame: false,
     transparent: false,
     hasShadow: true,
-    show: false // Start hidden, show when ready
+    show: false
   });
 
   let isToolsTabActive = false;
@@ -114,8 +113,7 @@ function createWindow(options = {}) {
     if (!windowShown && mainWindow && !mainWindow.isDestroyed()) {
       windowShown = true;
       mainWindow.show();
-      
-      // Initialize animation handler with this window
+
       AnimationHandler.initialize(mainWindow);
       
       if (options.animate) {
@@ -124,7 +122,6 @@ function createWindow(options = {}) {
     }
   };
 
-  // Additional fallback: force show after timeout (especially for Linux)
   const showTimeout = setTimeout(() => {
     if (!windowShown && mainWindow && !mainWindow.isDestroyed()) {
       console.log('[linux] Force showing window after timeout');
@@ -137,7 +134,6 @@ function createWindow(options = {}) {
     showWindow();
   });
 
-  // Fallback for Linux: show window when content finishes loading
   mainWindow.webContents.once('did-finish-load', () => {
     if (!windowShown && process.platform === 'linux') {
       console.log('[linux] Window not shown yet, showing after did-finish-load');
@@ -146,7 +142,6 @@ function createWindow(options = {}) {
     }
   });
 
-  // Drop handler for window level events
   mainWindow.webContents.on('dom-ready', () => {
     mainWindow.webContents.executeJavaScript(`
       document.addEventListener('drop', (e) => {

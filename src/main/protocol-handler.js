@@ -266,7 +266,12 @@ class ProtocolHandler {
     console.log("[protocol] Handling deep link:", url);
 
     try {
-      const cleanUrl = url.replace("fightplanner:", "");
+      let cleanUrl = url.replace("fightplanner:", "");
+      
+      if (cleanUrl.includes(',Mod,')) {
+        cleanUrl = cleanUrl.replace(',Mod,', ',Sound,');
+        console.log("[protocol] Replaced 'Mod' with 'Sound' in URL");
+      }
       
       if (this.processingUrls.has(cleanUrl)) {
         console.log("[protocol] URL already being processed, skipping duplicate:", cleanUrl);
@@ -281,6 +286,7 @@ class ProtocolHandler {
 
       const downloadId = `dl_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
       const modId = this.extractModId(cleanUrl);
+      const modType = this.extractModType(cleanUrl);
 
       const downloadUrl = this.parseGameBananaUrl(cleanUrl);
 
@@ -292,14 +298,16 @@ class ProtocolHandler {
 
       console.log("[protocol] Download URL:", downloadUrl);
       console.log("[protocol] Mod ID:", modId);
+      console.log("[protocol] Mod Type:", modType);
 
       this.sendToRenderer("mod-install-confirm-request", {
         url: downloadUrl,
         downloadId,
-        modId
+        modId,
+        modType
       });
 
-      this.pendingInstalls.set(downloadId, { url: downloadUrl, modId, downloadId });
+      this.pendingInstalls.set(downloadId, { url: downloadUrl, modId, downloadId, modType });
     } catch (error) {
       console.error("Error handling deep link:", error);
       const cleanUrl = url.replace("fightplanner:", "");
@@ -309,9 +317,9 @@ class ProtocolHandler {
     }
   }
 
-  async fetchModNameFromAPI(modId) {
+  async fetchModNameFromAPI(modId, modType = "Mod") {
     try {
-      const apiUrl = `https://gamebanana.com/apiv11/Mod/${modId}?_csvProperties=_sName`;
+      const apiUrl = `https://gamebanana.com/apiv11/${modType}/${modId}?_csvProperties=_sName`;
       const response = await this.fetchWithTimeout(apiUrl, 10000);
       const data = JSON.parse(response);
       return data._sName || null;
@@ -328,18 +336,19 @@ class ProtocolHandler {
       return;
     }
 
-    const { url: downloadUrl, modId } = installData;
+      const { url: downloadUrl, modId, modType = "Mod" } = installData;
 
-    try {
-      this.sendToRenderer("mod-install-start", {
-        url: downloadUrl,
-        downloadId,
-      });
+      try {
+        let modName = null;
+        if (modId) {
+          modName = await this.fetchModNameFromAPI(modId, modType);
+        }
 
-      let modName = null;
-      if (modId) {
-        modName = await this.fetchModNameFromAPI(modId);
-      }
+        this.sendToRenderer("mod-install-start", {
+          url: downloadUrl,
+          downloadId,
+          modName: modName || null
+        });
 
       const filePath = await this.downloadMod(downloadUrl, downloadId);
 
@@ -350,7 +359,7 @@ class ProtocolHandler {
 
       console.log("Downloaded to:", filePath);
 
-      const installedModName = await this.installMod(filePath, downloadId, modId, modName);
+      const installedModName = await this.installMod(filePath, downloadId, modId, modName, modType);
 
       try {
         fs.unlinkSync(filePath);
@@ -364,7 +373,7 @@ class ProtocolHandler {
 
         if (modsPath) {
           modFolderPath = path.join(modsPath, installedModName);
-          await this.fetchAndSaveModMetadata(modId, modFolderPath);
+          await this.fetchAndSaveModMetadata(modId, modFolderPath, modType);
         }
       }
 
@@ -389,7 +398,7 @@ class ProtocolHandler {
   }
   extractModId(url) {
     try {
-      const mmdlMatch = url.match(/mmdl\/\d+,Mod,(\d+)/);
+      const mmdlMatch = url.match(/mmdl\/\d+,(?:Mod|Sound),(\d+)/);
       if (mmdlMatch && mmdlMatch[1]) {
         return mmdlMatch[1];
       }
@@ -399,12 +408,25 @@ class ProtocolHandler {
       return null;
     }
   }
+
+  extractModType(url) {
+    try {
+      const typeMatch = url.match(/mmdl\/\d+,(Mod|Sound),/);
+      if (typeMatch && typeMatch[1]) {
+        return typeMatch[1];
+      }
+      return "Mod";
+    } catch (error) {
+      console.error("Error extracting mod type:", error);
+      return "Mod";
+    }
+  }
   parseGameBananaUrl(url) {
     try {
       const mmdlMatch = url.match(/mmdl\/(\d+)/);
       if (mmdlMatch && mmdlMatch[1]) {
-        const modId = mmdlMatch[1];
-        return `https://gamebanana.com/dl/${modId}`;
+        const downloadId = mmdlMatch[1];
+        return `https://gamebanana.com/dl/${downloadId}`;
       }
 
       if (url.includes("/dl/")) {
@@ -591,7 +613,7 @@ class ProtocolHandler {
       });
     });
   }
-  async installMod(zipPath, downloadId, modId = null, modNameFromAPI = null) {
+  async installMod(zipPath, downloadId, modId = null, modNameFromAPI = null, modType = "Mod") {
     if (!fs.existsSync(zipPath)) {
       throw new Error(`Archive file does not exist: ${zipPath}`);
     }
@@ -669,7 +691,7 @@ class ProtocolHandler {
       if (modNameFromAPI) {
         newName = modNameFromAPI;
       } else if (modId) {
-        newName = await this.fetchModNameFromAPI(modId);
+        newName = await this.fetchModNameFromAPI(modId, modType);
       }
       
       if (!newName) {
@@ -1246,9 +1268,9 @@ class ProtocolHandler {
     }
   }
 
-  async fetchAndSaveModMetadata(modId, modFolderPath) {
+  async fetchAndSaveModMetadata(modId, modFolderPath, modType = "Mod") {
     try {
-      console.log(`Fetching metadata for mod ${modId}...`);
+      console.log(`Fetching metadata for ${modType} ${modId}...`);
 
       const hasPreview = this.hasPreviewImage(modFolderPath);
       const hasInfoToml = fs.existsSync(path.join(modFolderPath, "info.toml"));
@@ -1260,7 +1282,7 @@ class ProtocolHandler {
         return;
       }
 
-      const apiUrl = `https://gamebanana.com/apiv11/Mod/${modId}?_csvProperties=%40gbprofile`;
+      const apiUrl = `https://gamebanana.com/apiv11/${modType}/${modId}?_csvProperties=%40gbprofile`;
       console.log("API URL:", apiUrl);
 
       const response = await this.fetchWithTimeout(apiUrl, 10000);

@@ -933,9 +933,18 @@ class SocialManager {
       const mods = Array.isArray(modsData) ? modsData : (modsData.documents || []);
 
       if (Array.isArray(mods) && mods.length > 0) {
+        const userId = this.userData?.localId;
+        const usernameEl = document.getElementById("social-profile-username");
+        const username = usernameEl ? usernameEl.textContent : null;
+
         feedContent.innerHTML =
           '<div class="social-mods-grid">' +
-          mods.map((mod) => this.renderModCard(mod)).join("") +
+          mods.map((mod) => {
+            const modUserId = mod.userId;
+            const modPseudo = mod.pseudo;
+            const isOwn = modUserId === userId || (username && modPseudo === username);
+            return this.renderModCard(mod, isOwn);
+          }).join("") +
           "</div>";
 
         setTimeout(() => {
@@ -1202,7 +1211,7 @@ class SocialManager {
                     </p>
                     ${installedBadge}
                     ${
-                      mod.link && mod.link.startsWith("fightplanner:")
+                      isOwn && mod.link && mod.link.startsWith("fightplanner:")
                         ? `<button class="social-mod-download-btn" data-link="${
                             mod.link
                           }"><i class="bi bi-download"></i> ${

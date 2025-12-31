@@ -29,10 +29,6 @@ app.on('open-url', (event, url) => {
     }
 });
 
-/**
- * Initialize protocol handling
- * Call this in your main.js after creating the window
- */
 function initializeProtocol(window) {
     mainWindow = window;
 

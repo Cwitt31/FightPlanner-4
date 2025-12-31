@@ -19,19 +19,13 @@ class StatusBarManager {
     const modalOpen = this.hasModalOpen();
     const hasActiveDownloads = this.checkActiveDownloads();
 
-    if (modalOpen) {
-      if (!hasActiveDownloads) {
-        this.preserveCurrentStatus();
-        return;
-      }
+    if (modalOpen && !hasActiveDownloads) {
+      this.preserveCurrentStatus();
+      return;
+    }
+
+    if (this.preservedStatus && !modalOpen && !hasActiveDownloads) {
       this.preservedStatus = null;
-    } else {
-      if (this.preservedStatus && !hasActiveDownloads) {
-        const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
-        if (statusText && statusText.textContent === this.t("statusBar.ready") || statusText.textContent === "Ready" || statusText.textContent === "Prêt") {
-          this.restorePreservedStatus();
-        }
-      }
     }
 
     const validTabs = ["social", "downloads", "tools", "plugins", "settings", "characters", "stages", "fightplanner"];
@@ -40,7 +34,7 @@ class StatusBarManager {
       if (validTabs.includes(tabName)) {
         this.currentTab = tabName;
       } else if (tabName.startsWith("statusBar.") || tabName.includes("...") || tabName.includes("…")) {
-        if (!this.preservedStatus && (!modalOpen || hasActiveDownloads)) {
+        if (!this.preservedStatus) {
           this.animateStatusChange(statusText, () => {
             this.setStatusText(this.t(tabName));
           });
@@ -58,45 +52,40 @@ class StatusBarManager {
       this.updateInterval = null;
     }
 
-    if (this.preservedStatus && (!hasActiveDownloads || modalOpen)) {
-      return;
-    }
-
     if (hasActiveDownloads) {
+      this.preservedStatus = null;
       this.updateDownloadsStatus(statusText);
     } else {
-      if (!this.preservedStatus) {
-        this.animateStatusChange(statusText, () => {
-          const tab = this.currentTab;
-          switch (tab) {
-            case "social":
-              this.updateSocialStatus(statusText);
-              break;
-            case "downloads":
-              this.updateDownloadsStatus(statusText);
-              break;
-            case "tools":
-              this.updateToolsStatus(statusText);
-              break;
-            case "plugins":
-              this.updatePluginsStatus(statusText);
-              break;
-            case "settings":
-              this.updateSettingsStatus(statusText);
-              break;
-            case "characters":
-              this.updateCharactersStatus(statusText);
-              break;
-            case "stages":
-              this.updateStagesStatus(statusText);
-              break;
-            default:
-              if (!this.currentTab) {
-                return;
-              }
-          }
-        });
-      }
+      this.animateStatusChange(statusText, () => {
+        const tab = this.currentTab;
+        switch (tab) {
+          case "social":
+            this.updateSocialStatus(statusText);
+            break;
+          case "downloads":
+            this.updateDownloadsStatus(statusText);
+            break;
+          case "tools":
+            this.updateToolsStatus(statusText);
+            break;
+          case "plugins":
+            this.updatePluginsStatus(statusText);
+            break;
+          case "settings":
+            this.updateSettingsStatus(statusText);
+            break;
+          case "characters":
+            this.updateCharactersStatus(statusText);
+            break;
+          case "stages":
+            this.updateStagesStatus(statusText);
+            break;
+          default:
+            if (!this.currentTab) {
+              return;
+            }
+        }
+      });
     }
   }
 
@@ -180,6 +169,13 @@ class StatusBarManager {
       if (statusText) {
         statusText.textContent = this.preservedStatus;
         this.preservedStatus = null;
+        if (this.currentTab) {
+          setTimeout(() => {
+            if (!this.hasModalOpen() && !this.checkActiveDownloads()) {
+              this.updateStatus(this.currentTab);
+            }
+          }, 100);
+        }
       } else {
         this.preservedStatus = null;
       }
@@ -268,14 +264,12 @@ class StatusBarManager {
           const userId = window.socialManager.userData.localId;
 
           try {
-            // OPTIMIZATION: Utiliser le cache du socialManager
             const modsData = await window.socialManager.fetchWithCache(
               `${window.socialManager.API_URL}/list/links?idToken=${window.socialManager.authToken}`,
               {},
               'links'
             );
             
-            // Handle both array and paginated response
             const mods = Array.isArray(modsData) ? modsData : (modsData.documents || []);
 
             if (Array.isArray(mods)) {
@@ -435,6 +429,7 @@ class StatusBarManager {
             }
 
             const fileName =
+              firstDownload.modName ||
               firstDownload.fileName ||
               firstDownload.url?.split("/").pop() ||
               "Downloading...";

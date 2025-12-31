@@ -478,6 +478,12 @@ class SettingsManager {
         }
         
         newActive.classList.add("active");
+        
+        const contentArea = document.querySelector(".settings-content-area");
+        if (contentArea) {
+          contentArea.scrollTop = 0;
+        }
+        
         this.switchTabTimeout = null;
       }, 200);
     } else {
@@ -497,6 +503,11 @@ class SettingsManager {
       }
       
       newActive.classList.add("active");
+      
+      const contentArea = document.querySelector(".settings-content-area");
+      if (contentArea) {
+        contentArea.scrollTop = 0;
+      }
     }
   }
 

@@ -12,7 +12,8 @@ const CONFLICT_WHITELIST_PATTERNS = [
   'plugin.nro',
   'victory.toml',
   'README.txt',
-  'READ ME.txt'
+  'READ ME.txt',
+  'Preview.webp'
 ];
 
 const TEMP_FOLDERS = [

@@ -19,6 +19,13 @@ class ProtocolListener {
           data.downloadId
         );
         this.idMap.set(data.downloadId, rendererId);
+        
+        if (data.modName && window.downloadManager.activeDownloads) {
+          const download = window.downloadManager.activeDownloads.get(rendererId);
+          if (download) {
+            download.modName = data.modName;
+          }
+        }
       }
 
       if (window.toastManager) {

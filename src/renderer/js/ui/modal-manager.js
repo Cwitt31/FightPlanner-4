@@ -713,8 +713,8 @@ class ModalManager {
     }
   }
 
-  async openInstallConfirmModal(url, downloadId, modId) {
-    this.pendingInstallData = { url, downloadId, modId };
+  async openInstallConfirmModal(url, downloadId, modId, modType = "Mod") {
+    this.pendingInstallData = { url, downloadId, modId, modType };
     
     const urlDisplay = document.getElementById('install-url-display');
     if (urlDisplay) {
@@ -728,8 +728,16 @@ class ModalManager {
       modal.style.display = 'block';
     }
 
-    // Fetch preview image from GameBanana
-    if (modId && window.electronAPI?.fetchGameBananaPreview) {
+    const previewContainer = document.getElementById('install-preview-container');
+    if (previewContainer) {
+      if (modType === "Sound") {
+        previewContainer.style.display = 'none';
+      } else {
+        previewContainer.style.display = 'flex';
+      }
+    }
+
+    if (modId && modType !== "Sound" && window.electronAPI?.fetchGameBananaPreview) {
       const previewImage = document.getElementById('install-preview-image');
       const previewLoading = document.querySelector('.install-preview-loading');
       
@@ -744,13 +752,15 @@ class ModalManager {
           previewImage.src = result.imageUrl;
           previewImage.style.display = 'block';
         } else {
-          // No preview available, hide loading
           if (previewLoading) previewLoading.style.display = 'none';
         }
       } catch (error) {
         console.error('Failed to fetch preview:', error);
         if (previewLoading) previewLoading.style.display = 'none';
       }
+    } else if (modType === "Sound") {
+      const previewLoading = document.querySelector('.install-preview-loading');
+      if (previewLoading) previewLoading.style.display = 'none';
     }
   }
 
@@ -762,9 +772,12 @@ class ModalManager {
         modal.style.display = 'none';
         modal.classList.remove('closing');
         
-        // Reset preview image
+        const previewContainer = document.getElementById('install-preview-container');
         const previewImage = document.getElementById('install-preview-image');
         const previewLoading = document.querySelector('.install-preview-loading');
+        if (previewContainer) {
+          previewContainer.style.display = 'flex';
+        }
         if (previewImage) {
           previewImage.src = '';
           previewImage.style.display = 'none';

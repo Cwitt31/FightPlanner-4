@@ -6,7 +6,11 @@ class ConflictModalManager {
   }
 
   async showConflictModal() {
-    if (!window.modManager || !window.modManager.conflicts || window.modManager.conflicts.length === 0) {
+    if (
+      !window.modManager ||
+      !window.modManager.conflicts ||
+      window.modManager.conflicts.length === 0
+    ) {
       if (window.toastManager) {
         window.toastManager.error("toasts.noConflictsDetected");
       }
@@ -31,7 +35,9 @@ class ConflictModalManager {
     };
 
     if (headerBadge) {
-      headerBadge.textContent = t("modals.conflict.badge", { count: conflicts.length });
+      headerBadge.textContent = t("modals.conflict.badge", {
+        count: conflicts.length,
+      });
     }
 
     summaryEl.textContent = t("modals.conflict.summary");
@@ -43,21 +49,25 @@ class ConflictModalManager {
 
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
-    
+
     const thFile = document.createElement("th");
     thFile.className = "conflict-th-file";
     const fileHeaderIcon = document.createElement("i");
     fileHeaderIcon.className = "bi bi-file-earmark";
     thFile.appendChild(fileHeaderIcon);
-    thFile.appendChild(document.createTextNode(` ${t("modals.conflict.fileHeader")}`));
-    
+    thFile.appendChild(
+      document.createTextNode(` ${t("modals.conflict.fileHeader")}`)
+    );
+
     const thMods = document.createElement("th");
     thMods.className = "conflict-th-mods";
     const modsHeaderIcon = document.createElement("i");
     modsHeaderIcon.className = "bi bi-people-fill";
     thMods.appendChild(modsHeaderIcon);
-    thMods.appendChild(document.createTextNode(` ${t("modals.conflict.conflictingModsHeader")}`));
-    
+    thMods.appendChild(
+      document.createTextNode(` ${t("modals.conflict.conflictingModsHeader")}`)
+    );
+
     headerRow.appendChild(thFile);
     headerRow.appendChild(thMods);
     thead.appendChild(headerRow);
@@ -99,7 +109,7 @@ class ConflictModalManager {
     });
 
     table.appendChild(tbody);
-    
+
     const listWrapper = document.createElement("div");
     listWrapper.className = "conflict-list";
     listWrapper.appendChild(table);
@@ -148,7 +158,7 @@ class ConflictModalManager {
 
     container.innerHTML = "";
 
-    conflictingMods.forEach(mod => {
+    conflictingMods.forEach((mod) => {
       const selectItem = document.createElement("div");
       selectItem.className = "conflict-mod-select-item";
       selectItem.addEventListener("click", () => {
@@ -209,7 +219,11 @@ class ConflictModalManager {
   }
 
   openGlobalSlotChange() {
-    if (!window.modManager || !window.modManager.conflicts || window.modManager.conflicts.length === 0) {
+    if (
+      !window.modManager ||
+      !window.modManager.conflicts ||
+      window.modManager.conflicts.length === 0
+    ) {
       if (window.toastManager) {
         window.toastManager.error("toasts.noConflictsDetected");
       }
@@ -222,12 +236,12 @@ class ConflictModalManager {
     if (!modal || !container) return;
 
     const modsMap = new Map();
-    window.modManager.conflicts.forEach(conflict => {
-      conflict.mods.forEach(mod => {
+    window.modManager.conflicts.forEach((conflict) => {
+      conflict.mods.forEach((mod) => {
         if (!modsMap.has(mod.path)) {
           modsMap.set(mod.path, {
             name: mod.name,
-            path: mod.path
+            path: mod.path,
           });
         }
       });
@@ -244,7 +258,7 @@ class ConflictModalManager {
 
     container.innerHTML = "";
 
-    uniqueMods.forEach(mod => {
+    uniqueMods.forEach((mod) => {
       const selectItem = document.createElement("div");
       selectItem.className = "conflict-mod-select-item";
       selectItem.addEventListener("click", () => {
@@ -264,11 +278,11 @@ class ConflictModalManager {
     });
 
     this.closeConflictModal(true);
-    
+
     if (window.modalManager) {
       window.modalManager.showOverlay();
     }
-    
+
     setTimeout(() => {
       modal.classList.remove("closing");
       modal.style.display = "block";
@@ -280,7 +294,11 @@ class ConflictModalManager {
   }
 
   openAutoSlotChangeModal() {
-    if (!window.modManager || !window.modManager.conflicts || window.modManager.conflicts.length === 0) {
+    if (
+      !window.modManager ||
+      !window.modManager.conflicts ||
+      window.modManager.conflicts.length === 0
+    ) {
       if (window.toastManager) {
         window.toastManager.error("toasts.noConflictsDetected");
       }
@@ -293,15 +311,17 @@ class ConflictModalManager {
     if (!modal || !container) return;
 
     const modsMap = new Map();
-    window.modManager.conflicts.forEach(conflict => {
-      conflict.mods.forEach(mod => {
+    window.modManager.conflicts.forEach((conflict) => {
+      conflict.mods.forEach((mod) => {
         if (!modsMap.has(mod.path)) {
-          const fullMod = window.modManager.mods.find(m => m.folderPath === mod.path || m.path === mod.path);
+          const fullMod = window.modManager.mods.find(
+            (m) => m.folderPath === mod.path || m.path === mod.path
+          );
           modsMap.set(mod.path, {
             name: mod.name,
             path: mod.path,
             folderPath: mod.path,
-            category: fullMod ? fullMod.category : null
+            category: fullMod ? fullMod.category : null,
           });
         }
       });
@@ -325,7 +345,7 @@ class ConflictModalManager {
     this.autoSlotChangeMods.forEach((mod, index) => {
       const modItem = document.createElement("div");
       modItem.className = "conflict-auto-slot-mod-item";
-      
+
       const isStage = mod.category && mod.category.toLowerCase() === "stages";
       if (isStage) {
         modItem.classList.add("conflict-auto-slot-mod-item-stage");
@@ -367,11 +387,11 @@ class ConflictModalManager {
     });
 
     this.closeConflictModal(true);
-    
+
     if (window.modalManager) {
       window.modalManager.showOverlay();
     }
-    
+
     setTimeout(() => {
       modal.classList.remove("closing");
       modal.style.display = "block";
@@ -410,12 +430,16 @@ class ConflictModalManager {
     };
 
     const excludedModPaths = new Set();
-    const checkboxes = document.querySelectorAll(".conflict-auto-slot-checkbox:checked");
-    checkboxes.forEach(checkbox => {
+    const checkboxes = document.querySelectorAll(
+      ".conflict-auto-slot-checkbox:checked"
+    );
+    checkboxes.forEach((checkbox) => {
       excludedModPaths.add(checkbox.dataset.modPath);
     });
 
-    const modsToChange = this.autoSlotChangeMods.filter(mod => !excludedModPaths.has(mod.path));
+    const modsToChange = this.autoSlotChangeMods.filter(
+      (mod) => !excludedModPaths.has(mod.path)
+    );
 
     if (modsToChange.length === 0) {
       if (window.toastManager) {
@@ -442,8 +466,10 @@ class ConflictModalManager {
           continue;
         }
 
-        const fighters = await window.electronAPI.scanModForFighters(mod.path || mod.folderPath);
-        
+        const fighters = await window.electronAPI.scanModForFighters(
+          mod.path || mod.folderPath
+        );
+
         if (!fighters || fighters.length === 0) {
           continue;
         }
@@ -454,8 +480,14 @@ class ConflictModalManager {
           continue;
         }
 
-        const slotResult = await window.electronAPI.scanModSlots(mod.path || mod.folderPath);
-        if (!slotResult.success || !slotResult.slots || slotResult.slots.length === 0) {
+        const slotResult = await window.electronAPI.scanModSlots(
+          mod.path || mod.folderPath
+        );
+        if (
+          !slotResult.success ||
+          !slotResult.slots ||
+          slotResult.slots.length === 0
+        ) {
           continue;
         }
 
@@ -464,7 +496,9 @@ class ConflictModalManager {
 
         for (const fighterId of fighters) {
           if (!window.electronAPI.scanModSlotsByFighter) {
-            errors.push(`${mod.name} (${fighterId}): Cannot scan slots by fighter`);
+            errors.push(
+              `${mod.name} (${fighterId}): Cannot scan slots by fighter`
+            );
             errorCount++;
             continue;
           }
@@ -474,13 +508,17 @@ class ConflictModalManager {
             fighterId
           );
 
-          if (!modSlotsResult.success || !modSlotsResult.slots || modSlotsResult.slots.length === 0) {
+          if (
+            !modSlotsResult.success ||
+            !modSlotsResult.slots ||
+            modSlotsResult.slots.length === 0
+          ) {
             continue;
           }
 
           const modSlots = modSlotsResult.slots;
           modSlotsByFighter.set(fighterId, modSlots);
-          modSlots.forEach(slot => allModSlots.add(slot));
+          modSlots.forEach((slot) => allModSlots.add(slot));
         }
 
         if (modSlotsByFighter.size === 0) {
@@ -497,11 +535,12 @@ class ConflictModalManager {
               break;
             }
 
-            const usedSlotsResult = await window.electronAPI.getUsedSlotsForFighter(
-              window.modManager.modsPath,
-              fighterId,
-              mod.path || mod.folderPath
-            );
+            const usedSlotsResult =
+              await window.electronAPI.getUsedSlotsForFighter(
+                window.modManager.modsPath,
+                fighterId,
+                mod.path || mod.folderPath
+              );
 
             if (!usedSlotsResult.success) {
               isAvailableForAll = false;
@@ -529,16 +568,18 @@ class ConflictModalManager {
         }
 
         const slotChanges = new Map();
-        Array.from(allModSlots).forEach(originalSlot => {
+        Array.from(allModSlots).forEach((originalSlot) => {
           slotChanges.set(originalSlot, availableSlot);
         });
 
         if (slotChanges.size > 0) {
-          const modifications = Array.from(slotChanges.entries()).map(([originalSlot, newSlot]) => ({
-            type: 'change',
-            originalSlot: originalSlot,
-            newSlot: newSlot
-          }));
+          const modifications = Array.from(slotChanges.entries()).map(
+            ([originalSlot, newSlot]) => ({
+              type: "change",
+              originalSlot: originalSlot,
+              newSlot: newSlot,
+            })
+          );
 
           const changes = { modifications };
 
@@ -551,7 +592,9 @@ class ConflictModalManager {
             if (applyResult.success) {
               successCount++;
             } else {
-              errors.push(`${mod.name}: ${applyResult.error || "Failed to apply changes"}`);
+              errors.push(
+                `${mod.name}: ${applyResult.error || "Failed to apply changes"}`
+              );
               errorCount++;
             }
           } else {
@@ -568,8 +611,12 @@ class ConflictModalManager {
 
     if (successCount > 0) {
       await window.modManager.fetchMods();
-      if (window.settingsManager && window.settingsManager.settings.conflictDetectionEnabled) {
-        const whitelistPatterns = window.settingsManager.settings.conflictWhitelistPatterns || [];
+      if (
+        window.settingsManager &&
+        window.settingsManager.settings.conflictDetectionEnabled
+      ) {
+        const whitelistPatterns =
+          window.settingsManager.settings.conflictWhitelistPatterns || [];
         setTimeout(() => {
           window.modManager.checkConflicts(whitelistPatterns);
         }, 500);
@@ -578,39 +625,50 @@ class ConflictModalManager {
 
     if (window.toastManager) {
       if (errorCount === 0) {
-        window.toastManager.success("toasts.slotChangesSuccess", 3000, { count: successCount });
+        window.toastManager.success("toasts.slotChangesSuccess", 3000, {
+          count: successCount,
+        });
       } else if (successCount > 0) {
         window.toastManager.warning("toasts.slotChangesPartialSuccess", 5000, {
           success: successCount,
-          error: errorCount
+          error: errorCount,
         });
       } else {
         const t = (key, params = {}) => {
-          return window.i18n && window.i18n.t ? window.i18n.t(key, params) : key;
+          return window.i18n && window.i18n.t
+            ? window.i18n.t(key, params)
+            : key;
         };
-        
-        window.toastManager.error("toasts.slotChangesFailed", 5000, { count: errorCount }, {
-          actionButton: {
-            text: t("toasts.viewLogs"),
-            onClick: () => {
-              const settingsBtn = document.querySelector('[data-tab="settings"]');
-              if (settingsBtn) {
-                settingsBtn.click();
-              }
-              
-              setTimeout(() => {
-                if (window.settingsManager) {
-                  window.settingsManager.switchSettingsTab("logs");
-                  if (window.logsManager) {
-                    setTimeout(() => {
-                      window.logsManager.reinitialize();
-                    }, 250);
-                  }
+
+        window.toastManager.error(
+          "toasts.slotChangesFailed",
+          5000,
+          { count: errorCount },
+          {
+            actionButton: {
+              text: t("toasts.viewLogs"),
+              onClick: () => {
+                const settingsBtn = document.querySelector(
+                  '[data-tab="settings"]'
+                );
+                if (settingsBtn) {
+                  settingsBtn.click();
                 }
-              }, 500);
-            }
+
+                setTimeout(() => {
+                  if (window.settingsManager) {
+                    window.settingsManager.switchSettingsTab("logs");
+                    if (window.logsManager) {
+                      setTimeout(() => {
+                        window.logsManager.reinitialize();
+                      }, 250);
+                    }
+                  }
+                }, 500);
+              },
+            },
           }
-        });
+        );
       }
     }
 
@@ -623,4 +681,3 @@ class ConflictModalManager {
 if (typeof window !== "undefined") {
   window.conflictModalManager = new ConflictModalManager();
 }
-

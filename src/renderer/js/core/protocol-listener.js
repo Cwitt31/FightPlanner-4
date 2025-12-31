@@ -31,7 +31,8 @@ if (window.electronAPI && window.electronAPI.onModInstallConfirmRequest) {
         window.modalManager.openInstallConfirmModal(
           data.url,
           data.downloadId,
-          data.modId
+          data.modId,
+          data.modType
         );
       } else {
         console.error("Modal manager not available");
