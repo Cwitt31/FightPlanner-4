@@ -184,7 +184,12 @@
     "expectedPath": "Expected path should contain:",
     "example": "Example:",
     "incorrectPathWarning": "⚠️ Using an incorrect path may prevent mods from working.",
-    "okUnderstand": "OK, I understand"
+    "okUnderstand": "OK, I understand",
+    "appUpdates": "Application Updates",
+    "currentVersion": "Current Version:",
+    "checkForUpdates": "Check for Updates",
+    "checkForUpdatesDesc": "Manually check if a new version is available",
+    "updatesHint": "FightPlanner automatically checks for updates on startup"
   },
   "modals": {
     "rename": {
@@ -287,6 +292,17 @@
       "title": "Social service unavailable",
       "rateLimited": "The social service is temporarily unavailable (429/404). Please try again in a few minutes.",
       "invalidResponse": "The social service response is invalid or unavailable. Please try again in a few minutes."
+    },
+    "update": {
+      "title": "Update Available",
+      "newVersion": "New version available:",
+      "releaseNotes": "Release Notes:",
+      "downloading": "Downloading update...",
+      "downloaded": "Update downloaded successfully!",
+      "restartHint": "Click \"Install and Restart\" to apply the update.",
+      "later": "Later",
+      "download": "Download",
+      "installRestart": "Install and Restart"
     },
     "close": "Close"
   },
@@ -553,7 +569,16 @@
     "cannotOpenLogsFolder": "Cannot open logs folder",
     "failedToOpenLogsFolder": "Failed to open logs folder",
     "logsCopiedToClipboard": "Logs copied to clipboard",
-    "failedToCopyLogs": "Failed to copy logs"
+    "failedToCopyLogs": "Failed to copy logs",
+    "updateAvailable": "Update available: version {{version}}",
+    "checkingForUpdates": "Checking for updates...",
+    "alreadyCheckingUpdates": "Already checking for updates",
+    "noUpdatesAvailable": "You're up to date!",
+    "updateCheckFailed": "Failed to check for updates",
+    "updateError": "Update error: {{error}}",
+    "updateDownloaded": "Update {{version}} downloaded successfully!",
+    "updateDownloadFailed": "Failed to download update",
+    "updateInstallFailed": "Failed to install update"
   },
   "statusBar": {
     "ready": "Ready",

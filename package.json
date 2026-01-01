@@ -23,7 +23,8 @@
     "adm-zip": "^0.5.10",
     "basic-ftp": "^5.0.5",
     "discord-rpc": "^4.0.1",
-    "electron-store": "^8.2.0"
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.3.9"
   },
   "devDependencies": {
     "electron": "^39.0.0",
@@ -33,6 +34,13 @@
     "appId": "com.shatteredchaos.fightplanner",
     "productName": "FightPlanner",
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "FIREXDF",
+        "repo": "FightPlanner-4"
+      }
+    ],
     "extraResources": [
       {
         "from": "tools",

@@ -292,6 +292,19 @@ class SettingsManager {
       autoCheckPluginUpdates.dataset.listenerAttached = "true";
     }
 
+    const checkUpdatesBtn = document.getElementById("check-updates-btn");
+    if (checkUpdatesBtn && !checkUpdatesBtn.dataset.listenerAttached) {
+      checkUpdatesBtn.addEventListener("click", async () => {
+        if (window.updateManager) {
+          await window.updateManager.checkForUpdatesManually();
+        }
+      });
+      checkUpdatesBtn.dataset.listenerAttached = "true";
+      console.log("Check updates button listener attached");
+    }
+
+    this.updateAppVersionUI();
+
     const languageTypeSelect = document.getElementById("language-type-select");
     if (languageTypeSelect && !languageTypeSelect.dataset.listenerAttached) {
       const trigger = languageTypeSelect.querySelector(".custom-select-trigger");
@@ -959,6 +972,18 @@ ${t("settings.okUnderstand")}
     const autoCheckPluginUpdatesCheckbox = document.getElementById("auto-check-plugin-updates-enabled");
     if (autoCheckPluginUpdatesCheckbox) {
       autoCheckPluginUpdatesCheckbox.checked = this.settings.autoCheckPluginUpdates || false;
+    }
+  }
+
+  async updateAppVersionUI() {
+    const appVersionEl = document.getElementById("app-version");
+    if (appVersionEl && window.electronAPI && window.electronAPI.getAppVersion) {
+      try {
+        const version = await window.electronAPI.getAppVersion();
+        appVersionEl.textContent = version;
+      } catch (error) {
+        console.error("Failed to get app version:", error);
+      }
     }
   }
 

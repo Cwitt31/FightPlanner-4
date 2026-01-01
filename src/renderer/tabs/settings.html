@@ -127,11 +127,34 @@
                         <input type="checkbox" id="install-confirm-enabled" checked>
                         <span class="settings-switch-slider"></span>
                     </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);" data-i18n="settings.showConfirmation">Show
+                    <span style="margin-left: 12px; color: var(--text-secondary);"
+                        data-i18n="settings.showConfirmation">Show
                         confirmation before downloading</span>
                 </div>
                 <p class="settings-hint" data-i18n="settings.installConfirmHint">Display a modal to confirm mod
                     downloads from browser links</p>
+            </div>
+
+            <div class="settings-section">
+                <label class="settings-label" data-i18n="settings.appUpdates">Application Updates</label>
+                <div class="settings-input-group" style="margin-bottom: 12px;">
+                    <span style="color: var(--text-secondary);" data-i18n="settings.currentVersion">Current
+                        Version:</span>
+                    <span id="app-version"
+                        style="margin-left: 8px; color: var(--primary-color); font-weight: 600;">4.0.0</span>
+                </div>
+                <button class="settings-btn-action" id="check-updates-btn">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <div class="settings-btn-action-content">
+                        <span class="settings-btn-action-title" data-i18n="settings.checkForUpdates">Check for
+                            Updates</span>
+                        <span class="settings-btn-action-desc" data-i18n="settings.checkForUpdatesDesc">Manually check
+                            if a new version is available</span>
+                    </div>
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+                <p class="settings-hint" data-i18n="settings.updatesHint">FightPlanner automatically checks for updates
+                    on startup</p>
             </div>
         </div>
 
@@ -168,12 +191,15 @@
                 <button class="settings-btn-action" id="export-mods-list-btn">
                     <i class="bi bi-file-earmark-text"></i>
                     <div class="settings-btn-action-content">
-                        <span class="settings-btn-action-title" data-i18n="settings.exportModListTitle">Export Enabled Mods</span>
-                        <span class="settings-btn-action-desc" data-i18n="settings.exportModListDesc">Export all enabled mods to a text file, grouped by character</span>
+                        <span class="settings-btn-action-title" data-i18n="settings.exportModListTitle">Export Enabled
+                            Mods</span>
+                        <span class="settings-btn-action-desc" data-i18n="settings.exportModListDesc">Export all enabled
+                            mods to a text file, grouped by character</span>
                     </div>
                     <i class="bi bi-arrow-right"></i>
                 </button>
-                <p class="settings-hint" data-i18n="settings.exportModListHint">Creates a text file listing all enabled mods, organized by character, making it easy to share your mod list</p>
+                <p class="settings-hint" data-i18n="settings.exportModListHint">Creates a text file listing all enabled
+                    mods, organized by character, making it easy to share your mod list</p>
             </div>
 
             <div class="settings-section">
@@ -224,7 +250,8 @@
                         <input type="checkbox" id="emulator-fullscreen-enabled">
                         <span class="settings-switch-slider"></span>
                     </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);" data-i18n="settings.launchFullscreen">Launch
+                    <span style="margin-left: 12px; color: var(--text-secondary);"
+                        data-i18n="settings.launchFullscreen">Launch
                         emulator in fullscreen</span>
                 </div>
                 <p class="settings-hint" data-i18n="settings.launchFullscreenHint">When enabled, adds the -f flag to
@@ -238,9 +265,10 @@
 
             <div class="settings-section">
                 <label class="settings-label" data-i18n="settings.switchConnection">Switch Connection</label>
-                
+
                 <div class="settings-input-group" style="margin-bottom: 12px;">
-                    <label class="settings-label" style="margin-right: 12px; min-width: 150px;" data-i18n="settings.transferMethod">Transfer Method:</label>
+                    <label class="settings-label" style="margin-right: 12px; min-width: 150px;"
+                        data-i18n="settings.transferMethod">Transfer Method:</label>
                     <div class="custom-select" id="switch-transfer-method-select" style="flex: 1;">
                         <div class="custom-select-trigger">
                             <span class="selected-value">Select method...</span>
@@ -256,13 +284,14 @@
                         </div>
                     </div>
                 </div>
-                <p class="settings-hint" data-i18n="settings.transferMethodHint">Choose how to send mods to Switch: via FTP or directly to SD card</p>
+                <p class="settings-hint" data-i18n="settings.transferMethodHint">Choose how to send mods to Switch: via
+                    FTP or directly to SD card</p>
 
                 <!-- FTP Settings -->
                 <div id="switch-ftp-settings" style="margin-top: 12px;">
                     <div class="settings-input-group">
-                        <input type="text" id="switch-ip" class="settings-input" data-i18n="settings.switchIpPlaceholder"
-                            data-i18n-placeholder placeholder="192.168.1.100">
+                        <input type="text" id="switch-ip" class="settings-input"
+                            data-i18n="settings.switchIpPlaceholder" data-i18n-placeholder placeholder="192.168.1.100">
                         <label class="settings-label" style="margin: 0 10px;">:</label>
                         <input type="text" id="switch-port" class="settings-input"
                             data-i18n="settings.switchPortPlaceholder" data-i18n-placeholder placeholder="5000"
@@ -276,13 +305,15 @@
                             data-i18n="settings.switchFtpPathPlaceholder" data-i18n-placeholder
                             placeholder="/switch/atmosphere/contents">
                     </div>
-                    <p class="settings-hint" data-i18n="settings.switchFtpPath">Remote path on Switch SD card for mods</p>
+                    <p class="settings-hint" data-i18n="settings.switchFtpPath">Remote path on Switch SD card for mods
+                    </p>
                 </div>
 
                 <!-- Drive Settings -->
                 <div id="switch-drive-settings" style="margin-top: 12px; display: none;">
                     <div class="settings-input-group">
-                        <label class="settings-label" style="margin-right: 12px; min-width: 150px;" data-i18n="settings.driveLetter">Drive Letter:</label>
+                        <label class="settings-label" style="margin-right: 12px; min-width: 150px;"
+                            data-i18n="settings.driveLetter">Drive Letter:</label>
                         <div class="custom-select" id="switch-drive-letter-select" style="flex: 1;">
                             <div class="custom-select-trigger">
                                 <span class="selected-value" data-i18n="settings.selectDrive">Select Drive</span>
@@ -293,7 +324,8 @@
                             </div>
                         </div>
                     </div>
-                    <p class="settings-hint" data-i18n="settings.driveLetterHint">Select the drive letter of your Switch SD card (e.g., E:)</p>
+                    <p class="settings-hint" data-i18n="settings.driveLetterHint">Select the drive letter of your Switch
+                        SD card (e.g., E:)</p>
                 </div>
             </div>
 
@@ -304,7 +336,8 @@
                         <input type="checkbox" id="conflict-detection-enabled" checked>
                         <span class="settings-switch-slider"></span>
                     </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);" data-i18n="settings.enableConflictDetection">Enable
+                    <span style="margin-left: 12px; color: var(--text-secondary);"
+                        data-i18n="settings.enableConflictDetection">Enable
                         automatic conflict detection</span>
                 </div>
                 <p class="settings-hint" data-i18n="settings.conflictDetectionHint">Automatically check for file
@@ -318,7 +351,8 @@
                         <input type="checkbox" id="auto-check-plugin-updates-enabled">
                         <span class="settings-switch-slider"></span>
                     </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);" data-i18n="settings.enablePluginAutoUpdate">Check
+                    <span style="margin-left: 12px; color: var(--text-secondary);"
+                        data-i18n="settings.enablePluginAutoUpdate">Check
                         for plugin updates on startup</span>
                 </div>
                 <p class="settings-hint" data-i18n="settings.pluginAutoUpdateHint">Automatically check for plugin

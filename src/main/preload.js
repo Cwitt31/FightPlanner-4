@@ -142,4 +142,23 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("save-file-dialog", defaultPath, filters),
   writeFile: (filePath, content) =>
     ipcRenderer.invoke("write-file", filePath, content),
+
+  checkForUpdates: () => ipcRenderer.invoke("check-for-updates"),
+  downloadUpdate: () => ipcRenderer.invoke("download-update"),
+  installUpdate: () => ipcRenderer.invoke("install-update"),
+  getUpdateInfo: () => ipcRenderer.invoke("get-update-info"),
+  setAutoCheckEnabled: (enabled) => ipcRenderer.invoke("set-auto-check-enabled", enabled),
+
+  onUpdateChecking: (callback) =>
+    ipcRenderer.on("update-checking", (event, data) => callback(data)),
+  onUpdateAvailable: (callback) =>
+    ipcRenderer.on("update-available", (event, data) => callback(data)),
+  onUpdateNotAvailable: (callback) =>
+    ipcRenderer.on("update-not-available", (event, data) => callback(data)),
+  onUpdateDownloadProgress: (callback) =>
+    ipcRenderer.on("update-download-progress", (event, data) => callback(data)),
+  onUpdateDownloaded: (callback) =>
+    ipcRenderer.on("update-downloaded", (event, data) => callback(data)),
+  onUpdateError: (callback) =>
+    ipcRenderer.on("update-error", (event, data) => callback(data)),
 });

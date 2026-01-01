@@ -183,7 +183,12 @@
     "expectedPath": "Le chemin attendu doit contenir :",
     "example": "Exemple :",
     "incorrectPathWarning": "⚠️ Utiliser un chemin incorrect peut empêcher les mods de fonctionner.",
-    "okUnderstand": "OK, j'ai compris"
+    "okUnderstand": "OK, j'ai compris",
+    "appUpdates": "Mises à Jour de l'Application",
+    "currentVersion": "Version Actuelle :",
+    "checkForUpdates": "Vérifier les Mises à Jour",
+    "checkForUpdatesDesc": "Vérifier manuellement si une nouvelle version est disponible",
+    "updatesHint": "FightPlanner vérifie automatiquement les mises à jour au démarrage"
   },
   "modals": {
     "rename": {
@@ -286,6 +291,17 @@
       "title": "Service social indisponible",
       "rateLimited": "Le service social est temporairement indisponible (erreur 429/404). Merci de réessayer dans quelques minutes.",
       "invalidResponse": "La réponse du service social est invalide ou indisponible. Merci de réessayer dans quelques minutes."
+    },
+    "update": {
+      "title": "Mise à Jour Disponible",
+      "newVersion": "Nouvelle version disponible :",
+      "releaseNotes": "Notes de Version :",
+      "downloading": "Téléchargement de la mise à jour...",
+      "downloaded": "Mise à jour téléchargée avec succès !",
+      "restartHint": "Cliquez sur \"Installer et Redémarrer\" pour appliquer la mise à jour.",
+      "later": "Plus tard",
+      "download": "Télécharger",
+      "installRestart": "Installer et Redémarrer"
     },
     "close": "Fermer"
   },
@@ -552,7 +568,16 @@
     "cannotOpenLogsFolder": "Impossible d'ouvrir le dossier des logs",
     "failedToOpenLogsFolder": "Échec de l'ouverture du dossier des logs",
     "logsCopiedToClipboard": "Logs copiés dans le presse-papiers",
-    "failedToCopyLogs": "Échec de la copie des logs"
+    "failedToCopyLogs": "Échec de la copie des logs",
+    "updateAvailable": "Mise à jour disponible : version {{version}}",
+    "checkingForUpdates": "Vérification des mises à jour...",
+    "alreadyCheckingUpdates": "Vérification des mises à jour déjà en cours",
+    "noUpdatesAvailable": "Vous êtes à jour !",
+    "updateCheckFailed": "Échec de la vérification des mises à jour",
+    "updateError": "Erreur de mise à jour : {{error}}",
+    "updateDownloaded": "Mise à jour {{version}} téléchargée avec succès !",
+    "updateDownloadFailed": "Échec du téléchargement de la mise à jour",
+    "updateInstallFailed": "Échec de l'installation de la mise à jour"
   },
   "statusBar": {
     "ready": "Prêt",

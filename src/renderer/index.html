@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,6 +26,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js"></script>
 </head>
+
 <body>
     <!-- Custom Title Bar -->
     <div class="titlebar">
@@ -35,17 +37,18 @@
         <div class="titlebar-buttons">
             <button class="titlebar-btn minimize" data-i18n="titlebar.minimize" data-i18n-title>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                    <rect x="0" y="5" width="12" height="2"/>
+                    <rect x="0" y="5" width="12" height="2" />
                 </svg>
             </button>
             <button class="titlebar-btn maximize" data-i18n="titlebar.maximize" data-i18n-title>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <rect x="1" y="1" width="10" height="10"/>
+                    <rect x="1" y="1" width="10" height="10" />
                 </svg>
             </button>
             <button class="titlebar-btn close" data-i18n="titlebar.close" data-i18n-title>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-                    <path d="M0.5 0.5L11.5 11.5M11.5 0.5L0.5 11.5"/>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round">
+                    <path d="M0.5 0.5L11.5 11.5M11.5 0.5L0.5 11.5" />
                 </svg>
             </button>
         </div>
@@ -82,59 +85,59 @@
 
         <!-- Main Content Area with Right Panel -->
         <div class="content-area-wrapper">
-        <div class="content-area">
-            <!-- Tab Content: Mods -->
-            <div class="tab-content active" id="tab-tools">
-                <!-- This tab will load from tabs/tools.html -->
-            </div>
+            <div class="content-area">
+                <!-- Tab Content: Mods -->
+                <div class="tab-content active" id="tab-tools">
+                    <!-- This tab will load from tabs/tools.html -->
+                </div>
 
-            <!-- Tab Content: Plugins -->
-            <div class="tab-content" id="tab-plugins">
-                <div class="content-box">
-                    <!-- Content for Plugins tab -->
+                <!-- Tab Content: Plugins -->
+                <div class="tab-content" id="tab-plugins">
+                    <div class="content-box">
+                        <!-- Content for Plugins tab -->
+                    </div>
+                </div>
+
+                <!-- Tab Content: Characters -->
+                <div class="tab-content" id="tab-characters">
+                    <div class="content-box">
+                        <!-- Content for Characters tab -->
+                    </div>
+                </div>
+
+                <!-- Tab Content: Stages -->
+                <div class="tab-content" id="tab-stages">
+                    <div class="content-box">
+                        <!-- Content for Stages tab -->
+                    </div>
+                </div>
+
+                <!-- Tab Content: Social -->
+                <div class="tab-content" id="tab-social">
+                    <div class="content-box">
+                        <!-- Content for Social tab -->
+                    </div>
+                </div>
+
+                <!-- Tab Content: Downloads -->
+                <div class="tab-content" id="tab-downloads">
+                    <div class="content-box">
+                        <!-- Content for Downloads tab -->
+                    </div>
+                </div>
+
+                <!-- Tab Content: Settings -->
+                <div class="tab-content" id="tab-settings">
+                    <div class="content-box">
+                        <!-- Content for Settings tab -->
+                    </div>
+                </div>
+
+                <!-- Tab Content: Credits -->
+                <div class="tab-content" id="tab-fightplanner">
+                    <!-- Content for Credits tab -->
                 </div>
             </div>
-
-            <!-- Tab Content: Characters -->
-            <div class="tab-content" id="tab-characters">
-                <div class="content-box">
-                    <!-- Content for Characters tab -->
-                </div>
-            </div>
-
-            <!-- Tab Content: Stages -->
-            <div class="tab-content" id="tab-stages">
-                <div class="content-box">
-                    <!-- Content for Stages tab -->
-                </div>
-            </div>
-
-            <!-- Tab Content: Social -->
-            <div class="tab-content" id="tab-social">
-                <div class="content-box">
-                    <!-- Content for Social tab -->
-                </div>
-            </div>
-
-            <!-- Tab Content: Downloads -->
-            <div class="tab-content" id="tab-downloads">
-                <div class="content-box">
-                    <!-- Content for Downloads tab -->
-                </div>
-            </div>
-
-            <!-- Tab Content: Settings -->
-            <div class="tab-content" id="tab-settings">
-                <div class="content-box">
-                    <!-- Content for Settings tab -->
-                </div>
-            </div>
-
-            <!-- Tab Content: Credits -->
-            <div class="tab-content" id="tab-fightplanner">
-                <!-- Content for Credits tab -->
-            </div>
-        </div>
         </div>
     </div>
 
@@ -198,29 +201,37 @@
         </div>
         <div class="modal-body">
             <label for="rename-input" class="modal-label" data-i18n="modals.rename.label">New mod name:</label>
-            <input type="text" id="rename-input" class="modal-input" data-i18n="modals.rename.placeholder" data-i18n-placeholder>
+            <input type="text" id="rename-input" class="modal-input" data-i18n="modals.rename.placeholder"
+                data-i18n-placeholder>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeRenameModal()" data-i18n="common.cancel">Cancel</button>
-            <button class="modal-btn modal-btn-primary" onclick="window.modalManager.confirmRename()" data-i18n="common.rename">Rename</button>
+            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeRenameModal()"
+                data-i18n="common.cancel">Cancel</button>
+            <button class="modal-btn modal-btn-primary" onclick="window.modalManager.confirmRename()"
+                data-i18n="common.rename">Rename</button>
         </div>
     </div>
 
     <!-- Uninstall Confirmation Modal -->
     <div id="uninstall-modal" class="modal" style="display: none;">
         <div class="modal-header modal-header-danger">
-            <h3><i class="bi bi-exclamation-triangle"></i> <span data-i18n="modals.uninstall.title">Uninstall Mod</span></h3>
+            <h3><i class="bi bi-exclamation-triangle"></i> <span data-i18n="modals.uninstall.title">Uninstall Mod</span>
+            </h3>
             <button class="modal-close" onclick="window.modalManager.closeUninstallModal()">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
         <div class="modal-body">
-            <p class="modal-warning"><span data-i18n="modals.uninstall.warning">Are you sure you want to uninstall</span> <strong id="uninstall-mod-name"></strong>?</p>
-            <p class="modal-hint" data-i18n="modals.uninstall.hint">This will permanently delete the mod folder and cannot be undone.</p>
+            <p class="modal-warning"><span data-i18n="modals.uninstall.warning">Are you sure you want to
+                    uninstall</span> <strong id="uninstall-mod-name"></strong>?</p>
+            <p class="modal-hint" data-i18n="modals.uninstall.hint">This will permanently delete the mod folder and
+                cannot be undone.</p>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeUninstallModal()" data-i18n="common.cancel">Cancel</button>
-            <button class="modal-btn modal-btn-danger" onclick="window.modalManager.confirmUninstall()" data-i18n="common.uninstall">Uninstall</button>
+            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeUninstallModal()"
+                data-i18n="common.cancel">Cancel</button>
+            <button class="modal-btn modal-btn-danger" onclick="window.modalManager.confirmUninstall()"
+                data-i18n="common.uninstall">Uninstall</button>
         </div>
     </div>
 
@@ -233,19 +244,24 @@
             </button>
         </div>
         <div class="modal-body">
-            <p class="modal-warning"><span data-i18n="modals.deletePlugin.warning">Are you sure you want to delete</span> <strong id="delete-plugin-name"></strong>?</p>
-            <p class="modal-hint" data-i18n="modals.deletePlugin.hint">This action cannot be undone. The plugin file will be permanently removed.</p>
+            <p class="modal-warning"><span data-i18n="modals.deletePlugin.warning">Are you sure you want to
+                    delete</span> <strong id="delete-plugin-name"></strong>?</p>
+            <p class="modal-hint" data-i18n="modals.deletePlugin.hint">This action cannot be undone. The plugin file
+                will be permanently removed.</p>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeDeletePluginModal()" data-i18n="common.cancel">Cancel</button>
-            <button class="modal-btn modal-btn-danger" onclick="window.modalManager.confirmDeletePlugin()" data-i18n="common.delete">Delete</button>
+            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeDeletePluginModal()"
+                data-i18n="common.cancel">Cancel</button>
+            <button class="modal-btn modal-btn-danger" onclick="window.modalManager.confirmDeletePlugin()"
+                data-i18n="common.delete">Delete</button>
         </div>
     </div>
 
     <!-- Error/Success Modal -->
     <div id="alert-modal" class="modal" style="display: none;">
         <div class="modal-header" id="alert-modal-header">
-            <h3 id="alert-modal-title"><i class="bi bi-info-circle"></i> <span data-i18n="modals.alert.title">Message</span></h3>
+            <h3 id="alert-modal-title"><i class="bi bi-info-circle"></i> <span
+                    data-i18n="modals.alert.title">Message</span></h3>
             <button class="modal-close" onclick="window.modalManager.closeAlertModal()">
                 <i class="bi bi-x-lg"></i>
             </button>
@@ -254,7 +270,8 @@
             <p id="alert-modal-message"></p>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn modal-btn-primary" onclick="window.modalManager.closeAlertModal()" data-i18n="common.ok">OK</button>
+            <button class="modal-btn modal-btn-primary" onclick="window.modalManager.closeAlertModal()"
+                data-i18n="common.ok">OK</button>
         </div>
     </div>
 
@@ -267,15 +284,18 @@
             </button>
         </div>
         <div class="modal-body">
-            <p class="modal-hint" id="slot-modal-hint" data-i18n="modals.changeSlot.hint">Detected slots in this mod:</p>
+            <p class="modal-hint" id="slot-modal-hint" data-i18n="modals.changeSlot.hint">Detected slots in this mod:
+            </p>
             <div id="slot-list-container" class="slot-list">
                 <!-- Slot items will be added dynamically -->
             </div>
-            
+
         </div>
         <div class="modal-footer">
-            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeChangeSlotModal()" data-i18n="common.cancel">Cancel</button>
-            <button class="modal-btn modal-btn-primary" onclick="window.modalManager.confirmChangeSlot()" data-i18n="modals.changeSlot.applyChanges">Apply Changes</button>
+            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeChangeSlotModal()"
+                data-i18n="common.cancel">Cancel</button>
+            <button class="modal-btn modal-btn-primary" onclick="window.modalManager.confirmChangeSlot()"
+                data-i18n="modals.changeSlot.applyChanges">Apply Changes</button>
         </div>
     </div>
 
@@ -288,7 +308,8 @@
             <div class="conflict-header-left">
                 <i class="bi bi-exclamation-triangle-fill"></i>
                 <h3 data-i18n="modals.conflict.title">Mod Conflicts Detected</h3>
-                <span id="conflict-header-badge" class="conflict-header-badge" data-i18n="modals.conflict.badge">0 files in conflicts</span>
+                <span id="conflict-header-badge" class="conflict-header-badge" data-i18n="modals.conflict.badge">0 files
+                    in conflicts</span>
             </div>
             <button class="modal-close" onclick="window.conflictModalManager.closeConflictModal()">
                 <i class="bi bi-x-lg"></i>
@@ -300,11 +321,14 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn conflict-change-slot-footer-btn" onclick="window.conflictModalManager.openGlobalSlotChange()">
+            <button class="modal-btn conflict-change-slot-footer-btn"
+                onclick="window.conflictModalManager.openGlobalSlotChange()">
                 <i class="bi bi-arrow-repeat"></i> <span data-i18n="modals.conflict.changeSlot">Change Slot</span>
             </button>
-            <button class="modal-btn conflict-auto-slot-footer-btn" onclick="window.conflictModalManager.openAutoSlotChangeModal()">
-                <i class="bi bi-magic"></i> <span data-i18n="modals.conflict.autoChangeSlot">Change Slots Automatically</span>
+            <button class="modal-btn conflict-auto-slot-footer-btn"
+                onclick="window.conflictModalManager.openAutoSlotChangeModal()">
+                <i class="bi bi-magic"></i> <span data-i18n="modals.conflict.autoChangeSlot">Change Slots
+                    Automatically</span>
             </button>
             <button class="modal-btn modal-btn-cancel" onclick="window.conflictModalManager.closeConflictModal()">
                 <i class="bi bi-x-lg"></i> <span data-i18n="modals.close">Close</span>
@@ -315,7 +339,8 @@
     <!-- Conflict Slot Change Modal -->
     <div id="conflict-slot-modal" class="modal modal-large" style="display: none;">
         <div class="modal-header">
-            <h3><i class="bi bi-grid-3x3-gap"></i> <span data-i18n="modals.conflictSlot.title">Change Slot for Conflicting Mod</span></h3>
+            <h3><i class="bi bi-grid-3x3-gap"></i> <span data-i18n="modals.conflictSlot.title">Change Slot for
+                    Conflicting Mod</span></h3>
             <button class="modal-close" onclick="window.conflictModalManager.closeSlotChangeModal()">
                 <i class="bi bi-x-lg"></i>
             </button>
@@ -326,26 +351,31 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn modal-btn-cancel" onclick="window.conflictModalManager.closeSlotChangeModal()" data-i18n="common.cancel">Cancel</button>
+            <button class="modal-btn modal-btn-cancel" onclick="window.conflictModalManager.closeSlotChangeModal()"
+                data-i18n="common.cancel">Cancel</button>
         </div>
     </div>
 
     <!-- Auto Slot Change Modal -->
     <div id="conflict-auto-slot-modal" class="modal modal-large" style="display: none;">
         <div class="modal-header">
-            <h3><i class="bi bi-magic"></i> <span data-i18n="modals.autoSlotChange.title">Change Slots Automatically</span></h3>
+            <h3><i class="bi bi-magic"></i> <span data-i18n="modals.autoSlotChange.title">Change Slots
+                    Automatically</span></h3>
             <button class="modal-close" onclick="window.conflictModalManager.closeAutoSlotChangeModal()">
                 <i class="bi bi-x-lg"></i>
             </button>
         </div>
         <div class="modal-body">
-            <p class="modal-hint" data-i18n="modals.autoSlotChange.hint">Select mods that should NOT be changed (recommended: check stage mods):</p>
+            <p class="modal-hint" data-i18n="modals.autoSlotChange.hint">Select mods that should NOT be changed
+                (recommended: check stage mods):</p>
             <div id="conflict-auto-slot-mod-list" class="conflict-auto-slot-mod-list">
             </div>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn modal-btn-primary" onclick="window.conflictModalManager.applyAutoSlotChanges()" data-i18n="modals.autoSlotChange.apply">Apply Changes</button>
-            <button class="modal-btn modal-btn-cancel" onclick="window.conflictModalManager.closeAutoSlotChangeModal()" data-i18n="common.cancel">Cancel</button>
+            <button class="modal-btn modal-btn-primary" onclick="window.conflictModalManager.applyAutoSlotChanges()"
+                data-i18n="modals.autoSlotChange.apply">Apply Changes</button>
+            <button class="modal-btn modal-btn-cancel" onclick="window.conflictModalManager.closeAutoSlotChangeModal()"
+                data-i18n="common.cancel">Cancel</button>
         </div>
     </div>
 
@@ -361,15 +391,18 @@
             <form id="mod-info-form">
                 <div class="form-group">
                     <label data-i18n="modals.editInfo.displayName">Display Name</label>
-                    <input type="text" name="display_name" id="edit-info-display-name" data-i18n="modals.editInfo.displayNamePlaceholder" data-i18n-placeholder placeholder="Mod name">
+                    <input type="text" name="display_name" id="edit-info-display-name"
+                        data-i18n="modals.editInfo.displayNamePlaceholder" data-i18n-placeholder placeholder="Mod name">
                 </div>
                 <div class="form-group">
                     <label data-i18n="modals.editInfo.authors">Authors</label>
-                    <input type="text" name="authors" id="edit-info-authors" data-i18n="modals.editInfo.authorsPlaceholder" data-i18n-placeholder placeholder="Author name">
+                    <input type="text" name="authors" id="edit-info-authors"
+                        data-i18n="modals.editInfo.authorsPlaceholder" data-i18n-placeholder placeholder="Author name">
                 </div>
                 <div class="form-group">
                     <label data-i18n="modals.editInfo.version">Version</label>
-                    <input type="text" name="version" id="edit-info-version" data-i18n="modals.editInfo.versionPlaceholder" data-i18n-placeholder placeholder="1.0.0">
+                    <input type="text" name="version" id="edit-info-version"
+                        data-i18n="modals.editInfo.versionPlaceholder" data-i18n-placeholder placeholder="1.0.0">
                 </div>
                 <div class="form-group">
                     <label data-i18n="modals.editInfo.category">Category</label>
@@ -388,11 +421,14 @@
                 </div>
                 <div class="form-group">
                     <label data-i18n="modals.editInfo.url">URL</label>
-                    <input type="text" name="url" id="edit-info-url" data-i18n="modals.editInfo.urlPlaceholder" data-i18n-placeholder placeholder="https://...">
+                    <input type="text" name="url" id="edit-info-url" data-i18n="modals.editInfo.urlPlaceholder"
+                        data-i18n-placeholder placeholder="https://...">
                 </div>
                 <div class="form-group">
                     <label data-i18n="modals.editInfo.description">Description</label>
-                    <textarea name="description" id="edit-info-description" rows="6" data-i18n="modals.editInfo.descriptionPlaceholder" data-i18n-placeholder placeholder="Mod description"></textarea>
+                    <textarea name="description" id="edit-info-description" rows="6"
+                        data-i18n="modals.editInfo.descriptionPlaceholder" data-i18n-placeholder
+                        placeholder="Mod description"></textarea>
                 </div>
             </form>
         </div>
@@ -400,15 +436,18 @@
             <button class="modal-btn modal-btn-secondary" onclick="window.modInfoEditor.openAdvancedMode()">
                 <i class="bi bi-code-slash"></i> <span data-i18n="modals.editInfo.advanced">Advanced</span>
             </button>
-            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeEditInfoModal()" data-i18n="common.cancel">Cancel</button>
-            <button class="modal-btn modal-btn-primary" onclick="window.modalManager.confirmEditInfo()" data-i18n="common.save">Save</button>
+            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeEditInfoModal()"
+                data-i18n="common.cancel">Cancel</button>
+            <button class="modal-btn modal-btn-primary" onclick="window.modalManager.confirmEditInfo()"
+                data-i18n="common.save">Save</button>
         </div>
     </div>
 
     <!-- Advanced Info Modal -->
     <div id="advanced-info-modal" class="modal mod-info-editor-modal" style="display: none;">
         <div class="modal-header">
-            <h3><i class="bi bi-code-slash"></i> <span data-i18n="modals.advancedInfo.title">Advanced Edit - info.toml</span></h3>
+            <h3><i class="bi bi-code-slash"></i> <span data-i18n="modals.advancedInfo.title">Advanced Edit -
+                    info.toml</span></h3>
             <button class="modal-close" onclick="window.modalManager.closeAdvancedInfoModal()">
                 <i class="bi bi-x-lg"></i>
             </button>
@@ -416,19 +455,24 @@
         <div class="modal-body">
             <div class="form-group">
                 <label data-i18n="modals.advancedInfo.rawContent">Raw TOML Content</label>
-                <textarea id="advanced-info-textarea" class="advanced-textarea" data-i18n="modals.advancedInfo.placeholder" data-i18n-placeholder placeholder="Edit the raw TOML file content here..."></textarea>
+                <textarea id="advanced-info-textarea" class="advanced-textarea"
+                    data-i18n="modals.advancedInfo.placeholder" data-i18n-placeholder
+                    placeholder="Edit the raw TOML file content here..."></textarea>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeAdvancedInfoModal()" data-i18n="common.cancel">Cancel</button>
-            <button class="modal-btn modal-btn-primary" onclick="window.modalManager.confirmAdvancedInfo()" data-i18n="common.save">Save</button>
+            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.closeAdvancedInfoModal()"
+                data-i18n="common.cancel">Cancel</button>
+            <button class="modal-btn modal-btn-primary" onclick="window.modalManager.confirmAdvancedInfo()"
+                data-i18n="common.save">Save</button>
         </div>
     </div>
 
     <!-- 1-Click Install Confirmation Modal -->
     <div id="install-confirm-modal" class="modal" style="display: none;">
         <div class="modal-header">
-            <h3><i class="fas fa-download"></i> <span data-i18n="modals.installConfirm.title">Confirm Mod Installation</span></h3>
+            <h3><i class="fas fa-download"></i> <span data-i18n="modals.installConfirm.title">Confirm Mod
+                    Installation</span></h3>
             <button class="modal-close" onclick="window.modalManager.cancelInstallConfirm()">
                 <i class="bi bi-x-lg"></i>
             </button>
@@ -441,19 +485,87 @@
                     </div>
                     <img id="install-preview-image" class="install-preview-image" style="display: none;">
                 </div>
-                <p class="install-question" data-i18n="modals.installConfirm.question">Do you want to download and install this mod?</p>
+                <p class="install-question" data-i18n="modals.installConfirm.question">Do you want to download and
+                    install this mod?</p>
                 <div class="install-url-container">
                     <label data-i18n="modals.installConfirm.downloadUrl">Download URL:</label>
                     <div id="install-url-display" class="install-url-display"></div>
                 </div>
-                <p class="install-hint" data-i18n="modals.installConfirm.hint">The mod will be downloaded and automatically installed to your mods folder.</p>
+                <p class="install-hint" data-i18n="modals.installConfirm.hint">The mod will be downloaded and
+                    automatically installed to your mods folder.</p>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.cancelInstallConfirm()" data-i18n="common.cancel">Cancel</button>
+            <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.cancelInstallConfirm()"
+                data-i18n="common.cancel">Cancel</button>
             <button class="modal-btn modal-btn-primary" onclick="window.modalManager.confirmInstall()">
-                <i class="fas fa-download"></i> <span data-i18n="modals.installConfirm.downloadInstall">Download & Install</span>
+                <i class="fas fa-download"></i> <span data-i18n="modals.installConfirm.downloadInstall">Download &
+                    Install</span>
             </button>
+        </div>
+    </div>
+
+    <div id="update-modal" class="modal" style="display: none;">
+        <div class="modal-header">
+            <h3><i class="bi bi-arrow-repeat"></i> <span data-i18n="modals.update.title">Update Available</span></h3>
+            <button class="modal-close" onclick="window.updateManager.closeUpdateModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="update-available-content" class="update-content" style="display: none;">
+                <div class="update-info">
+                    <p class="update-version">
+                        <span data-i18n="modals.update.newVersion">New version available:</span>
+                        <strong id="update-version-number"></strong>
+                    </p>
+                    <div class="update-release-notes">
+                        <h4 data-i18n="modals.update.releaseNotes">Release Notes:</h4>
+                        <div id="update-release-notes-content"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="update-downloading-content" class="update-content" style="display: none;">
+                <p data-i18n="modals.update.downloading">Downloading update...</p>
+                <div class="update-progress-container">
+                    <div class="update-progress-bar">
+                        <div id="update-progress-fill" class="update-progress-fill"></div>
+                    </div>
+                    <div class="update-progress-info">
+                        <span id="update-progress-percent">0%</span>
+                        <span id="update-progress-speed"></span>
+                    </div>
+                </div>
+            </div>
+            <div id="update-downloaded-content" class="update-content" style="display: none;">
+                <p class="update-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span data-i18n="modals.update.downloaded">Update downloaded successfully!</span>
+                </p>
+                <p class="update-hint" data-i18n="modals.update.restartHint">Click "Install and Restart" to apply the
+                    update.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <div id="update-available-actions" class="update-actions" style="display: none;">
+                <button class="modal-btn modal-btn-cancel" onclick="window.updateManager.closeUpdateModal()"
+                    data-i18n="modals.update.later">Later</button>
+                <button class="modal-btn modal-btn-primary" onclick="window.updateManager.downloadUpdate()">
+                    <i class="bi bi-download"></i> <span data-i18n="modals.update.download">Download</span>
+                </button>
+            </div>
+            <div id="update-downloading-actions" class="update-actions" style="display: none;">
+                <button class="modal-btn modal-btn-cancel" onclick="window.updateManager.closeUpdateModal()"
+                    data-i18n="common.cancel">Cancel</button>
+            </div>
+            <div id="update-downloaded-actions" class="update-actions" style="display: none;">
+                <button class="modal-btn modal-btn-cancel" onclick="window.updateManager.closeUpdateModal()"
+                    data-i18n="modals.update.later">Later</button>
+                <button class="modal-btn modal-btn-primary" onclick="window.updateManager.installUpdate()">
+                    <i class="bi bi-arrow-clockwise"></i> <span data-i18n="modals.update.installRestart">Install and
+                        Restart</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -463,16 +575,17 @@
     <script src="js/tutorial/tutorial-manager.js"></script>
     <script src="js/ui/toast-manager.js"></script>
     <script src="js/ui/modal-manager.js"></script>
+    <script src="js/ui/update-manager.js"></script>
     <script src="js/logs/logs-manager.js"></script>
     <script src="js/customization/customization-manager.js"></script>
     <script src="js/fightplanner/fightplanner-manager.js"></script>
     <!-- Characters Manager -->
     <script src="js/characters/characters-data.js"></script>
     <script src="js/characters/characters-manager.js"></script>
-    
+
     <!-- Downloads Manager -->
     <script src="js/downloads/download-manager.js"></script>
-    
+
     <!-- Protocol Listener -->
     <script src="js/protocol/protocol-listener.js"></script>
     <!-- End Characters Manager -->
@@ -509,24 +622,5 @@
         });
     </script>
 </body>
+
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

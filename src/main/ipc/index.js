@@ -1,4 +1,3 @@
-const { ipcMain } = require('electron');
 const { registerWindowHandlers } = require('./handlers/window-handlers');
 const { registerFileHandlers } = require('./handlers/file-handlers');
 const { registerModHandlers } = require('./handlers/mod-handlers');
@@ -11,6 +10,7 @@ const { registerMigrationHandlers } = require('./handlers/migration-handlers');
 const { registerFtpHandlers } = require('./handlers/ftp-handlers');
 const { registerDiscordHandlers } = require('./handlers/discord-handlers');
 const { registerAppHandlers } = require('./handlers/app-handlers');
+const { registerUpdateHandlers } = require('./handlers/update-handlers');
 
 /**
  * Register all IPC handlers for the application
@@ -30,6 +30,7 @@ function registerAllHandlers(ipcMain, discordRPC = null) {
   registerFtpHandlers(ipcMain);
   registerDiscordHandlers(ipcMain, discordRPC);
   registerAppHandlers(ipcMain);
+  registerUpdateHandlers(ipcMain);
 }
 
 module.exports = { registerAllHandlers };

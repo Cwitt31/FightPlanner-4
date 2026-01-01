@@ -8,6 +8,7 @@ const { migrateFromV3 } = require('./migration');
 const DiscordRPCManager = require('./discord-rpc');
 const { registerAllHandlers } = require('./ipc');
 const { PATHS, TEMP_FOLDERS } = require('./config');
+const autoUpdater = require('./auto-updater');
 
 const AnimationHandler = require('./animations/animation-handler');
 
@@ -177,6 +178,9 @@ function createWindow(options = {}) {
   });
 
   initializeProtocol(mainWindow);
+
+  autoUpdater.setMainWindow(mainWindow);
+  autoUpdater.checkForUpdatesOnStartup();
 
   return mainWindow;
 }
