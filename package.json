@@ -24,7 +24,8 @@
     "basic-ftp": "^5.0.5",
     "discord-rpc": "^4.0.1",
     "electron-store": "^8.2.0",
-    "electron-updater": "^6.3.9"
+    "electron-updater": "^6.3.9",
+    "semver": "^7.6.0"
   },
   "devDependencies": {
     "electron": "^39.0.0",
