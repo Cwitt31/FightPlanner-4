@@ -18,6 +18,26 @@ class AutoUpdater {
     this.setupEventHandlers();
   }
 
+  isVersionAllowed(version) {
+    const lowerVersion = version.toLowerCase();
+    
+    if (this.updateChannel === 'beta') {
+      // Beta channel: Allow Beta and Stable, reject Alpha
+      if (lowerVersion.includes('alpha')) {
+        console.log('[AutoUpdater] ⚠️ Skipping Alpha update because we are on Beta channel');
+        return false;
+      }
+    } else if (this.updateChannel === 'stable') {
+      // Stable channel: Reject Alpha and Beta
+      if (lowerVersion.includes('alpha') || lowerVersion.includes('beta')) {
+        console.log('[AutoUpdater] ⚠️ Skipping Pre-release update because we are on Stable channel');
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
   setupEventHandlers() {
     autoUpdater.on('checking-for-update', () => {
       console.log('[AutoUpdater] Checking for updates...');
@@ -34,25 +54,7 @@ class AutoUpdater {
       console.log('[AutoUpdater] Current version:', app.getVersion());
       console.log('[AutoUpdater] Update channel:', this.updateChannel);
       
-      // Custom Channel Logic
-      const version = info.version.toLowerCase();
-      let isAllowed = true;
-      
-      if (this.updateChannel === 'beta') {
-        // Beta channel: Allow Beta and Stable, reject Alpha
-        if (version.includes('alpha')) {
-          console.log('[AutoUpdater] ⚠️ Skipping Alpha update because we are on Beta channel');
-          isAllowed = false;
-        }
-      } else if (this.updateChannel === 'stable') {
-        // Stable channel: Reject Alpha and Beta (normally handled by allowPrerelease=false, but double check)
-        if (version.includes('alpha') || version.includes('beta')) {
-          console.log('[AutoUpdater] ⚠️ Skipping Pre-release update because we are on Stable channel');
-          isAllowed = false;
-        }
-      }
-      
-      if (!isAllowed) {
+      if (!this.isVersionAllowed(info.version)) {
         console.log('[AutoUpdater] Update rejected by channel filter.');
         this.isChecking = false;
         this.sendToRenderer('update-not-available', {
@@ -180,6 +182,12 @@ class AutoUpdater {
         console.log('[AutoUpdater] ✅ Update info found:');
         console.log('[AutoUpdater]   Version:', result.updateInfo.version);
         console.log('[AutoUpdater]   Release date:', result.updateInfo.releaseDate);
+        
+        // Apply channel filtering to manual check result as well
+        if (!this.isVersionAllowed(result.updateInfo.version)) {
+          console.log('[AutoUpdater] ⚠️ Update rejected by channel filter (manual check)');
+          return { success: true, updateInfo: null, filtered: true };
+        }
       }
       console.log('[AutoUpdater] ========================================');
       

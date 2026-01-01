@@ -237,14 +237,17 @@ class UpdateManager {
         throw new Error(result.error || 'Check failed');
       }
 
-      setTimeout(() => {
-        if (!this.updateInfo) {
-          console.log('[UpdateManager] No update found after check');
-          if (window.toastManager) {
-            window.toastManager.success('toasts.noUpdatesAvailable', 3000);
-          }
+      // If updateInfo is present in the result, it means an update was found
+      if (result.updateInfo) {
+        console.log('[UpdateManager] Update found via manual check:', result.updateInfo);
+        this.updateInfo = result.updateInfo;
+        this.showUpdateAvailable(result.updateInfo);
+      } else {
+        console.log('[UpdateManager] No update found via manual check');
+        if (window.toastManager) {
+          window.toastManager.success('toasts.noUpdatesAvailable', 3000);
         }
-      }, 2000);
+      }
     } catch (error) {
       console.error('[UpdateManager] Failed to check for updates:', error);
       if (window.toastManager) {
