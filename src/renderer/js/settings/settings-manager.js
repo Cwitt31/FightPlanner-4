@@ -1422,6 +1422,27 @@ ${t("settings.okUnderstand")}
     }
   }
 
+  translate(key, params = {}) {
+    if (window.i18n && window.i18n.t) {
+      return window.i18n.t(key, params);
+    }
+    return key;
+  }
+
+  showToast(message, type = 'info') {
+    if (window.toastManager) {
+      if (type === 'success') {
+        window.toastManager.success(message);
+      } else if (type === 'error') {
+        window.toastManager.error(message);
+      } else {
+        window.toastManager.info(message);
+      }
+    } else {
+      console.log(`[Toast] ${type}: ${message}`);
+    }
+  }
+
 }
 
 if (typeof window !== "undefined") {

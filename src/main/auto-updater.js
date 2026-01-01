@@ -168,8 +168,11 @@ class AutoUpdater {
       // Chek for fake version override
       const fakeVersion = store.get('developer.fakeVersion');
       let currentVersion = app.getVersion();
+      
       if (fakeVersion) {
         console.log(`[AutoUpdater] ⚠️ USING FAKE VERSION OVERRIDE: ${fakeVersion} (Real: ${currentVersion})`);
+        // Force electron-updater to use our fake version
+        autoUpdater.currentVersion = semver.parse(fakeVersion);
         currentVersion = fakeVersion;
       }
       
