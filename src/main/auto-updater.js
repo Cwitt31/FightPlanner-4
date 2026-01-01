@@ -32,6 +32,38 @@ class AutoUpdater {
       console.log('[AutoUpdater] Update available!');
       console.log('[AutoUpdater] Available version:', info.version);
       console.log('[AutoUpdater] Current version:', app.getVersion());
+      console.log('[AutoUpdater] Update channel:', this.updateChannel);
+      
+      // Custom Channel Logic
+      const version = info.version.toLowerCase();
+      let isAllowed = true;
+      
+      if (this.updateChannel === 'beta') {
+        // Beta channel: Allow Beta and Stable, reject Alpha
+        if (version.includes('alpha')) {
+          console.log('[AutoUpdater] ⚠️ Skipping Alpha update because we are on Beta channel');
+          isAllowed = false;
+        }
+      } else if (this.updateChannel === 'stable') {
+        // Stable channel: Reject Alpha and Beta (normally handled by allowPrerelease=false, but double check)
+        if (version.includes('alpha') || version.includes('beta')) {
+          console.log('[AutoUpdater] ⚠️ Skipping Pre-release update because we are on Stable channel');
+          isAllowed = false;
+        }
+      }
+      
+      if (!isAllowed) {
+        console.log('[AutoUpdater] Update rejected by channel filter.');
+        this.isChecking = false;
+        this.sendToRenderer('update-not-available', {
+          version: app.getVersion(),
+          latestVersion: info.version,
+          reason: 'channel-mismatch'
+        });
+        return;
+      }
+
+      console.log('[AutoUpdater] ✅ Update accepted by channel filter');
       console.log('[AutoUpdater] Release date:', info.releaseDate);
       console.log('[AutoUpdater] Full update info:', JSON.stringify(info, null, 2));
       
@@ -200,6 +232,8 @@ class AutoUpdater {
       autoUpdater.allowPrerelease = false;
       console.log('[AutoUpdater] Disabled prerelease (stable channel)');
     } else {
+      // For both Alpha and Beta, we enable prerelease
+      // Filtering for Beta (to exclude Alpha) is done in update-available event
       autoUpdater.allowPrerelease = true;
       console.log('[AutoUpdater] Enabled prerelease (alpha/beta channel)');
     }
