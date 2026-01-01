@@ -1,26 +1,40 @@
 const { autoUpdater } = require('electron-updater');
-const { app, BrowserWindow } = require('electron');
+const { app } = require('electron');
 
 class AutoUpdater {
   constructor() {
     this.mainWindow = null;
     this.updateInfo = null;
     this.isChecking = false;
+    this.isDownloading = false;
+    this.updateDownloaded = false;
     this.autoCheckEnabled = true;
+    this.updateChannel = 'alpha';
     
     autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = true;
+    autoUpdater.allowPrerelease = true;
     
     this.setupEventHandlers();
   }
 
   setupEventHandlers() {
     autoUpdater.on('checking-for-update', () => {
+      console.log('[AutoUpdater] Checking for updates...');
+      console.log('[AutoUpdater] Current version:', app.getVersion());
+      console.log('[AutoUpdater] Feed URL:', autoUpdater.getFeedURL());
+      console.log('[AutoUpdater] API endpoint: https://api.github.com/repos/FIREXDF/FightPlanner-4/releases');
       this.isChecking = true;
       this.sendToRenderer('update-checking');
     });
 
     autoUpdater.on('update-available', (info) => {
+      console.log('[AutoUpdater] Update available!');
+      console.log('[AutoUpdater] Available version:', info.version);
+      console.log('[AutoUpdater] Current version:', app.getVersion());
+      console.log('[AutoUpdater] Release date:', info.releaseDate);
+      console.log('[AutoUpdater] Full update info:', JSON.stringify(info, null, 2));
+      
       this.isChecking = false;
       this.updateInfo = info;
       this.sendToRenderer('update-available', {
@@ -32,33 +46,53 @@ class AutoUpdater {
     });
 
     autoUpdater.on('update-not-available', (info) => {
+      console.log('[AutoUpdater] No updates available');
+      console.log('[AutoUpdater] Current version:', app.getVersion());
+      console.log('[AutoUpdater] Latest version checked:', info?.version || 'unknown');
+      console.log('[AutoUpdater] Update info:', JSON.stringify(info, null, 2));
+      
       this.isChecking = false;
       this.sendToRenderer('update-not-available', {
-        version: info.version
+        version: app.getVersion(),
+        latestVersion: info?.version
       });
     });
 
     autoUpdater.on('error', (error) => {
+      console.error('[AutoUpdater] Error occurred:', error);
+      console.error('[AutoUpdater] Error message:', error.message);
+      console.error('[AutoUpdater] Error stack:', error.stack);
+      
       this.isChecking = false;
+      this.isDownloading = false;
       this.sendToRenderer('update-error', {
-        message: error.message,
-        stack: error.stack
+        message: error.message
       });
     });
 
     autoUpdater.on('download-progress', (progressObj) => {
+      console.log('[AutoUpdater] Download progress:', progressObj.percent.toFixed(2) + '%');
+      console.log('[AutoUpdater] Downloaded:', (progressObj.transferred / 1024 / 1024).toFixed(2), 'MB');
+      console.log('[AutoUpdater] Total:', (progressObj.total / 1024 / 1024).toFixed(2), 'MB');
+      console.log('[AutoUpdater] Speed:', (progressObj.bytesPerSecond / 1024 / 1024).toFixed(2), 'MB/s');
+      
       this.sendToRenderer('update-download-progress', {
         percent: progressObj.percent,
-        bytesPerSecond: progressObj.bytesPerSecond,
         transferred: progressObj.transferred,
-        total: progressObj.total
+        total: progressObj.total,
+        bytesPerSecond: progressObj.bytesPerSecond
       });
     });
 
     autoUpdater.on('update-downloaded', (info) => {
+      console.log('[AutoUpdater] Update downloaded successfully!');
+      console.log('[AutoUpdater] Version:', info.version);
+      console.log('[AutoUpdater] Release date:', info.releaseDate);
+      
+      this.isDownloading = false;
+      this.updateDownloaded = true;
       this.sendToRenderer('update-downloaded', {
         version: info.version,
-        releaseNotes: info.releaseNotes,
         releaseDate: info.releaseDate
       });
     });
@@ -76,46 +110,103 @@ class AutoUpdater {
 
   async checkForUpdates() {
     if (this.isChecking) {
-      return { checking: true };
+      console.log('[AutoUpdater] Already checking for updates, skipping...');
+      return { success: false, checking: true };
     }
 
     try {
+      console.log('[AutoUpdater] ========================================');
+      console.log('[AutoUpdater] Starting manual update check...');
+      console.log('[AutoUpdater] Current app version:', app.getVersion());
+      console.log('[AutoUpdater] Update channel:', this.updateChannel);
+      console.log('[AutoUpdater] Allow prerelease:', autoUpdater.allowPrerelease);
+      console.log('[AutoUpdater] Repository: FIREXDF/FightPlanner-4');
+      console.log('[AutoUpdater] Provider: GitHub Releases');
+      
+      const feedURL = autoUpdater.getFeedURL();
+      console.log('[AutoUpdater] Feed URL:', feedURL);
+      console.log('[AutoUpdater] Checking URL: https://api.github.com/repos/FIREXDF/FightPlanner-4/releases');
+      console.log('[AutoUpdater] ========================================');
+      
       const result = await autoUpdater.checkForUpdates();
+      
+      console.log('[AutoUpdater] ========================================');
+      console.log('[AutoUpdater] Raw check result:', result);
+      console.log('[AutoUpdater] Result type:', typeof result);
+      console.log('[AutoUpdater] Result is null:', result === null);
+      
+      if (result === null) {
+        console.log('[AutoUpdater] ⚠️  Result is NULL - This usually means:');
+        console.log('[AutoUpdater]   1. No GitHub releases found');
+        console.log('[AutoUpdater]   2. Current version is already the latest');
+        console.log('[AutoUpdater]   3. Network/connection issue');
+        console.log('[AutoUpdater] ========================================');
+        return { success: true, updateInfo: null, noRelease: true };
+      }
+      
+      if (result && result.updateInfo) {
+        console.log('[AutoUpdater] ✅ Update info found:');
+        console.log('[AutoUpdater]   Version:', result.updateInfo.version);
+        console.log('[AutoUpdater]   Release date:', result.updateInfo.releaseDate);
+      }
+      console.log('[AutoUpdater] ========================================');
+      
       return { success: true, updateInfo: result?.updateInfo };
     } catch (error) {
-      console.error('Error checking for updates:', error);
+      console.error('[AutoUpdater] ========================================');
+      console.error('[AutoUpdater] ❌ Error checking for updates:', error);
+      console.error('[AutoUpdater] Error message:', error.message);
+      console.error('[AutoUpdater] Error stack:', error.stack);
+      console.error('[AutoUpdater] ========================================');
       return { success: false, error: error.message };
     }
   }
 
   async downloadUpdate() {
     try {
+      console.log('[AutoUpdater] Starting download...');
+      this.isDownloading = true;
       await autoUpdater.downloadUpdate();
       return { success: true };
     } catch (error) {
-      console.error('Error downloading update:', error);
+      console.error('[AutoUpdater] Error downloading update:', error);
+      this.isDownloading = false;
       return { success: false, error: error.message };
     }
   }
 
   quitAndInstall() {
+    console.log('[AutoUpdater] Quitting and installing update...');
     autoUpdater.quitAndInstall(false, true);
   }
 
-  async checkForUpdatesOnStartup() {
-    if (!this.autoCheckEnabled) {
-      return;
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    
-    if (app.isReady()) {
-      this.checkForUpdates();
-    }
+  checkForUpdatesOnStartup() {
+    console.log('[AutoUpdater] Scheduling startup update check in 5 seconds...');
+    setTimeout(async () => {
+      console.log('[AutoUpdater] Running startup update check...');
+      await this.checkForUpdates();
+    }, 5000);
   }
 
   setAutoCheckEnabled(enabled) {
     this.autoCheckEnabled = enabled;
+  }
+
+  setUpdateChannel(channel) {
+    console.log('[AutoUpdater] Setting update channel to:', channel);
+    this.updateChannel = channel;
+    
+    if (channel === 'stable') {
+      autoUpdater.allowPrerelease = false;
+      console.log('[AutoUpdater] Disabled prerelease (stable channel)');
+    } else {
+      autoUpdater.allowPrerelease = true;
+      console.log('[AutoUpdater] Enabled prerelease (alpha/beta channel)');
+    }
+  }
+
+  getUpdateChannel() {
+    return this.updateChannel;
   }
 
   getUpdateInfo() {

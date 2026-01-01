@@ -305,6 +305,55 @@ class SettingsManager {
 
     this.updateAppVersionUI();
 
+    const updateChannelSelect = document.getElementById("update-channel-select");
+    if (updateChannelSelect && !updateChannelSelect.dataset.listenerAttached) {
+      const trigger = updateChannelSelect.querySelector(".custom-select-trigger");
+      const options = updateChannelSelect.querySelectorAll(".custom-select-option");
+      const selectedValue = updateChannelSelect.querySelector(".selected-value");
+
+      if (trigger) {
+        trigger.addEventListener("click", (e) => {
+          e.stopPropagation();
+          updateChannelSelect.classList.toggle("open");
+        });
+      }
+
+      document.addEventListener("click", (e) => {
+        if (!updateChannelSelect.contains(e.target)) {
+          updateChannelSelect.classList.remove("open");
+        }
+      });
+
+      options.forEach((option) => {
+        option.addEventListener("click", async () => {
+          const value = option.dataset.value;
+          const text = option.querySelector("span").textContent;
+
+          if (selectedValue) {
+            selectedValue.textContent = text;
+          }
+
+          options.forEach((opt) => opt.classList.remove("active"));
+          option.classList.add("active");
+
+          updateChannelSelect.classList.remove("open");
+
+          if (window.electronAPI && window.electronAPI.setUpdateChannel) {
+            await window.electronAPI.setUpdateChannel(value);
+            await window.electronAPI.store.set("updateChannel", value);
+            console.log("Update channel set to:", value);
+            
+            if (window.toastManager) {
+              window.toastManager.success("toasts.settingSaved");
+            }
+          }
+        });
+      });
+
+      updateChannelSelect.dataset.listenerAttached = "true";
+      this.updateChannelUI();
+    }
+
     const languageTypeSelect = document.getElementById("language-type-select");
     if (languageTypeSelect && !languageTypeSelect.dataset.listenerAttached) {
       const trigger = languageTypeSelect.querySelector(".custom-select-trigger");
@@ -983,6 +1032,30 @@ ${t("settings.okUnderstand")}
         appVersionEl.textContent = version;
       } catch (error) {
         console.error("Failed to get app version:", error);
+      }
+    }
+  }
+
+  async updateChannelUI() {
+    const updateChannelSelect = document.getElementById("update-channel-select");
+    if (updateChannelSelect && window.electronAPI && window.electronAPI.getUpdateChannel) {
+      try {
+        const channel = await window.electronAPI.getUpdateChannel();
+        const selectedValue = updateChannelSelect.querySelector(".selected-value");
+        const options = updateChannelSelect.querySelectorAll(".custom-select-option");
+
+        options.forEach((option) => {
+          if (option.dataset.value === channel) {
+            option.classList.add("active");
+            if (selectedValue) {
+              selectedValue.textContent = option.querySelector("span").textContent;
+            }
+          } else {
+            option.classList.remove("active");
+          }
+        });
+      } catch (error) {
+        console.error("Failed to get update channel:", error);
       }
     }
   }

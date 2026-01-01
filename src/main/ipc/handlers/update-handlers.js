@@ -22,6 +22,15 @@ function registerUpdateHandlers(ipcMain) {
     autoUpdater.setAutoCheckEnabled(enabled);
     return { success: true };
   });
+
+  ipcMain.handle('set-update-channel', (event, channel) => {
+    autoUpdater.setUpdateChannel(channel);
+    return { success: true };
+  });
+
+  ipcMain.handle('get-update-channel', () => {
+    return autoUpdater.getUpdateChannel();
+  });
 }
 
 module.exports = { registerUpdateHandlers };

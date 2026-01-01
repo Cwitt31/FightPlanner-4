@@ -189,7 +189,11 @@
     "currentVersion": "Current Version:",
     "checkForUpdates": "Check for Updates",
     "checkForUpdatesDesc": "Manually check if a new version is available",
-    "updatesHint": "FightPlanner automatically checks for updates on startup"
+    "updatesHint": "FightPlanner automatically checks for updates on startup. Choose your update channel to receive stable, beta, or alpha releases.",
+    "updateChannel": "Update Channel",
+    "channelStable": "Stable",
+    "channelBeta": "Beta",
+    "channelAlpha": "Alpha"
   },
   "modals": {
     "rename": {

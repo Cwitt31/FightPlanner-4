@@ -12,28 +12,35 @@ class UpdateManager {
     }
 
     window.electronAPI.onUpdateChecking(() => {
-      console.log('Checking for updates...');
+      console.log('[UpdateManager] Checking for updates...');
     });
 
     window.electronAPI.onUpdateAvailable((data) => {
+      console.log('[UpdateManager] Update available:', data);
+      console.log('[UpdateManager] New version:', data.version);
       this.updateInfo = data;
       this.showUpdateAvailable(data);
     });
 
     window.electronAPI.onUpdateNotAvailable((data) => {
-      console.log('No updates available. Current version:', data.version);
+      console.log('[UpdateManager] No updates available');
+      console.log('[UpdateManager] Current version:', data.version);
+      console.log('[UpdateManager] Latest version:', data.latestVersion);
+      console.log('[UpdateManager] Update data:', data);
     });
 
     window.electronAPI.onUpdateDownloadProgress((data) => {
+      console.log('[UpdateManager] Download progress:', data.percent.toFixed(2) + '%');
       this.updateDownloadProgress(data);
     });
 
     window.electronAPI.onUpdateDownloaded((data) => {
+      console.log('[UpdateManager] Update downloaded:', data);
       this.showUpdateDownloaded(data);
     });
 
     window.electronAPI.onUpdateError((data) => {
-      console.error('Update error:', data.message);
+      console.error('[UpdateManager] Update error:', data.message);
       if (window.toastManager) {
         window.toastManager.error('toasts.updateError', 5000, { error: data.message });
       }
@@ -207,14 +214,18 @@ class UpdateManager {
   }
 
   async checkForUpdatesManually() {
+    console.log('[UpdateManager] Manual update check initiated');
+    
     if (window.toastManager) {
       window.toastManager.info('toasts.checkingForUpdates', 3000);
     }
 
     try {
       const result = await window.electronAPI.checkForUpdates();
+      console.log('[UpdateManager] Manual check result:', result);
       
       if (result.checking) {
+        console.log('[UpdateManager] Already checking for updates');
         if (window.toastManager) {
           window.toastManager.info('toasts.alreadyCheckingUpdates', 3000);
         }
@@ -222,18 +233,20 @@ class UpdateManager {
       }
 
       if (!result.success) {
+        console.error('[UpdateManager] Check failed:', result.error);
         throw new Error(result.error || 'Check failed');
       }
 
       setTimeout(() => {
         if (!this.updateInfo) {
+          console.log('[UpdateManager] No update found after check');
           if (window.toastManager) {
             window.toastManager.success('toasts.noUpdatesAvailable', 3000);
           }
         }
       }, 2000);
     } catch (error) {
-      console.error('Failed to check for updates:', error);
+      console.error('[UpdateManager] Failed to check for updates:', error);
       if (window.toastManager) {
         window.toastManager.error('toasts.updateCheckFailed', 5000);
       }

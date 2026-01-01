@@ -148,6 +148,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   installUpdate: () => ipcRenderer.invoke("install-update"),
   getUpdateInfo: () => ipcRenderer.invoke("get-update-info"),
   setAutoCheckEnabled: (enabled) => ipcRenderer.invoke("set-auto-check-enabled", enabled),
+  setUpdateChannel: (channel) => ipcRenderer.invoke("set-update-channel", channel),
+  getUpdateChannel: () => ipcRenderer.invoke("get-update-channel"),
 
   onUpdateChecking: (callback) =>
     ipcRenderer.on("update-checking", (event, data) => callback(data)),

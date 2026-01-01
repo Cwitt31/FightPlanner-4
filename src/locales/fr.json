@@ -188,7 +188,11 @@
     "currentVersion": "Version Actuelle :",
     "checkForUpdates": "Vérifier les Mises à Jour",
     "checkForUpdatesDesc": "Vérifier manuellement si une nouvelle version est disponible",
-    "updatesHint": "FightPlanner vérifie automatiquement les mises à jour au démarrage"
+    "updatesHint": "FightPlanner vérifie automatiquement les mises à jour au démarrage. Choisissez votre canal de mise à jour pour recevoir les versions stables, bêta ou alpha.",
+    "updateChannel": "Canal de Mise à Jour",
+    "channelStable": "Stable",
+    "channelBeta": "Bêta",
+    "channelAlpha": "Alpha"
   },
   "modals": {
     "rename": {
