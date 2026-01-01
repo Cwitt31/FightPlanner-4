@@ -377,6 +377,34 @@ class ProtocolHandler {
         }
       }
 
+      // Auto-disable mod if setting is enabled
+      if (installedModName && sharedStore.get("autoDisableNewMods")) {
+        try {
+          const modsPath = sharedStore.get("modsPath");
+          if (modsPath) {
+            const currentModPath = path.join(modsPath, installedModName);
+            const parentDir = path.dirname(modsPath);
+            const disabledModsPath = path.join(parentDir, '{disabled_mod}');
+            
+            if (!fs.existsSync(disabledModsPath)) {
+              fs.mkdirSync(disabledModsPath, { recursive: true });
+            }
+            
+            const targetPath = path.join(disabledModsPath, installedModName);
+            if (!fs.existsSync(targetPath)) {
+              fs.renameSync(currentModPath, targetPath);
+              console.log(`[Protocol][AutoDisable] Moved ${installedModName} to disabled mods folder`);
+              // Update modFolderPath to point to the new location so renderer gets correct path
+              modFolderPath = targetPath;
+            } else {
+              console.warn(`[Protocol][AutoDisable] Cannot move ${installedModName}, target already exists: ${targetPath}`);
+            }
+          }
+        } catch (disableError) {
+          console.error('[Protocol][AutoDisable] Failed to disable mod:', disableError);
+        }
+      }
+
       this.sendToRenderer("mod-install-success", {
         url: downloadUrl,
         modName: installedModName,

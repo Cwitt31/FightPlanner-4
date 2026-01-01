@@ -5,10 +5,12 @@
         <button class="settings-tab-btn active" data-settings-tab="general"
             data-i18n="settings.general">General</button>
         <button class="settings-tab-btn" data-settings-tab="mods" data-i18n="settings.paths">Paths</button>
-        <button class="settings-tab-btn" data-settings-tab="advanced" data-i18n="settings.advanced">Advanced</button>
         <button class="settings-tab-btn" data-settings-tab="customization"
             data-i18n="settings.customization">Customization</button>
+        <button class="settings-tab-btn" data-settings-tab="advanced" data-i18n="settings.advanced">Advanced</button>
         <button class="settings-tab-btn" data-settings-tab="logs" data-i18n="settings.logs">Logs</button>
+        <button class="settings-tab-btn" data-settings-tab="developer" id="settings-tab-developer"
+            style="display: none;" data-i18n="settings.developer">Developer</button>
     </div>
 
     <!-- Settings Content -->
@@ -207,6 +209,22 @@
                     plugin files</p>
             </div>
 
+            <!-- New Mod Installation Section -->
+            <div class="settings-section">
+                <label class="settings-label" data-i18n="settings.modInstallation">Mod Installation</label>
+                <div class="settings-input-group">
+                    <label class="settings-switch">
+                        <input type="checkbox" id="auto-disable-mods-enabled">
+                        <span class="settings-switch-slider"></span>
+                    </label>
+                    <span style="margin-left: 12px; color: var(--text-secondary);"
+                        data-i18n="settings.autoDisableMods">Auto-disable
+                        new mods after install</span>
+                </div>
+                <p class="settings-hint" data-i18n="settings.autoDisableModsHint">When enabled, newly installed mods
+                    will be automatically disabled to prevent conflicts</p>
+            </div>
+
             <div class="settings-section">
                 <label class="settings-label" data-i18n="settings.exportModList">Export Mod List</label>
                 <button class="settings-btn-action" id="export-mods-list-btn">
@@ -283,6 +301,18 @@
         <!-- Advanced Settings -->
         <div class="settings-tab-content" id="settings-advanced">
             <h2 class="settings-title" data-i18n="settings.advanced">Advanced Settings</h2>
+
+            <div class="settings-section">
+                <label class="settings-label" data-i18n="settings.developerMode">Developer Mode</label>
+                <div class="settings-input-group">
+                    <label class="settings-switch">
+                        <input type="checkbox" id="developer-mode-enabled">
+                        <span class="settings-switch-slider"></span>
+                    </label>
+                    <span style="margin-left: 12px; color: var(--text-secondary);"
+                        data-i18n="settings.developerModeHint">Enable advanced developer features</span>
+                </div>
+            </div>
 
             <div class="settings-section">
                 <label class="settings-label" data-i18n="settings.switchConnection">Switch Connection</label>
@@ -525,5 +555,35 @@
                 </p>
             </div>
         </div>
+        <!-- Developer Settings -->
+        <div class="settings-tab-content" id="settings-developer">
+            <h2 class="settings-title" data-i18n="settings.developer">Developer Options</h2>
+
+            <div class="settings-section">
+                <label class="settings-label" data-i18n="settings.fakeVersion">Fake App Version</label>
+                <div class="settings-input-group">
+                    <input type="text" id="fake-version-input" class="settings-input"
+                        data-i18n="settings.fakeVersionPlaceholder" data-i18n-placeholder placeholder="e.g. 3.0.0">
+                </div>
+                <p class="settings-hint" data-i18n="settings.fakeVersionHint">Override the current app version to test
+                    the update system. LEAVE EMPTY to use real version.</p>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-input-group">
+                    <button class="settings-btn-action" id="save-dev-settings-btn">
+                        <i class="bi bi-save"></i>
+                        <div class="settings-btn-action-content">
+                            <span class="settings-btn-action-title" data-i18n="settings.saveDevSettings">Save Developer
+                                Settings</span>
+                        </div>
+                    </button>
+                    <button class="settings-btn" id="reset-dev-settings-btn" style="margin-left: 10px;">
+                        <i class="bi bi-arrow-counterclockwise"></i> <span data-i18n="settings.reset">Reset</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>

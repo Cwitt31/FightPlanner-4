@@ -16,6 +16,8 @@ class SettingsManager {
       conflictWhitelistPatterns: [],
       autoCheckPluginUpdates: false,
       pluginUpdateIntroShown: false,
+      autoDisableNewMods: false,
+      devMode: false,
       theme: "dark"
     };
     this.initialized = false;
@@ -292,6 +294,15 @@ class SettingsManager {
       autoCheckPluginUpdates.dataset.listenerAttached = "true";
     }
 
+    const autoDisableMods = document.getElementById("auto-disable-mods-enabled");
+    if (autoDisableMods && !autoDisableMods.dataset.listenerAttached) {
+      autoDisableMods.addEventListener("change", () => {
+        this.settings.autoDisableNewMods = autoDisableMods.checked;
+        this.saveSettings();
+      });
+      autoDisableMods.dataset.listenerAttached = "true";
+    }
+
     const checkUpdatesBtn = document.getElementById("check-updates-btn");
     if (checkUpdatesBtn && !checkUpdatesBtn.dataset.listenerAttached) {
       checkUpdatesBtn.addEventListener("click", async () => {
@@ -505,6 +516,70 @@ class SettingsManager {
     this.updateSwitchTransferMethodUI();
     this.updateConflictDetectionUI();
     this.updateAutoCheckPluginUpdatesUI();
+    this.updateAutoDisableModsUI();
+    this.updateDeveloperModeUI();
+
+    const devModeToggle = document.getElementById("developer-mode-enabled");
+    if (devModeToggle) {
+      devModeToggle.addEventListener("change", (e) => {
+        this.settings.devMode = e.target.checked;
+        this.saveSettings();
+        this.updateDeveloperModeUI();
+      });
+    }
+
+    const fakeVersionInput = document.getElementById("fake-version-input");
+    const saveDevSettingsBtn = document.getElementById("save-dev-settings-btn");
+    const resetDevSettingsBtn = document.getElementById("reset-dev-settings-btn");
+
+    if (fakeVersionInput && saveDevSettingsBtn) {
+      // Load current fake version
+      window.electronAPI.store.get("developer.fakeVersion").then((fakeVersion) => {
+        if (fakeVersion) {
+          fakeVersionInput.value = fakeVersion;
+        }
+      });
+
+      saveDevSettingsBtn.addEventListener("click", () => {
+        const fakeVersion = fakeVersionInput.value.trim();
+        window.electronAPI.store.set("developer.fakeVersion", fakeVersion);
+        this.showToast(this.translate("devSettingsSaved"), "success");
+      });
+
+      if (resetDevSettingsBtn) {
+        resetDevSettingsBtn.addEventListener("click", () => {
+          fakeVersionInput.value = "";
+          window.electronAPI.store.set("developer.fakeVersion", "");
+          this.showToast(this.translate("settingSaved"), "success");
+        });
+      }
+    }
+  }
+
+  updateDeveloperModeUI() {
+    const devTabBtn = document.getElementById("settings-tab-developer");
+    const devModeToggle = document.getElementById("developer-mode-enabled");
+
+    if (devModeToggle) {
+      devModeToggle.checked = this.settings.devMode;
+    }
+
+    if (devTabBtn) {
+      devTabBtn.style.display = this.settings.devMode ? "block" : "none";
+      
+      // If we are on the developer tab and disable dev mode, switch to general
+      if (!this.settings.devMode && devTabBtn.classList.contains("active")) {
+        const generalBtn = document.querySelector('[data-settings-tab="general"]');
+        if (generalBtn) generalBtn.click();
+      }
+    }
+  }
+
+  updateAutoDisableModsUI() {
+    const toggle = document.getElementById("auto-disable-mods-enabled");
+    if (toggle) {
+      toggle.checked = this.settings.autoDisableNewMods || false;
+    }
   }
 
   switchSettingsTab(tabName) {

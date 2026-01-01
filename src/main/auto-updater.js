@@ -1,5 +1,8 @@
 const { autoUpdater } = require('electron-updater');
 const { app } = require('electron');
+const semver = require('semver');
+const Store = require('electron-store');
+const store = new Store();
 
 class AutoUpdater {
   constructor() {
@@ -162,6 +165,14 @@ class AutoUpdater {
       console.log('[AutoUpdater] Checking URL: https://api.github.com/repos/FIREXDF/FightPlanner-4/releases');
       console.log('[AutoUpdater] ========================================');
       
+      // Chek for fake version override
+      const fakeVersion = store.get('developer.fakeVersion');
+      let currentVersion = app.getVersion();
+      if (fakeVersion) {
+        console.log(`[AutoUpdater] ⚠️ USING FAKE VERSION OVERRIDE: ${fakeVersion} (Real: ${currentVersion})`);
+        currentVersion = fakeVersion;
+      }
+      
       const result = await autoUpdater.checkForUpdates();
       
       console.log('[AutoUpdater] ========================================');
@@ -183,6 +194,14 @@ class AutoUpdater {
         console.log('[AutoUpdater]   Version:', result.updateInfo.version);
         console.log('[AutoUpdater]   Release date:', result.updateInfo.releaseDate);
         
+        
+        // Check if version is actually newer
+        // const currentVersion = app.getVersion(); // Already set above
+        if (semver.lte(result.updateInfo.version, currentVersion)) {
+           console.log('[AutoUpdater] ℹ️ Found version', result.updateInfo.version, 'is not newer than current', currentVersion);
+           return { success: true, updateInfo: null, noRelease: true };
+        }
+
         // Apply channel filtering to manual check result as well
         if (!this.isVersionAllowed(result.updateInfo.version)) {
           console.log('[AutoUpdater] ⚠️ Update rejected by channel filter (manual check)');
