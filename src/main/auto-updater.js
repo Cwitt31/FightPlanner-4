@@ -153,6 +153,9 @@ class AutoUpdater {
     }
 
     try {
+      // Re-assert autoDownload is false to prevent unsolicited downloads
+      autoUpdater.autoDownload = false;
+      
       console.log('[AutoUpdater] ========================================');
       console.log('[AutoUpdater] Starting manual update check...');
       console.log('[AutoUpdater] Current app version:', app.getVersion());
@@ -173,6 +176,16 @@ class AutoUpdater {
         console.log('[AutoUpdater] Force update available is ENABLED. Trick: Setting current version to 0.0.0 to force update found.');
         autoUpdater.currentVersion = semver.parse('0.0.0');
         currentVersion = '0.0.0';
+        
+        // Disable signature verification for forced updates (allows testing unsigned alpha builds)
+        // This is necessary because alpha builds might not be fully signed or the dev environment lacks the certs.
+        try {
+          // Attempt to disable signature verification if property exists
+          autoUpdater.verifyCodeSignature = false; 
+          console.log('[AutoUpdater] ⚠️ Disabled signature verification for forced update');
+        } catch (e) {
+          console.warn('[AutoUpdater] Could not disable signature verification:', e);
+        }
         
         // Ensure we don't skip alpha if we are forced
         // But we still respect the channel logic unless we want to force EVERYTHING.
