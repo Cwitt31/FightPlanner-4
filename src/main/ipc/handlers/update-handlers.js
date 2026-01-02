@@ -31,6 +31,19 @@ function registerUpdateHandlers(ipcMain) {
   ipcMain.handle('get-update-channel', () => {
     return autoUpdater.getUpdateChannel();
   });
+
+  ipcMain.handle('set-force-update', (event, enabled) => {
+    autoUpdater.setForceUpdateAvailable(enabled);
+    return { success: true };
+  });
+
+  ipcMain.handle('get-force-update', () => {
+    return autoUpdater.getForceUpdateAvailable();
+  });
+
+  ipcMain.handle('simulate-update', () => {
+    return autoUpdater.simulateUpdate();
+  });
 }
 
 module.exports = { registerUpdateHandlers };

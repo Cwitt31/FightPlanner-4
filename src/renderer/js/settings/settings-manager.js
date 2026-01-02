@@ -553,6 +553,32 @@ class SettingsManager {
           this.showToast(this.translate("settingSaved"), "success");
         });
       }
+
+      const simulateUpdateBtn = document.getElementById("simulate-update-btn");
+      if (simulateUpdateBtn) {
+        simulateUpdateBtn.addEventListener("click", async () => {
+          if (window.electronAPI && window.electronAPI.simulateUpdate) {
+            await window.electronAPI.simulateUpdate();
+            this.showToast("Update simulation started", "success");
+          }
+        });
+      }
+
+      const forceUpdateToggle = document.getElementById("force-update-enabled");
+      if (forceUpdateToggle && window.electronAPI && window.electronAPI.getForceUpdate) {
+        // Load initial state
+        window.electronAPI.getForceUpdate().then((isEnabled) => {
+          forceUpdateToggle.checked = isEnabled;
+        });
+        
+        // Add listener
+        forceUpdateToggle.addEventListener("change", async (e) => {
+          if (window.electronAPI.setForceUpdate) {
+            await window.electronAPI.setForceUpdate(e.target.checked);
+            this.showToast("Force update setting saved", "success");
+          }
+        });
+      }
     }
   }
 

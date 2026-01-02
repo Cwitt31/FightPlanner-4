@@ -570,6 +570,18 @@
             </div>
 
             <div class="settings-section">
+                <label class="settings-label" data-i18n="settings.forceUpdateAvailable">Force Update Available</label>
+                <div class="settings-input-group">
+                    <label class="settings-switch">
+                        <input type="checkbox" id="force-update-enabled">
+                        <span class="settings-switch-slider"></span>
+                    </label>
+                    <span style="margin-left: 12px; color: var(--text-secondary);"
+                        data-i18n="settings.forceUpdateAvailableHint">Force updater to report update available</span>
+                </div>
+            </div>
+
+            <div class="settings-section">
                 <div class="settings-input-group">
                     <button class="settings-btn-action" id="save-dev-settings-btn">
                         <i class="bi bi-save"></i>
@@ -580,6 +592,10 @@
                     </button>
                     <button class="settings-btn" id="reset-dev-settings-btn" style="margin-left: 10px;">
                         <i class="bi bi-arrow-counterclockwise"></i> <span data-i18n="settings.reset">Reset</span>
+                    </button>
+                    <button class="settings-btn" id="simulate-update-btn" style="margin-left: 10px;">
+                        <i class="bi bi-play-circle"></i> <span data-i18n="settings.simulateUpdate">Simulate
+                            Update</span>
                     </button>
                 </div>
             </div>

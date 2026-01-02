@@ -85,6 +85,8 @@
     "fakeVersionHint": "Override the current app version to test the update system. LEAVE EMPTY to use real version.",
     "saveDevSettings": "Save Developer Settings",
     "devSettingsSaved": "Developer settings saved. Please restart the app for version override to take effect.",
+    "forceUpdateAvailable": "Force Update Available",
+    "forceUpdateAvailableHint": "Force the updater to report an update is available, even if you are on the latest version.",
     "reset": "Reset",
     "customization": "Customization",
     "logs": "Logs",

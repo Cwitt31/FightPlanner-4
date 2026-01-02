@@ -12,9 +12,10 @@ class AutoUpdater {
     this.isDownloading = false;
     this.updateDownloaded = false;
     this.autoCheckEnabled = true;
-    this.updateChannel = 'alpha';
+    this.updateChannel = 'stable'; // Default to stable
+    this.forceUpdateAvailable = false;
     
-    autoUpdater.autoDownload = false;
+    autoUpdater.allowPrerelease = false; // Default to false
     autoUpdater.autoInstallOnAppQuit = true;
     autoUpdater.allowPrerelease = true;
     
@@ -165,15 +166,26 @@ class AutoUpdater {
       console.log('[AutoUpdater] Checking URL: https://api.github.com/repos/FIREXDF/FightPlanner-4/releases');
       console.log('[AutoUpdater] ========================================');
       
-      // Chek for fake version override
-      const fakeVersion = store.get('developer.fakeVersion');
       let currentVersion = app.getVersion();
-      
-      if (fakeVersion) {
-        console.log(`[AutoUpdater] ⚠️ USING FAKE VERSION OVERRIDE: ${fakeVersion} (Real: ${currentVersion})`);
-        // Force electron-updater to use our fake version
-        autoUpdater.currentVersion = semver.parse(fakeVersion);
-        currentVersion = fakeVersion;
+
+      // Force update check if enabled
+      if (this.forceUpdateAvailable) {
+        console.log('[AutoUpdater] Force update available is ENABLED. Trick: Setting current version to 0.0.0 to force update found.');
+        autoUpdater.currentVersion = semver.parse('0.0.0');
+        currentVersion = '0.0.0';
+        
+        // Ensure we don't skip alpha if we are forced
+        // But we still respect the channel logic unless we want to force EVERYTHING.
+        // For now, let's just force the version check.
+      } else {
+        // Chek for fake version override
+        const fakeVersion = store.get('developer.fakeVersion');
+        if (fakeVersion) {
+          console.log(`[AutoUpdater] ⚠️ USING FAKE VERSION OVERRIDE: ${fakeVersion} (Real: ${currentVersion})`);
+          // Force electron-updater to use our fake version
+          autoUpdater.currentVersion = semver.parse(fakeVersion);
+          currentVersion = fakeVersion;
+        }
       }
       
       const result = await autoUpdater.checkForUpdates();
@@ -275,6 +287,29 @@ class AutoUpdater {
 
   getUpdateInfo() {
     return this.updateInfo;
+  }
+
+  setForceUpdateAvailable(value) {
+    this.forceUpdateAvailable = value;
+    console.log(`[AutoUpdater] Force update available set to: ${value}`);
+  }
+
+  getForceUpdateAvailable() {
+    return this.forceUpdateAvailable;
+  }
+
+  simulateUpdate() {
+    console.log('[AutoUpdater] Simulating update available...');
+    const dummyUpdateInfo = {
+      version: '9.9.9-simulator',
+      releaseNotes: '<h2>Simulation Update</h2><p>This is a simulated update to test the UI.</p><ul><li>Feature 1</li><li>Feature 2</li></ul>',
+      releaseDate: new Date().toISOString(),
+      files: []
+    };
+    
+    this.updateInfo = dummyUpdateInfo;
+    this.sendToRenderer('update-available', dummyUpdateInfo);
+    return { success: true };
   }
 }
 
