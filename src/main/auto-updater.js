@@ -252,6 +252,12 @@ class AutoUpdater {
   async downloadUpdate() {
     try {
       console.log('[AutoUpdater] Starting download...');
+      
+      if (this.forceUpdateAvailable) {
+         console.log('[AutoUpdater] Force update enabled: ensuring signature verification is DISABLED for download.');
+         autoUpdater.verifyCodeSignature = false;
+      }
+      
       this.isDownloading = true;
       await autoUpdater.downloadUpdate();
       return { success: true };
