@@ -597,7 +597,9 @@
     "updateError": "Update error: {{error}}",
     "updateDownloaded": "Update {{version}} downloaded successfully!",
     "updateDownloadFailed": "Failed to download update",
-    "updateInstallFailed": "Failed to install update"
+    "updateInstallFailed": "Failed to install update",
+    "channelStable": "Stable",
+    "channelPrerelease": "Prerelease"
   },
   "statusBar": {
     "ready": "Ready",

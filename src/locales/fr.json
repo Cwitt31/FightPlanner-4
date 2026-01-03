@@ -596,7 +596,9 @@
     "updateError": "Erreur de mise à jour : {{error}}",
     "updateDownloaded": "Mise à jour {{version}} téléchargée avec succès !",
     "updateDownloadFailed": "Échec du téléchargement de la mise à jour",
-    "updateInstallFailed": "Échec de l'installation de la mise à jour"
+    "updateInstallFailed": "Échec de l'installation de la mise à jour",
+    "channelStable": "Stable",
+    "channelPrerelease": "Pré-version"
   },
   "statusBar": {
     "ready": "Prêt",
