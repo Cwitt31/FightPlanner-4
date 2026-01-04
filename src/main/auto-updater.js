@@ -92,6 +92,11 @@ class AutoUpdater {
 
     try {
       const result = await autoUpdater.checkForUpdates()
+      if (result && result.updateInfo) {
+        this.updateInfo = result.updateInfo
+      } else if (!this.updateInfo || !this.updateInfo.version.includes('simulator')) {
+        this.updateInfo = null
+      }
       return { success: true, updateInfo: result?.updateInfo }
     } catch (error) {
       return { success: false, error: error.message }
@@ -125,8 +130,10 @@ class AutoUpdater {
         return { success: true }
       }
 
+      if (!this.updateInfo) {
+        return { success: false, error: 'Please check for updates first' }
+      }
 
-      
       this.isDownloading = true
       await autoUpdater.downloadUpdate()
       return { success: true }
