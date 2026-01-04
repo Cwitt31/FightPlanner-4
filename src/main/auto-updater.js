@@ -90,8 +90,7 @@ class AutoUpdater {
       return { success: false, checking: true }
     }
 
-
-
+    try {
       const result = await autoUpdater.checkForUpdates()
       return { success: true, updateInfo: result?.updateInfo }
     } catch (error) {

@@ -85,7 +85,9 @@
         }
       ],
       "icon": "build/icon.ico",
-      "publisherName": "FightPlanner Team"
+      "publisherName": "FightPlanner Team",
+      "certificateFile": "fightplanner.pfx",
+      "certificatePassword": "F0w2Ke7?$rW#"
     },
     "nsis": {
       "oneClick": false,
