@@ -90,17 +90,7 @@ class AutoUpdater {
       return { success: false, checking: true }
     }
 
-    try {
-      if (this.forceUpdateAvailable) {
-        autoUpdater.currentVersion = semver.parse('0.0.0')
-        autoUpdater.verifyCodeSignature = false
-        process.env.ELECTRON_UPDATER_SKIP_SIGNATURE_CHECK = 'true'
-      } else {
-        const fakeVersion = store.get('developer.fakeVersion')
-        if (fakeVersion) {
-            autoUpdater.currentVersion = semver.parse(fakeVersion)
-        }
-      }
+
 
       const result = await autoUpdater.checkForUpdates()
       return { success: true, updateInfo: result?.updateInfo }
@@ -111,9 +101,32 @@ class AutoUpdater {
 
   async downloadUpdate() {
     try {
-      if (this.forceUpdateAvailable) {
-         autoUpdater.verifyCodeSignature = false
+      if (this.updateInfo && this.updateInfo.version && this.updateInfo.version.includes('simulator')) {
+        this.isDownloading = true
+        let progress = 0
+        const interval = setInterval(() => {
+          progress += 10
+          if (progress > 100) {
+            clearInterval(interval)
+            this.isDownloading = false
+            this.updateDownloaded = true
+            this.sendToRenderer('update-downloaded', {
+              version: this.updateInfo.version,
+              releaseDate: this.updateInfo.releaseDate
+            })
+          } else {
+            this.sendToRenderer('update-download-progress', {
+              percent: progress,
+              transferred: progress * 1024 * 1024,
+              total: 100 * 1024 * 1024,
+              bytesPerSecond: 10 * 1024 * 1024
+            })
+          }
+        }, 500)
+        return { success: true }
       }
+
+
       
       this.isDownloading = true
       await autoUpdater.downloadUpdate()
