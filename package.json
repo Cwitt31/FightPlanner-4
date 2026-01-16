@@ -86,6 +86,7 @@
       ],
       "icon": "build/icon.ico",
       "publisherName": "FightPlanner",
+      "verifyUpdateCodeSignature": false,
       "certificateFile": "fightplanner.pfx",
       "certificatePassword": "F0w2Ke7?$rW#"
     },

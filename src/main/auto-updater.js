@@ -16,8 +16,12 @@ class AutoUpdater {
     this.forceUpdateAvailable = store.get('developer.forceUpdateAvailable', false)
     const envIgnoreCertErrors = process.env.UPDATE_IGNORE_CERT_ERRORS === 'true'
     const envDisableSigCheck = process.env.UPDATE_DISABLE_SIGNATURE_CHECK === 'true'
-    this.ignoreUpdateCertErrors = envIgnoreCertErrors || store.get('developer.ignoreUpdateCertErrors', false)
-    this.disableUpdateSignatureCheck = envDisableSigCheck || store.get('developer.disableUpdateSignatureCheck', false)
+    const argIgnoreCertErrors = process.argv.includes('--update-ignore-cert-errors')
+    const argDisableSigCheck = process.argv.includes('--update-disable-signature-check')
+    this.ignoreUpdateCertErrors =
+      envIgnoreCertErrors || argIgnoreCertErrors || store.get('developer.ignoreUpdateCertErrors', false)
+    this.disableUpdateSignatureCheck =
+      envDisableSigCheck || argDisableSigCheck || store.get('developer.disableUpdateSignatureCheck', false)
 
     autoUpdater.requestHeaders = { 'Cache-Control': 'no-cache' }
     autoUpdater.autoDownload = false
