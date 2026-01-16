@@ -14,10 +14,25 @@ class AutoUpdater {
     this.autoCheckEnabled = true
     this.updateChannel = store.get('updateChannel', 'stable')
     this.forceUpdateAvailable = store.get('developer.forceUpdateAvailable', false)
+    const envIgnoreCertErrors = process.env.UPDATE_IGNORE_CERT_ERRORS === 'true'
+    const envDisableSigCheck = process.env.UPDATE_DISABLE_SIGNATURE_CHECK === 'true'
+    this.ignoreUpdateCertErrors = envIgnoreCertErrors || store.get('developer.ignoreUpdateCertErrors', false)
+    this.disableUpdateSignatureCheck = envDisableSigCheck || store.get('developer.disableUpdateSignatureCheck', false)
 
     autoUpdater.requestHeaders = { 'Cache-Control': 'no-cache' }
     autoUpdater.autoDownload = false
     autoUpdater.autoInstallOnAppQuit = true
+    autoUpdater.verifyCodeSignature = false
+    if (this.disableUpdateSignatureCheck) {
+      if ('verifyUpdateCodeSignature' in autoUpdater) {
+        autoUpdater.verifyUpdateCodeSignature = false
+      }
+      process.env.ELECTRON_UPDATER_SKIP_SIGNATURE_CHECK = 'true'
+    }
+    if (this.ignoreUpdateCertErrors) {
+      app.commandLine.appendSwitch('ignore-certificate-errors')
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+    }
 
     this.setUpdateChannel(this.updateChannel)
     this.setupEventHandlers()
@@ -89,6 +104,9 @@ class AutoUpdater {
     if (this.isChecking) {
       return { success: false, checking: true }
     }
+    if (!app.isPackaged) {
+      return { success: false, error: 'Updates are only available in packaged builds' }
+    }
 
     try {
       const result = await autoUpdater.checkForUpdates()
@@ -149,7 +167,9 @@ class AutoUpdater {
 
   checkForUpdatesOnStartup() {
     setTimeout(async () => {
-      await this.checkForUpdates()
+      if (this.autoCheckEnabled) {
+        await this.checkForUpdates()
+      }
     }, 5000)
   }
 
@@ -183,6 +203,24 @@ class AutoUpdater {
 
   getForceUpdateAvailable() {
     return this.forceUpdateAvailable
+  }
+
+  setIgnoreUpdateCertErrors(value) {
+    this.ignoreUpdateCertErrors = value
+    store.set('developer.ignoreUpdateCertErrors', value)
+  }
+
+  getIgnoreUpdateCertErrors() {
+    return this.ignoreUpdateCertErrors
+  }
+
+  setDisableUpdateSignatureCheck(value) {
+    this.disableUpdateSignatureCheck = value
+    store.set('developer.disableUpdateSignatureCheck', value)
+  }
+
+  getDisableUpdateSignatureCheck() {
+    return this.disableUpdateSignatureCheck
   }
 
   simulateUpdate() {
