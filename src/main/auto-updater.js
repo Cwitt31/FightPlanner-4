@@ -123,6 +123,13 @@ class AutoUpdater {
 
   async downloadUpdate() {
     try {
+      if (!this.updateInfo) {
+        const checkResult = await this.checkForUpdates()
+        if (!checkResult.success) {
+          return checkResult
+        }
+      }
+
       if (this.updateInfo && this.updateInfo.version && this.updateInfo.version.includes('simulator')) {
         this.isDownloading = true
         let progress = 0
@@ -149,7 +156,7 @@ class AutoUpdater {
       }
 
       if (!this.updateInfo) {
-        return { success: false, error: 'Please check for updates first' }
+        return { success: false, error: 'No update available' }
       }
 
       this.isDownloading = true
