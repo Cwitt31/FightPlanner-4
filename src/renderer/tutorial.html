@@ -15,33 +15,30 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: transparent; /* TRANSPARENT - on voit le bureau */
+            background: transparent;
             overflow: hidden;
             height: 100vh;
             width: 100vw;
             position: relative;
         }
 
-        /* Main window - starts TRANSPARENT, becomes WHITE when animation triggers */
         .tutorial-window {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: transparent; /* TRANSPARENT au début */
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 1.2s ease; /* Transition plus douce */
+            transition: background 1.2s ease;
         }
 
-        /* When animation reaches 2.33s, background becomes white */
         .tutorial-window.white-bg {
             background: #ffffff;
         }
 
-        /* Lottie animation container */
         #lottie-animation {
             position: absolute;
             width: 100%;
@@ -53,7 +50,6 @@
             transition: opacity 0.5s ease;
         }
 
-        /* Welcome text */
         .welcome-text {
             position: absolute;
             top: 50%;
@@ -90,10 +86,9 @@
             margin: 0;
         }
 
-        /* Screenshot preview - BRUT sans effet, commence EN BAS */
         .screenshot-preview {
             position: absolute;
-            top: 100%; /* Commence en bas, hors écran */
+            top: 100%;
             left: 50%;
             transform: translate(-50%, 0);
             width: 94%;
@@ -108,22 +103,21 @@
         }
 
         .screenshot-preview.slide-up {
-            top: 18%; /* Monte vers le haut */
+            top: 18%;
         }
 
         .screenshot-preview img {
             width: 100%;
             height: auto;
             display: block;
-            filter: blur(12px); /* FLOU au début */
-            transition: filter 1.5s cubic-bezier(0.16, 1, 0.3, 1); /* Même durée et easing que le slide */
+            filter: blur(12px);
+            transition: filter 1.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .screenshot-preview.clear img {
-            filter: blur(0); /* Devient net pendant le slide */
+            filter: blur(0);
         }
 
-        /* Tutorial container with steps - MODERN GLASS */
         .tutorial-container {
             position: absolute;
             top: 50%;
@@ -153,7 +147,6 @@
             transform: translate(-50%, -50%) scale(1);
         }
 
-        /* Close button */
         .tutorial-close {
             position: absolute;
             top: 24px;
@@ -179,7 +172,6 @@
             transform: rotate(90deg);
         }
 
-        /* Progress dots - MODERN */
         .tutorial-progress {
             display: flex;
             gap: 10px;
@@ -216,7 +208,6 @@
             box-shadow: 0 0 8px rgba(122, 155, 255, 0.4);
         }
 
-        /* Tutorial content */
         .tutorial-content {
             flex: 1;
             overflow-y: auto;
@@ -309,7 +300,6 @@
             line-height: 1.7;
         }
 
-        /* Navigation buttons - REFINED */
         .tutorial-navigation {
             padding: 24px 32px;
             background: rgba(0, 0, 0, 0.2);
@@ -379,7 +369,6 @@
             transform: translateY(-1px);
         }
 
-        /* Discord link styling */
         a[href*="discord.gg"] {
             color: #7a9bff !important;
             text-decoration: none !important;
@@ -398,32 +387,26 @@
 </head>
 <body>
     <div class="tutorial-window">
-        <!-- Lottie animation (background) -->
         <div id="lottie-animation"></div>
 
-        <!-- Welcome text (appears after bubble expands to white) -->
         <div class="welcome-text" id="welcome-text">
             <h1 data-i18n="tutorial.welcomeTitle">Welcome to FightPlanner 4</h1>
             <p data-i18n="tutorial.welcomeSubtitle">Your Ultimate Mod Manager</p>
         </div>
 
-        <!-- Screenshot preview (appears after welcome moves up) -->
         <div class="screenshot-preview" id="screenshot-preview">
             <img src="../assets/images/app-screenshot.png" alt="FightPlanner Interface" id="screenshot-img">
         </div>
 
-        <!-- Tutorial container with steps -->
         <div class="tutorial-container" id="tutorial-container">
             <button class="tutorial-close" id="close-btn">
                 <i class="bi bi-x-lg"></i>
             </button>
 
             <div class="tutorial-progress" id="progress-dots">
-                <!-- Progress dots will be injected here -->
             </div>
 
             <div class="tutorial-content" id="tutorial-content">
-                <!-- Step content will be injected here -->
             </div>
 
             <div class="tutorial-navigation">
