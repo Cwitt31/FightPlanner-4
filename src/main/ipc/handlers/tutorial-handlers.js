@@ -1,10 +1,20 @@
 const { BrowserWindow, ipcMain, dialog } = require('electron');
-const { createTutorialWindow, closeTutorialWindow } = require('../../tutorial-window');
-const { handleError, createErrorResponse, ErrorCodes } = require('../../utils/error-handler');
+const {
+  createTutorialWindow,
+  closeTutorialWindow,
+} = require('../../tutorial-window');
+const {
+  handleError,
+  createErrorResponse,
+  ErrorCodes,
+} = require('../../utils/error-handler');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
-const { detectWindowsDrives, isSwitchSdCard } = require('../../utils/drive-detector');
+const {
+  detectWindowsDrives,
+  isSwitchSdCard,
+} = require('../../utils/drive-detector');
 const {
   getLatestArcropolisRelease,
   getLatestSkylineRelease,
@@ -13,7 +23,7 @@ const {
   extractAndInstallSkyline,
   checkArcropolisInstalled,
   checkArcropolisFolder,
-  createDirectory
+  createDirectory,
 } = require('../../utils/arcropolis-installer');
 
 function registerTutorialHandlers(ipcMain) {
@@ -25,7 +35,10 @@ function registerTutorialHandlers(ipcMain) {
       return { success: true };
     } catch (error) {
       handleError(error, 'open-tutorial-window');
-      return createErrorResponse(ErrorCodes.TUTORIAL_WINDOW_ERROR, error.message);
+      return createErrorResponse(
+        ErrorCodes.TUTORIAL_WINDOW_ERROR,
+        error.message,
+      );
     }
   });
 
@@ -54,11 +67,11 @@ function registerTutorialHandlers(ipcMain) {
     try {
       const homeDir = os.homedir();
       const yuzuPath = path.join(homeDir, 'AppData', 'Roaming', 'yuzu');
-      
+
       if (fs.existsSync(yuzuPath)) {
         return { success: true, path: yuzuPath };
       }
-      
+
       return { success: false, path: null };
     } catch (error) {
       handleError(error, 'detect-yuzu-path');
@@ -70,11 +83,11 @@ function registerTutorialHandlers(ipcMain) {
     try {
       const homeDir = os.homedir();
       const ryujinxPath = path.join(homeDir, 'AppData', 'Roaming', 'Ryujinx');
-      
+
       if (fs.existsSync(ryujinxPath)) {
         return { success: true, path: ryujinxPath };
       }
-      
+
       return { success: false, path: null };
     } catch (error) {
       handleError(error, 'detect-ryujinx-path');
@@ -82,20 +95,23 @@ function registerTutorialHandlers(ipcMain) {
     }
   });
 
-  ipcMain.handle('get-github-release', async (event, repo = 'Raytwo/ARCropolis') => {
-    try {
-      let release;
-      if (repo === 'skyline-dev/skyline') {
-        release = await getLatestSkylineRelease();
-      } else {
-        release = await getLatestArcropolisRelease();
+  ipcMain.handle(
+    'get-github-release',
+    async (event, repo = 'Raytwo/ARCropolis') => {
+      try {
+        let release;
+        if (repo === 'skyline-dev/skyline') {
+          release = await getLatestSkylineRelease();
+        } else {
+          release = await getLatestArcropolisRelease();
+        }
+        return { success: true, ...release };
+      } catch (error) {
+        handleError(error, 'get-github-release');
+        return createErrorResponse(ErrorCodes.UNKNOWN_ERROR, error.message);
       }
-      return { success: true, ...release };
-    } catch (error) {
-      handleError(error, 'get-github-release');
-      return createErrorResponse(ErrorCodes.UNKNOWN_ERROR, error.message);
-    }
-  });
+    },
+  );
 
   ipcMain.handle('get-skyline-release', async () => {
     try {
@@ -117,15 +133,21 @@ function registerTutorialHandlers(ipcMain) {
     }
   });
 
-  ipcMain.handle('download-arcropolis', async (event, downloadUrl, targetPath) => {
-    try {
-      const downloadedPath = await downloadArcropolis(downloadUrl, targetPath);
-      return { success: true, path: downloadedPath };
-    } catch (error) {
-      handleError(error, 'download-arcropolis');
-      return createErrorResponse(ErrorCodes.UNKNOWN_ERROR, error.message);
-    }
-  });
+  ipcMain.handle(
+    'download-arcropolis',
+    async (event, downloadUrl, targetPath) => {
+      try {
+        const downloadedPath = await downloadArcropolis(
+          downloadUrl,
+          targetPath,
+        );
+        return { success: true, path: downloadedPath };
+      } catch (error) {
+        handleError(error, 'download-arcropolis');
+        return createErrorResponse(ErrorCodes.UNKNOWN_ERROR, error.message);
+      }
+    },
+  );
 
   ipcMain.handle('extract-arcropolis', async (event, zipPath, targetDir) => {
     try {
@@ -191,25 +213,25 @@ function registerTutorialHandlers(ipcMain) {
     try {
       const win = BrowserWindow.fromWebContents(event.sender);
       const drives = await detectWindowsDrives();
-      
+
       // Show custom dialog or use file picker
       const result = await dialog.showOpenDialog(win, {
         title: 'Select SD Card Drive',
         properties: ['openDirectory'],
-        message: 'Please select your Nintendo Switch SD card drive'
+        message: 'Please select your Nintendo Switch SD card drive',
       });
-      
+
       if (result.canceled || result.filePaths.length === 0) {
         return { success: false, canceled: true };
       }
-      
+
       const selectedPath = result.filePaths[0];
       const isSwitch = isSwitchSdCard(selectedPath);
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         path: selectedPath,
-        isSwitchCard: isSwitch
+        isSwitchCard: isSwitch,
       };
     } catch (error) {
       handleError(error, 'select-drive');
@@ -219,7 +241,3 @@ function registerTutorialHandlers(ipcMain) {
 }
 
 module.exports = { registerTutorialHandlers };
-
-
-
-

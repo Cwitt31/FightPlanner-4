@@ -1,13 +1,19 @@
 const { ipcMain } = require('electron');
 const store = require('../../store');
-const { createErrorResponse, ErrorCodes } = require('../../utils/error-handler');
+const {
+  createErrorResponse,
+  ErrorCodes,
+} = require('../../utils/error-handler');
 
 function registerStoreHandlers(ipcMain) {
   ipcMain.handle('store-get', (event, key) => {
     try {
       return store.get(key);
     } catch (error) {
-      return createErrorResponse(ErrorCodes.STORE_OPERATION_ERROR, error.message);
+      return createErrorResponse(
+        ErrorCodes.STORE_OPERATION_ERROR,
+        error.message,
+      );
     }
   });
 
@@ -16,7 +22,10 @@ function registerStoreHandlers(ipcMain) {
       store.set(key, value);
       return { success: true };
     } catch (error) {
-      return createErrorResponse(ErrorCodes.STORE_OPERATION_ERROR, error.message);
+      return createErrorResponse(
+        ErrorCodes.STORE_OPERATION_ERROR,
+        error.message,
+      );
     }
   });
 
@@ -25,7 +34,10 @@ function registerStoreHandlers(ipcMain) {
       store.delete(key);
       return { success: true };
     } catch (error) {
-      return createErrorResponse(ErrorCodes.STORE_OPERATION_ERROR, error.message);
+      return createErrorResponse(
+        ErrorCodes.STORE_OPERATION_ERROR,
+        error.message,
+      );
     }
   });
 
@@ -34,27 +46,12 @@ function registerStoreHandlers(ipcMain) {
       store.clear();
       return { success: true };
     } catch (error) {
-      return createErrorResponse(ErrorCodes.STORE_OPERATION_ERROR, error.message);
+      return createErrorResponse(
+        ErrorCodes.STORE_OPERATION_ERROR,
+        error.message,
+      );
     }
   });
 }
 
 module.exports = { registerStoreHandlers };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

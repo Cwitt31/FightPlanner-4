@@ -11,13 +11,13 @@ class ModListRenderer {
         entries.forEach((entry) => {
           const modItem = entry.target;
 
-          if (modItem.dataset.processed === "true") {
+          if (modItem.dataset.processed === 'true') {
             return;
           }
 
           if (entry.isIntersecting) {
-            modItem.classList.add("mod-item-visible");
-            modItem.dataset.processed = "true";
+            modItem.classList.add('mod-item-visible');
+            modItem.dataset.processed = 'true';
 
             this.intersectionObserver.unobserve(modItem);
           }
@@ -26,8 +26,8 @@ class ModListRenderer {
       {
         root: null,
         threshold: 0.01,
-        rootMargin: "100px",
-      }
+        rootMargin: '100px',
+      },
     );
   }
 
@@ -35,11 +35,11 @@ class ModListRenderer {
     if (!this.modManager || !this.modManager.modListContainer) return;
 
     const allModItems =
-      this.modManager.modListContainer.querySelectorAll(".mod-item");
+      this.modManager.modListContainer.querySelectorAll('.mod-item');
     allModItems.forEach((modItem) => {
-      if (modItem.dataset.processed !== "true") {
-        modItem.classList.add("mod-item-instant");
-        modItem.dataset.processed = "true";
+      if (modItem.dataset.processed !== 'true') {
+        modItem.classList.add('mod-item-instant');
+        modItem.dataset.processed = 'true';
         if (this.intersectionObserver) {
           this.intersectionObserver.unobserve(modItem);
         }
@@ -48,34 +48,34 @@ class ModListRenderer {
   }
 
   renderModItem(mod, index) {
-    const modItem = document.createElement("div");
-    modItem.classList.add("mod-item");
+    const modItem = document.createElement('div');
+    modItem.classList.add('mod-item');
     modItem.dataset.modId = mod.id;
 
-    modItem.dataset.processed = "false";
+    modItem.dataset.processed = 'false';
 
     // Set CSS variable for staggered animation
-    modItem.style.setProperty("--mod-index", index);
+    modItem.style.setProperty('--mod-index', index);
 
     if (mod.status) {
-      modItem.classList.add("mod-" + mod.status);
+      modItem.classList.add('mod-' + mod.status);
     }
 
-    const statusIcon = document.createElement("div");
-    statusIcon.classList.add("mod-status-icon");
+    const statusIcon = document.createElement('div');
+    statusIcon.classList.add('mod-status-icon');
 
-    let svgHTML = "";
-    if (mod.status === "conflict") {
+    let svgHTML = '';
+    if (mod.status === 'conflict') {
       svgHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
 <circle cx="10" cy="10" r="9" fill="#FFC107" stroke="#FFA000" stroke-width="2"/>
 <path d="M10 6V11M10 14H10.01" stroke="white" stroke-width="2" stroke-linecap="round"/>
 </svg>`;
-    } else if (mod.status === "active") {
+    } else if (mod.status === 'active') {
       svgHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
 <circle cx="10" cy="10" r="9" fill="#4CAF50" stroke="#388E3C" stroke-width="2"/>
 <path d="M6 10L9 13L14 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
-    } else if (mod.status === "disabled") {
+    } else if (mod.status === 'disabled') {
       svgHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
 <circle cx="10" cy="10" r="9" fill="#F44336" stroke="#D32F2F" stroke-width="2"/>
 <path d="M7 7L13 13M13 7L7 13" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -83,15 +83,15 @@ class ModListRenderer {
     }
     statusIcon.innerHTML = svgHTML;
 
-    const modName = document.createElement("span");
-    modName.classList.add("mod-name");
-    modName.textContent = mod.name || "Unknown Mod";
+    const modName = document.createElement('span');
+    modName.classList.add('mod-name');
+    modName.textContent = mod.name || 'Unknown Mod';
 
     modItem.appendChild(statusIcon);
     modItem.appendChild(modName);
 
-    modItem.addEventListener("click", () => this.modManager.selectMod(mod.id));
-    modItem.addEventListener("contextmenu", (e) => {
+    modItem.addEventListener('click', () => this.modManager.selectMod(mod.id));
+    modItem.addEventListener('contextmenu', (e) => {
       if (this.modManager.contextMenuHandler) {
         this.modManager.contextMenuHandler.showContextMenu(e, mod);
       }
@@ -104,23 +104,23 @@ class ModListRenderer {
     return modItem;
   }
 
-  renderModList(mods, container, searchQuery = "", categoryFilter = "") {
+  renderModList(mods, container, searchQuery = '', categoryFilter = '') {
     if (!container) {
-      console.warn("Mod list container not found");
+      console.warn('Mod list container not found');
       return;
     }
 
     const existingProcessedStates = new Map();
-    const existingItems = container.querySelectorAll(".mod-item");
+    const existingItems = container.querySelectorAll('.mod-item');
     existingItems.forEach((item) => {
       const modId = item.dataset.modId;
       const processed = item.dataset.processed;
-      if (modId && processed === "true") {
+      if (modId && processed === 'true') {
         existingProcessedStates.set(modId, true);
       }
     });
 
-    container.innerHTML = "";
+    container.innerHTML = '';
 
     if (mods.length === 0) {
       container.innerHTML =
@@ -132,7 +132,7 @@ class ModListRenderer {
 
     if (searchQuery) {
       filteredMods = filteredMods.filter((mod) =>
-        mod.name.toLowerCase().includes(searchQuery.toLowerCase())
+        mod.name.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
@@ -142,8 +142,8 @@ class ModListRenderer {
         const modCategory = mod.category.toLowerCase();
         const filterCategory = categoryFilter.toLowerCase();
 
-        if (filterCategory === "fighter") {
-          return modCategory === "fighter" || modCategory === "skins";
+        if (filterCategory === 'fighter') {
+          return modCategory === 'fighter' || modCategory === 'skins';
         }
 
         return modCategory === filterCategory;
@@ -160,8 +160,8 @@ class ModListRenderer {
       const modItem = this.renderModItem(mod, index);
 
       if (existingProcessedStates.has(mod.id)) {
-        modItem.dataset.processed = "true";
-        modItem.classList.add("mod-item-instant");
+        modItem.dataset.processed = 'true';
+        modItem.classList.add('mod-item-instant');
       }
 
       container.appendChild(modItem);
@@ -172,10 +172,10 @@ class ModListRenderer {
     }, 150);
   }
 
-  updateVisibility(mods, container, searchQuery = "", categoryFilter = "") {
+  updateVisibility(mods, container, searchQuery = '', categoryFilter = '') {
     if (!container) return;
 
-    const allModItems = container.querySelectorAll(".mod-item");
+    const allModItems = container.querySelectorAll('.mod-item');
 
     if (allModItems.length === 0) {
       return false;
@@ -192,7 +192,7 @@ class ModListRenderer {
       const mod = mods.find((m) => m.id === modId);
 
       if (!mod) {
-        item.style.display = "none";
+        item.style.display = 'none';
         return;
       }
 
@@ -205,32 +205,33 @@ class ModListRenderer {
         const modCategory = mod.category.toLowerCase();
         const filterCategory = categoryFilter.toLowerCase();
 
-        if (filterCategory === "fighter") {
+        if (filterCategory === 'fighter') {
           matchesCategory =
-            modCategory === "fighter" || modCategory === "skins";
+            modCategory === 'fighter' || modCategory === 'skins';
         } else {
           matchesCategory = modCategory === filterCategory;
         }
       }
 
       if (matchesSearch && matchesCategory) {
-        item.style.display = "";
+        item.style.display = '';
         visibleCount++;
 
-        if (item.dataset.processed !== "true" && this.intersectionObserver) {
+        if (item.dataset.processed !== 'true' && this.intersectionObserver) {
           this.intersectionObserver.observe(item);
         }
       } else {
-        item.style.display = "none";
+        item.style.display = 'none';
       }
     });
 
-    const existingMessage = container.querySelector(".no-results-message");
+    const existingMessage = container.querySelector('.no-results-message');
     if (visibleCount === 0 && !existingMessage) {
-      const message = document.createElement("p");
-      message.className = "no-results-message";
-      message.style.cssText = "color: var(--text-muted); text-align: center; padding: 20px;";
-      message.textContent = "No mods found";
+      const message = document.createElement('p');
+      message.className = 'no-results-message';
+      message.style.cssText =
+        'color: var(--text-muted); text-align: center; padding: 20px;';
+      message.textContent = 'No mods found';
       container.appendChild(message);
     } else if (visibleCount > 0 && existingMessage) {
       existingMessage.remove();
@@ -240,6 +241,6 @@ class ModListRenderer {
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.ModListRenderer = ModListRenderer;
 }

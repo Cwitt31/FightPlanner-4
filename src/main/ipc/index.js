@@ -34,4 +34,3 @@ function registerAllHandlers(ipcMain, discordRPC = null) {
 }
 
 module.exports = { registerAllHandlers };
-

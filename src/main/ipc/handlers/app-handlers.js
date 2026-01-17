@@ -7,27 +7,9 @@ function registerAppHandlers(ipcMain) {
       name: app.getName(),
       electronVersion: process.versions.electron,
       nodeVersion: process.versions.node,
-      chromeVersion: process.versions.chrome
+      chromeVersion: process.versions.chrome,
     };
   });
 }
 
 module.exports = { registerAppHandlers };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

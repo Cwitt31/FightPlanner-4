@@ -17,47 +17,51 @@ async function getLatestGitHubRelease(repo) {
       method: 'GET',
       headers: {
         'User-Agent': 'FightPlanner-Installer',
-        'Accept': 'application/vnd.github.v3+json'
-      }
+        Accept: 'application/vnd.github.v3+json',
+      },
     };
 
-    https.get(options, (res) => {
-      let data = '';
+    https
+      .get(options, (res) => {
+        let data = '';
 
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
 
-      res.on('end', () => {
-        if (res.statusCode !== 200) {
-          reject(new Error(`GitHub API returned status ${res.statusCode}`));
-          return;
-        }
-
-        try {
-          const release = JSON.parse(data);
-          const zipAsset = release.assets.find(asset => 
-            asset.name.endsWith('.zip')
-          );
-
-          if (!zipAsset) {
-            reject(new Error('No ZIP file found in release assets'));
+        res.on('end', () => {
+          if (res.statusCode !== 200) {
+            reject(new Error(`GitHub API returned status ${res.statusCode}`));
             return;
           }
 
-          resolve({
-            tag: release.tag_name,
-            version: release.tag_name.replace('v', ''),
-            downloadUrl: zipAsset.browser_download_url,
-            name: zipAsset.name
-          });
-        } catch (error) {
-          reject(new Error(`Failed to parse GitHub response: ${error.message}`));
-        }
+          try {
+            const release = JSON.parse(data);
+            const zipAsset = release.assets.find((asset) =>
+              asset.name.endsWith('.zip'),
+            );
+
+            if (!zipAsset) {
+              reject(new Error('No ZIP file found in release assets'));
+              return;
+            }
+
+            resolve({
+              tag: release.tag_name,
+              version: release.tag_name.replace('v', ''),
+              downloadUrl: zipAsset.browser_download_url,
+              name: zipAsset.name,
+            });
+          } catch (error) {
+            reject(
+              new Error(`Failed to parse GitHub response: ${error.message}`),
+            );
+          }
+        });
+      })
+      .on('error', (error) => {
+        reject(error);
       });
-    }).on('error', (error) => {
-      reject(error);
-    });
   });
 }
 
@@ -84,54 +88,68 @@ async function getLatestSkylineRelease() {
  * @param {Function} progressCallback - Optional progress callback (bytesReceived, totalBytes)
  * @returns {Promise<string>} Path to downloaded file
  */
-async function downloadArcropolis(downloadUrl, targetPath, progressCallback = null) {
+async function downloadArcropolis(
+  downloadUrl,
+  targetPath,
+  progressCallback = null,
+) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(targetPath);
-    
-    https.get(downloadUrl, {
-      headers: {
-        'User-Agent': 'FightPlanner-ARCropolis-Installer'
-      }
-    }, (res) => {
-      // Handle redirects
-      if (res.statusCode === 302 || res.statusCode === 301) {
+
+    https
+      .get(
+        downloadUrl,
+        {
+          headers: {
+            'User-Agent': 'FightPlanner-ARCropolis-Installer',
+          },
+        },
+        (res) => {
+          // Handle redirects
+          if (res.statusCode === 302 || res.statusCode === 301) {
+            file.close();
+            fs.unlinkSync(targetPath);
+            return downloadArcropolis(
+              res.headers.location,
+              targetPath,
+              progressCallback,
+            )
+              .then(resolve)
+              .catch(reject);
+          }
+
+          if (res.statusCode !== 200) {
+            file.close();
+            fs.unlinkSync(targetPath);
+            reject(new Error(`HTTP ${res.statusCode}`));
+            return;
+          }
+
+          const totalBytes = parseInt(res.headers['content-length'] || '0', 10);
+          let receivedBytes = 0;
+
+          res.on('data', (chunk) => {
+            receivedBytes += chunk.length;
+            if (progressCallback) {
+              progressCallback(receivedBytes, totalBytes);
+            }
+          });
+
+          res.pipe(file);
+
+          file.on('finish', () => {
+            file.close();
+            resolve(targetPath);
+          });
+        },
+      )
+      .on('error', (err) => {
         file.close();
-        fs.unlinkSync(targetPath);
-        return downloadArcropolis(res.headers.location, targetPath, progressCallback)
-          .then(resolve)
-          .catch(reject);
-      }
-
-      if (res.statusCode !== 200) {
-        file.close();
-        fs.unlinkSync(targetPath);
-        reject(new Error(`HTTP ${res.statusCode}`));
-        return;
-      }
-
-      const totalBytes = parseInt(res.headers['content-length'] || '0', 10);
-      let receivedBytes = 0;
-
-      res.on('data', (chunk) => {
-        receivedBytes += chunk.length;
-        if (progressCallback) {
-          progressCallback(receivedBytes, totalBytes);
+        if (fs.existsSync(targetPath)) {
+          fs.unlinkSync(targetPath);
         }
+        reject(err);
       });
-
-      res.pipe(file);
-
-      file.on('finish', () => {
-        file.close();
-        resolve(targetPath);
-      });
-    }).on('error', (err) => {
-      file.close();
-      if (fs.existsSync(targetPath)) {
-        fs.unlinkSync(targetPath);
-      }
-      reject(err);
-    });
   });
 }
 
@@ -171,13 +189,13 @@ async function extractAndInstallSkyline(zipPath, targetDir) {
     // Find exefs folder in extracted content
     const findExefsFolder = (dir, depth = 0, maxDepth = 5) => {
       if (depth > maxDepth) return null;
-      
+
       try {
         const entries = fs.readdirSync(dir, { withFileTypes: true });
-        
+
         for (const entry of entries) {
           const fullPath = path.join(dir, entry.name);
-          
+
           if (entry.isDirectory() && entry.name.toLowerCase() === 'exefs') {
             try {
               const exefsContents = fs.readdirSync(fullPath);
@@ -188,7 +206,7 @@ async function extractAndInstallSkyline(zipPath, targetDir) {
               // Continue searching
             }
           }
-          
+
           if (entry.isDirectory()) {
             const skipDirs = ['__macosx', '.ds_store', 'romfs'];
             if (!skipDirs.includes(entry.name.toLowerCase())) {
@@ -200,20 +218,26 @@ async function extractAndInstallSkyline(zipPath, targetDir) {
       } catch (error) {
         console.warn(`Error searching in ${dir}:`, error.message);
       }
-      
+
       return null;
     };
 
     let exefsSource = findExefsFolder(tempDir);
-    
+
     // Try common paths
     if (!exefsSource) {
       const commonPaths = [
         path.join(tempDir, 'exefs'),
         path.join(tempDir, 'skyline', 'exefs'),
-        path.join(tempDir, 'atmosphere', 'contents', '01006A800016E000', 'exefs'),
+        path.join(
+          tempDir,
+          'atmosphere',
+          'contents',
+          '01006A800016E000',
+          'exefs',
+        ),
       ];
-      
+
       for (const commonPath of commonPaths) {
         if (fs.existsSync(commonPath)) {
           try {
@@ -228,7 +252,7 @@ async function extractAndInstallSkyline(zipPath, targetDir) {
         }
       }
     }
-    
+
     if (!exefsSource) {
       throw new Error('exefs folder not found in Skyline release');
     }
@@ -239,7 +263,7 @@ async function extractAndInstallSkyline(zipPath, targetDir) {
     }
 
     const exefsTarget = path.join(targetDir, 'exefs');
-    
+
     // Copy exefs folder contents
     const copyRecursive = (src, dest) => {
       if (!fs.existsSync(dest)) {
@@ -280,7 +304,7 @@ async function extractAndInstallSkyline(zipPath, targetDir) {
 
     return {
       success: true,
-      exefsPath: exefsTarget
+      exefsPath: exefsTarget,
     };
   } catch (error) {
     throw new Error(`Failed to extract and install Skyline: ${error.message}`);
@@ -324,13 +348,13 @@ async function extractAndInstallArcropolis(zipPath, targetDir) {
     // Find romfs folder in extracted content - ARCropolis provides romfs
     const findRomfsFolder = (dir, depth = 0, maxDepth = 5) => {
       if (depth > maxDepth) return null;
-      
+
       try {
         const entries = fs.readdirSync(dir, { withFileTypes: true });
-        
+
         for (const entry of entries) {
           const fullPath = path.join(dir, entry.name);
-          
+
           // Check if this is the romfs folder
           if (entry.isDirectory() && entry.name.toLowerCase() === 'romfs') {
             // Verify it contains files (not empty)
@@ -343,7 +367,7 @@ async function extractAndInstallArcropolis(zipPath, targetDir) {
               // Continue searching
             }
           }
-          
+
           // Recursively search subdirectories
           if (entry.isDirectory()) {
             // Skip common non-relevant directories
@@ -357,21 +381,27 @@ async function extractAndInstallArcropolis(zipPath, targetDir) {
       } catch (error) {
         console.warn(`Error searching in ${dir}:`, error.message);
       }
-      
+
       return null;
     };
 
     let romfsSource = findRomfsFolder(tempDir);
-    
+
     // Try common ARCropolis folder structures
     if (!romfsSource) {
       const commonPaths = [
         path.join(tempDir, 'romfs'),
         path.join(tempDir, 'ARCropolis', 'romfs'),
-        path.join(tempDir, 'atmosphere', 'contents', '01006A800016E000', 'romfs'),
+        path.join(
+          tempDir,
+          'atmosphere',
+          'contents',
+          '01006A800016E000',
+          'romfs',
+        ),
         path.join(tempDir, '01006A800016E000', 'romfs'),
       ];
-      
+
       for (const commonPath of commonPaths) {
         if (fs.existsSync(commonPath)) {
           try {
@@ -386,15 +416,19 @@ async function extractAndInstallArcropolis(zipPath, targetDir) {
         }
       }
     }
-    
+
     if (!romfsSource) {
       // Log directory structure for debugging
       console.error('ARCropolis extraction failed - directory structure:');
       const logDirStructure = (dir, indent = '') => {
         try {
-          const entries = fs.readdirSync(dir, { withFileTypes: true });
-          entries.forEach(entry => {
-            console.error(`${indent}${entry.isDirectory() ? '📁' : '📄'} ${entry.name}`);
+          const entries = fs.readdirSync(dir, {
+            withFileTypes: true,
+          });
+          entries.forEach((entry) => {
+            console.error(
+              `${indent}${entry.isDirectory() ? '📁' : '📄'} ${entry.name}`,
+            );
             if (entry.isDirectory() && indent.length < 20) {
               logDirStructure(path.join(dir, entry.name), indent + '  ');
             }
@@ -404,8 +438,10 @@ async function extractAndInstallArcropolis(zipPath, targetDir) {
         }
       };
       logDirStructure(tempDir);
-      
-      throw new Error('romfs folder not found in ARCropolis release. Please check the release structure.');
+
+      throw new Error(
+        'romfs folder not found in ARCropolis release. Please check the release structure.',
+      );
     }
 
     // Ensure target directory exists
@@ -414,7 +450,7 @@ async function extractAndInstallArcropolis(zipPath, targetDir) {
     }
 
     const romfsTarget = path.join(targetDir, 'romfs');
-    
+
     // Copy romfs folder contents
     const copyRecursive = (src, dest) => {
       if (!fs.existsSync(dest)) {
@@ -455,10 +491,12 @@ async function extractAndInstallArcropolis(zipPath, targetDir) {
 
     return {
       success: true,
-      romfsPath: romfsTarget
+      romfsPath: romfsTarget,
     };
   } catch (error) {
-    throw new Error(`Failed to extract and install ARCropolis: ${error.message}`);
+    throw new Error(
+      `Failed to extract and install ARCropolis: ${error.message}`,
+    );
   }
 }
 
@@ -471,11 +509,13 @@ function checkArcropolisInstalled(targetDir) {
   try {
     const exefsPath = path.join(targetDir, 'exefs');
     const romfsPath = path.join(targetDir, 'romfs');
-    
+
     // Both exefs (Skyline) and romfs (ARCropolis) should exist
-    const hasExefs = fs.existsSync(exefsPath) && fs.readdirSync(exefsPath).length > 0;
-    const hasRomfs = fs.existsSync(romfsPath) && fs.readdirSync(romfsPath).length > 0;
-    
+    const hasExefs =
+      fs.existsSync(exefsPath) && fs.readdirSync(exefsPath).length > 0;
+    const hasRomfs =
+      fs.existsSync(romfsPath) && fs.readdirSync(romfsPath).length > 0;
+
     return hasExefs && hasRomfs;
   } catch (error) {
     return false;
@@ -490,7 +530,9 @@ function checkArcropolisInstalled(targetDir) {
 function checkArcropolisFolder(ultimatePath) {
   try {
     const arcropolisPath = path.join(ultimatePath, 'arcropolis');
-    return fs.existsSync(arcropolisPath) && fs.statSync(arcropolisPath).isDirectory();
+    return (
+      fs.existsSync(arcropolisPath) && fs.statSync(arcropolisPath).isDirectory()
+    );
   } catch (error) {
     return false;
   }
@@ -520,6 +562,5 @@ module.exports = {
   extractAndInstallSkyline,
   checkArcropolisInstalled,
   checkArcropolisFolder,
-  createDirectory
+  createDirectory,
 };
-

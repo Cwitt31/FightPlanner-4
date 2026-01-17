@@ -3,7 +3,7 @@ const { ipcMain } = require('electron');
 function registerDiscordHandlers(ipcMain, discordRPC) {
   ipcMain.on('discord-rpc-update', (event, data) => {
     console.log('Received discord-rpc-update:', data);
-    
+
     if (!discordRPC) {
       console.warn('Discord RPC manager not initialized');
       return;
@@ -45,21 +45,3 @@ function registerDiscordHandlers(ipcMain, discordRPC) {
 }
 
 module.exports = { registerDiscordHandlers };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

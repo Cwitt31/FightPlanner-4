@@ -10,7 +10,7 @@ class DiscordRPCManager {
       tab: 'Idle',
       details: 'In menus',
       state: null,
-      modCount: 0
+      modCount: 0,
     };
   }
 
@@ -38,7 +38,9 @@ class DiscordRPCManager {
       await this.client.login({ clientId: this.clientId });
     } catch (error) {
       console.error('❌ Failed to connect to Discord RPC:', error.message);
-      console.error('Make sure Discord is running and you have a valid Client ID');
+      console.error(
+        'Make sure Discord is running and you have a valid Client ID',
+      );
       this.connected = false;
     }
   }
@@ -61,7 +63,7 @@ class DiscordRPCManager {
     if (details !== null) this.currentActivity.details = details;
     if (state !== null) this.currentActivity.state = state;
     if (modCount !== null) this.currentActivity.modCount = modCount;
-    
+
     this.updatePresence();
   }
 
@@ -89,10 +91,13 @@ class DiscordRPCManager {
     }
   }
 
-
-
   setModsTab(modCount = 0) {
-    this.setActivity('Mods', 'Managing mods', `${modCount} mods installed`, modCount);
+    this.setActivity(
+      'Mods',
+      'Managing mods',
+      `${modCount} mods installed`,
+      modCount,
+    );
   }
 
   setPluginsTab() {

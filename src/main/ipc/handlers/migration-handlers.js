@@ -1,6 +1,10 @@
 const { ipcMain } = require('electron');
 const { getMigrationStatus } = require('../../migration');
-const { handleError, createErrorResponse, ErrorCodes } = require('../../utils/error-handler');
+const {
+  handleError,
+  createErrorResponse,
+  ErrorCodes,
+} = require('../../utils/error-handler');
 
 function registerMigrationHandlers(ipcMain) {
   ipcMain.handle('get-migration-status', async () => {
@@ -15,21 +19,3 @@ function registerMigrationHandlers(ipcMain) {
 }
 
 module.exports = { registerMigrationHandlers };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,602 +1,980 @@
 <!-- Settings Tab Content -->
 <div class="settings-container">
-    <!-- Settings Tabs -->
-    <div class="settings-sidebar">
-        <button class="settings-tab-btn active" data-settings-tab="general"
-            data-i18n="settings.general">General</button>
-        <button class="settings-tab-btn" data-settings-tab="mods" data-i18n="settings.paths">Paths</button>
-        <button class="settings-tab-btn" data-settings-tab="customization"
-            data-i18n="settings.customization">Customization</button>
-        <button class="settings-tab-btn" data-settings-tab="advanced" data-i18n="settings.advanced">Advanced</button>
-        <button class="settings-tab-btn" data-settings-tab="logs" data-i18n="settings.logs">Logs</button>
-        <button class="settings-tab-btn" data-settings-tab="developer" id="settings-tab-developer"
-            style="display: none;" data-i18n="settings.developer">Developer</button>
+  <!-- Settings Tabs -->
+  <div class="settings-sidebar">
+    <button
+      class="settings-tab-btn active"
+      data-settings-tab="general"
+      data-i18n="settings.general"
+    >
+      General
+    </button>
+    <button
+      class="settings-tab-btn"
+      data-settings-tab="mods"
+      data-i18n="settings.paths"
+    >
+      Paths
+    </button>
+    <button
+      class="settings-tab-btn"
+      data-settings-tab="customization"
+      data-i18n="settings.customization"
+    >
+      Customization
+    </button>
+    <button
+      class="settings-tab-btn"
+      data-settings-tab="advanced"
+      data-i18n="settings.advanced"
+    >
+      Advanced
+    </button>
+    <button
+      class="settings-tab-btn"
+      data-settings-tab="logs"
+      data-i18n="settings.logs"
+    >
+      Logs
+    </button>
+    <button
+      class="settings-tab-btn"
+      data-settings-tab="developer"
+      id="settings-tab-developer"
+      style="display: none"
+      data-i18n="settings.developer"
+    >
+      Developer
+    </button>
+  </div>
+
+  <!-- Settings Content -->
+  <div class="settings-content-area">
+    <!-- General Settings -->
+    <div class="settings-tab-content active" id="settings-general">
+      <h2 class="settings-title" data-i18n="settings.title">
+        General Settings
+      </h2>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.language"
+          >Language</label
+        >
+        <div class="custom-select" id="language-type-select">
+          <div class="custom-select-trigger">
+            <span class="selected-value">English</span>
+            <i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="custom-select-dropdown">
+            <div class="custom-select-option active" data-value="en">
+              <span>English</span>
+            </div>
+            <div class="custom-select-option" data-value="fr">
+              <span>Français</span>
+            </div>
+          </div>
+        </div>
+        <p class="settings-hint" data-i18n="settings.languageHint">
+          Select your preferred language for the application
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.theme">Theme</label>
+        <div class="custom-select" id="theme-select">
+          <div class="custom-select-trigger">
+            <span class="selected-value" data-i18n="settings.themeDark"
+              >Dark</span
+            >
+            <i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="custom-select-dropdown">
+            <div class="custom-select-option active" data-value="dark">
+              <span data-i18n="settings.themeDark">Dark</span>
+            </div>
+            <div class="custom-select-option" data-value="light">
+              <span data-i18n="settings.themeLight">Light</span>
+            </div>
+          </div>
+        </div>
+        <p class="settings-hint" data-i18n="settings.themeHint">
+          Select your preferred visual theme
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.animations"
+          >Animations</label
+        >
+        <div class="animation-selector" id="animation-preference">
+          <div class="animation-option" data-value="full">
+            <div class="animation-option-icon">
+              <i class="bi bi-stars"></i>
+            </div>
+            <div class="animation-option-content">
+              <span
+                class="animation-option-title"
+                data-i18n="settings.fullAnimations"
+                >Full Animations</span
+              >
+              <span
+                class="animation-option-desc"
+                data-i18n="settings.fullAnimationsDesc"
+                >All effects enabled</span
+              >
+            </div>
+            <div class="animation-option-check">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+          </div>
+          <div class="animation-option" data-value="reduced">
+            <div class="animation-option-icon">
+              <i class="bi bi-dash-circle"></i>
+            </div>
+            <div class="animation-option-content">
+              <span
+                class="animation-option-title"
+                data-i18n="settings.reducedAnimations"
+                >Reduced Animations</span
+              >
+              <span
+                class="animation-option-desc"
+                data-i18n="settings.reducedAnimationsDesc"
+                >Minimal effects</span
+              >
+            </div>
+            <div class="animation-option-check">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+          </div>
+          <div class="animation-option" data-value="none">
+            <div class="animation-option-icon">
+              <i class="bi bi-x-circle"></i>
+            </div>
+            <div class="animation-option-content">
+              <span
+                class="animation-option-title"
+                data-i18n="settings.noAnimations"
+                >No Animations</span
+              >
+              <span
+                class="animation-option-desc"
+                data-i18n="settings.noAnimationsDesc"
+                >Instant transitions</span
+              >
+            </div>
+            <div class="animation-option-check">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+          </div>
+        </div>
+        <p class="settings-hint" data-i18n="settings.animationsHint">
+          Control the amount of animations in the interface
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.tutorial"
+          >Tutorial</label
+        >
+        <button class="settings-btn-action" id="restart-tutorial-btn">
+          <i class="bi bi-book"></i>
+          <div class="settings-btn-action-content">
+            <span
+              class="settings-btn-action-title"
+              data-i18n="settings.openTutorial"
+              >Open Tutorial</span
+            >
+            <span
+              class="settings-btn-action-desc"
+              data-i18n="settings.openTutorialDesc"
+              >Watch the welcome animation again</span
+            >
+          </div>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+        <p class="settings-hint" data-i18n="settings.tutorialHint">
+          Opens a transparent window with the full tutorial animation
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.installConfirm"
+          >1-Click Install Confirmation</label
+        >
+        <div class="settings-input-group">
+          <label class="settings-switch">
+            <input type="checkbox" id="install-confirm-enabled" checked />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span
+            style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.showConfirmation"
+            >Show confirmation before downloading</span
+          >
+        </div>
+        <p class="settings-hint" data-i18n="settings.installConfirmHint">
+          Display a modal to confirm mod downloads from browser links
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.appUpdates"
+          >Application Updates</label
+        >
+        <div class="settings-input-group" style="margin-bottom: 12px">
+          <span
+            style="color: var(--text-secondary)"
+            data-i18n="settings.currentVersion"
+            >Current Version:</span
+          >
+          <span
+            id="app-version"
+            style="
+              margin-left: 8px;
+              color: var(--primary-color);
+              font-weight: 600;
+            "
+            >4.0.0</span
+          >
+        </div>
+        <div class="settings-input-group" style="margin-bottom: 12px">
+          <label
+            class="settings-label"
+            style="margin-right: 12px; min-width: 150px"
+            data-i18n="settings.updateChannel"
+            >Update Channel:</label
+          >
+          <div class="custom-select" id="update-channel-select" style="flex: 1">
+            <div class="custom-select-trigger">
+              <span class="selected-value" data-i18n="settings.channelStable"
+                >Stable</span
+              >
+              <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="custom-select-dropdown">
+              <div class="custom-select-option active" data-value="stable">
+                <span data-i18n="settings.channelStable">Stable</span>
+              </div>
+              <div class="custom-select-option" data-value="prerelease">
+                <span data-i18n="settings.channelPrerelease">Prerelease</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="settings-btn-action" id="check-updates-btn">
+          <i class="bi bi-arrow-repeat"></i>
+          <div class="settings-btn-action-content">
+            <span
+              class="settings-btn-action-title"
+              data-i18n="settings.checkForUpdates"
+              >Check for Updates</span
+            >
+            <span
+              class="settings-btn-action-desc"
+              data-i18n="settings.checkForUpdatesDesc"
+              >Manually check if a new version is available</span
+            >
+          </div>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+        <p class="settings-hint" data-i18n="settings.updatesHint">
+          FightPlanner automatically checks for updates on startup. Choose your
+          update channel to receive stable, beta, or alpha releases.
+        </p>
+      </div>
     </div>
 
-    <!-- Settings Content -->
-    <div class="settings-content-area">
-        <!-- General Settings -->
-        <div class="settings-tab-content active" id="settings-general">
-            <h2 class="settings-title" data-i18n="settings.title">General Settings</h2>
+    <!-- Paths Settings -->
+    <div class="settings-tab-content" id="settings-mods">
+      <h2 class="settings-title" data-i18n="settings.pathsConfiguration">
+        Paths Configuration
+      </h2>
 
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.language">Language</label>
-                <div class="custom-select" id="language-type-select">
-                    <div class="custom-select-trigger">
-                        <span class="selected-value">English</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </div>
-                    <div class="custom-select-dropdown">
-                        <div class="custom-select-option active" data-value="en">
-                            <span>English</span>
-                        </div>
-                        <div class="custom-select-option" data-value="fr">
-                            <span>Français</span>
-                        </div>
-                    </div>
-                </div>
-                <p class="settings-hint" data-i18n="settings.languageHint">Select your preferred language for the
-                    application</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.theme">Theme</label>
-                <div class="custom-select" id="theme-select">
-                    <div class="custom-select-trigger">
-                        <span class="selected-value" data-i18n="settings.themeDark">Dark</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </div>
-                    <div class="custom-select-dropdown">
-                        <div class="custom-select-option active" data-value="dark">
-                            <span data-i18n="settings.themeDark">Dark</span>
-                        </div>
-                        <div class="custom-select-option" data-value="light">
-                            <span data-i18n="settings.themeLight">Light</span>
-                        </div>
-                    </div>
-                </div>
-                <p class="settings-hint" data-i18n="settings.themeHint">Select your preferred visual theme</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.animations">Animations</label>
-                <div class="animation-selector" id="animation-preference">
-                    <div class="animation-option" data-value="full">
-                        <div class="animation-option-icon">
-                            <i class="bi bi-stars"></i>
-                        </div>
-                        <div class="animation-option-content">
-                            <span class="animation-option-title" data-i18n="settings.fullAnimations">Full
-                                Animations</span>
-                            <span class="animation-option-desc" data-i18n="settings.fullAnimationsDesc">All effects
-                                enabled</span>
-                        </div>
-                        <div class="animation-option-check">
-                            <i class="bi bi-check-circle-fill"></i>
-                        </div>
-                    </div>
-                    <div class="animation-option" data-value="reduced">
-                        <div class="animation-option-icon">
-                            <i class="bi bi-dash-circle"></i>
-                        </div>
-                        <div class="animation-option-content">
-                            <span class="animation-option-title" data-i18n="settings.reducedAnimations">Reduced
-                                Animations</span>
-                            <span class="animation-option-desc" data-i18n="settings.reducedAnimationsDesc">Minimal
-                                effects</span>
-                        </div>
-                        <div class="animation-option-check">
-                            <i class="bi bi-check-circle-fill"></i>
-                        </div>
-                    </div>
-                    <div class="animation-option" data-value="none">
-                        <div class="animation-option-icon">
-                            <i class="bi bi-x-circle"></i>
-                        </div>
-                        <div class="animation-option-content">
-                            <span class="animation-option-title" data-i18n="settings.noAnimations">No Animations</span>
-                            <span class="animation-option-desc" data-i18n="settings.noAnimationsDesc">Instant
-                                transitions</span>
-                        </div>
-                        <div class="animation-option-check">
-                            <i class="bi bi-check-circle-fill"></i>
-                        </div>
-                    </div>
-                </div>
-                <p class="settings-hint" data-i18n="settings.animationsHint">Control the amount of animations in the
-                    interface</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.tutorial">Tutorial</label>
-                <button class="settings-btn-action" id="restart-tutorial-btn">
-                    <i class="bi bi-book"></i>
-                    <div class="settings-btn-action-content">
-                        <span class="settings-btn-action-title" data-i18n="settings.openTutorial">Open Tutorial</span>
-                        <span class="settings-btn-action-desc" data-i18n="settings.openTutorialDesc">Watch the welcome
-                            animation again</span>
-                    </div>
-                    <i class="bi bi-arrow-right"></i>
-                </button>
-                <p class="settings-hint" data-i18n="settings.tutorialHint">Opens a transparent window with the full
-                    tutorial animation</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.installConfirm">1-Click Install Confirmation</label>
-                <div class="settings-input-group">
-                    <label class="settings-switch">
-                        <input type="checkbox" id="install-confirm-enabled" checked>
-                        <span class="settings-switch-slider"></span>
-                    </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);"
-                        data-i18n="settings.showConfirmation">Show
-                        confirmation before downloading</span>
-                </div>
-                <p class="settings-hint" data-i18n="settings.installConfirmHint">Display a modal to confirm mod
-                    downloads from browser links</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.appUpdates">Application Updates</label>
-                <div class="settings-input-group" style="margin-bottom: 12px;">
-                    <span style="color: var(--text-secondary);" data-i18n="settings.currentVersion">Current
-                        Version:</span>
-                    <span id="app-version"
-                        style="margin-left: 8px; color: var(--primary-color); font-weight: 600;">4.0.0</span>
-                </div>
-                <div class="settings-input-group" style="margin-bottom: 12px;">
-                    <label class="settings-label" style="margin-right: 12px; min-width: 150px;"
-                        data-i18n="settings.updateChannel">Update Channel:</label>
-                    <div class="custom-select" id="update-channel-select" style="flex: 1;">
-                        <div class="custom-select-trigger">
-                            <span class="selected-value" data-i18n="settings.channelStable">Stable</span>
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
-                        <div class="custom-select-dropdown">
-                            <div class="custom-select-option active" data-value="stable">
-                                <span data-i18n="settings.channelStable">Stable</span>
-                            </div>
-                            <div class="custom-select-option" data-value="prerelease">
-                                <span data-i18n="settings.channelPrerelease">Prerelease</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button class="settings-btn-action" id="check-updates-btn">
-                    <i class="bi bi-arrow-repeat"></i>
-                    <div class="settings-btn-action-content">
-                        <span class="settings-btn-action-title" data-i18n="settings.checkForUpdates">Check for
-                            Updates</span>
-                        <span class="settings-btn-action-desc" data-i18n="settings.checkForUpdatesDesc">Manually check
-                            if a new version is available</span>
-                    </div>
-                    <i class="bi bi-arrow-right"></i>
-                </button>
-                <p class="settings-hint" data-i18n="settings.updatesHint">FightPlanner automatically checks for updates
-                    on startup. Choose your update channel to receive stable, beta, or alpha releases.</p>
-            </div>
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.modsFolder"
+          >Mods Folder Path</label
+        >
+        <div class="settings-input-group">
+          <input
+            type="text"
+            id="mods-folder-path"
+            class="settings-input"
+            data-i18n="settings.modsFolderPlaceholder"
+            data-i18n-placeholder
+            placeholder="Select mods folder..."
+            readonly
+          />
+          <button
+            class="settings-btn"
+            id="browse-mods-folder"
+            data-i18n="settings.browse"
+          >
+            Browse
+          </button>
         </div>
+        <p class="settings-hint" data-i18n="settings.modsFolderHint">
+          Select the folder containing your mods (usually atmosphere/contents)
+        </p>
+      </div>
 
-        <!-- Paths Settings -->
-        <div class="settings-tab-content" id="settings-mods">
-            <h2 class="settings-title" data-i18n="settings.pathsConfiguration">Paths Configuration</h2>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.modsFolder">Mods Folder Path</label>
-                <div class="settings-input-group">
-                    <input type="text" id="mods-folder-path" class="settings-input"
-                        data-i18n="settings.modsFolderPlaceholder" data-i18n-placeholder
-                        placeholder="Select mods folder..." readonly>
-                    <button class="settings-btn" id="browse-mods-folder" data-i18n="settings.browse">Browse</button>
-                </div>
-                <p class="settings-hint" data-i18n="settings.modsFolderHint">Select the folder containing your mods
-                    (usually atmosphere/contents)</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.pluginsFolder">Plugins Folder Path</label>
-                <div class="settings-input-group">
-                    <input type="text" id="plugins-folder-path" class="settings-input"
-                        data-i18n="settings.pluginsFolderPlaceholder" data-i18n-placeholder
-                        placeholder="Select plugins folder..." readonly>
-                    <button class="settings-btn" id="browse-plugins-folder" data-i18n="settings.browse">Browse</button>
-                </div>
-                <p class="settings-hint" data-i18n="settings.pluginsFolderHint">Select the folder containing your .nro
-                    plugin files</p>
-            </div>
-
-            <!-- New Mod Installation Section -->
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.modInstallation">Mod Installation</label>
-                <div class="settings-input-group">
-                    <label class="settings-switch">
-                        <input type="checkbox" id="auto-disable-mods-enabled">
-                        <span class="settings-switch-slider"></span>
-                    </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);"
-                        data-i18n="settings.autoDisableMods">Auto-disable
-                        new mods after install</span>
-                </div>
-                <p class="settings-hint" data-i18n="settings.autoDisableModsHint">When enabled, newly installed mods
-                    will be automatically disabled to prevent conflicts</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.exportModList">Export Mod List</label>
-                <button class="settings-btn-action" id="export-mods-list-btn">
-                    <i class="bi bi-file-earmark-text"></i>
-                    <div class="settings-btn-action-content">
-                        <span class="settings-btn-action-title" data-i18n="settings.exportModListTitle">Export Enabled
-                            Mods</span>
-                        <span class="settings-btn-action-desc" data-i18n="settings.exportModListDesc">Export all enabled
-                            mods to a text file, grouped by character</span>
-                    </div>
-                    <i class="bi bi-arrow-right"></i>
-                </button>
-                <p class="settings-hint" data-i18n="settings.exportModListHint">Creates a text file listing all enabled
-                    mods, organized by character, making it easy to share your mod list</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.emulatorType">Emulator Type</label>
-                <div class="custom-select" id="emulator-type-select">
-                    <div class="custom-select-trigger">
-                        <span class="selected-value" data-i18n="settings.emulatorTypeYuzu">Yuzu</span>
-                        <i class="bi bi-chevron-down"></i>
-                    </div>
-                    <div class="custom-select-dropdown">
-                        <div class="custom-select-option active" data-value="yuzu">
-                            <span data-i18n="settings.emulatorTypeYuzu">Yuzu</span>
-                        </div>
-                        <div class="custom-select-option" data-value="ryujinx">
-                            <span data-i18n="settings.emulatorTypeRyujinx">Ryujinx</span>
-                        </div>
-                    </div>
-                </div>
-                <p class="settings-hint" data-i18n="settings.emulatorTypeHint">Select which emulator you want to use</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.emulatorPath">Emulator Path</label>
-                <div class="settings-input-group">
-                    <input type="text" id="emulator-path" class="settings-input"
-                        data-i18n="settings.emulatorPathPlaceholder" data-i18n-placeholder
-                        placeholder="Select emulator executable..." readonly>
-                    <button class="settings-btn" id="browse-emulator-path" data-i18n="settings.browse">Browse</button>
-                </div>
-                <p class="settings-hint" data-i18n="settings.emulatorPathHint">Select your emulator executable (yuzu.exe
-                    or Ryujinx.exe)</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.gamePath">Game Path</label>
-                <div class="settings-input-group">
-                    <input type="text" id="game-path" class="settings-input" data-i18n="settings.gamePathPlaceholder"
-                        data-i18n-placeholder placeholder="Select game file..." readonly>
-                    <button class="settings-btn" id="browse-game-path" data-i18n="settings.browse">Browse</button>
-                </div>
-                <p class="settings-hint" data-i18n="settings.gamePathHint">Select your game file (.xci or .nsp)</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.emulatorOptions">Emulator Options</label>
-                <div class="settings-input-group">
-                    <label class="settings-switch">
-                        <input type="checkbox" id="emulator-fullscreen-enabled">
-                        <span class="settings-switch-slider"></span>
-                    </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);"
-                        data-i18n="settings.launchFullscreen">Launch
-                        emulator in fullscreen</span>
-                </div>
-                <p class="settings-hint" data-i18n="settings.launchFullscreenHint">When enabled, adds the -f flag to
-                    launch the emulator in fullscreen mode</p>
-            </div>
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.pluginsFolder"
+          >Plugins Folder Path</label
+        >
+        <div class="settings-input-group">
+          <input
+            type="text"
+            id="plugins-folder-path"
+            class="settings-input"
+            data-i18n="settings.pluginsFolderPlaceholder"
+            data-i18n-placeholder
+            placeholder="Select plugins folder..."
+            readonly
+          />
+          <button
+            class="settings-btn"
+            id="browse-plugins-folder"
+            data-i18n="settings.browse"
+          >
+            Browse
+          </button>
         </div>
+        <p class="settings-hint" data-i18n="settings.pluginsFolderHint">
+          Select the folder containing your .nro plugin files
+        </p>
+      </div>
 
-        <!-- Advanced Settings -->
-        <div class="settings-tab-content" id="settings-advanced">
-            <h2 class="settings-title" data-i18n="settings.advanced">Advanced Settings</h2>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.developerMode">Developer Mode</label>
-                <div class="settings-input-group">
-                    <label class="settings-switch">
-                        <input type="checkbox" id="developer-mode-enabled">
-                        <span class="settings-switch-slider"></span>
-                    </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);"
-                        data-i18n="settings.developerModeHint">Enable advanced developer features</span>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.switchConnection">Switch Connection</label>
-
-                <div class="settings-input-group" style="margin-bottom: 12px;">
-                    <label class="settings-label" style="margin-right: 12px; min-width: 150px;"
-                        data-i18n="settings.transferMethod">Transfer Method:</label>
-                    <div class="custom-select" id="switch-transfer-method-select" style="flex: 1;">
-                        <div class="custom-select-trigger">
-                            <span class="selected-value">Select method...</span>
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
-                        <div class="custom-select-dropdown">
-                            <div class="custom-select-option" data-value="ftp">
-                                <span data-i18n="settings.transferMethodFtp">FTP</span>
-                            </div>
-                            <div class="custom-select-option" data-value="drive">
-                                <span data-i18n="settings.transferMethodDrive">Local Drive</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <p class="settings-hint" data-i18n="settings.transferMethodHint">Choose how to send mods to Switch: via
-                    FTP or directly to SD card</p>
-
-                <!-- FTP Settings -->
-                <div id="switch-ftp-settings" style="margin-top: 12px;">
-                    <div class="settings-input-group">
-                        <input type="text" id="switch-ip" class="settings-input"
-                            data-i18n="settings.switchIpPlaceholder" data-i18n-placeholder placeholder="192.168.1.100">
-                        <label class="settings-label" style="margin: 0 10px;">:</label>
-                        <input type="text" id="switch-port" class="settings-input"
-                            data-i18n="settings.switchPortPlaceholder" data-i18n-placeholder placeholder="5000"
-                            style="width: 100px;">
-                    </div>
-                    <p class="settings-hint" data-i18n="settings.switchIpPort">Switch IP address and FTP port (default:
-                        5000)</p>
-
-                    <div class="settings-input-group" style="margin-top: 12px;">
-                        <input type="text" id="switch-ftp-path" class="settings-input"
-                            data-i18n="settings.switchFtpPathPlaceholder" data-i18n-placeholder
-                            placeholder="/switch/atmosphere/contents">
-                    </div>
-                    <p class="settings-hint" data-i18n="settings.switchFtpPath">Remote path on Switch SD card for mods
-                    </p>
-                </div>
-
-                <!-- Drive Settings -->
-                <div id="switch-drive-settings" style="margin-top: 12px; display: none;">
-                    <div class="settings-input-group">
-                        <label class="settings-label" style="margin-right: 12px; min-width: 150px;"
-                            data-i18n="settings.driveLetter">Drive Letter:</label>
-                        <div class="custom-select" id="switch-drive-letter-select" style="flex: 1;">
-                            <div class="custom-select-trigger">
-                                <span class="selected-value" data-i18n="settings.selectDrive">Select Drive</span>
-                                <i class="bi bi-chevron-down"></i>
-                            </div>
-                            <div class="custom-select-dropdown" id="switch-drive-letter-options">
-                                <!-- Drive letters will be populated dynamically -->
-                            </div>
-                        </div>
-                    </div>
-                    <p class="settings-hint" data-i18n="settings.driveLetterHint">Select the drive letter of your Switch
-                        SD card (e.g., E:)</p>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.conflictDetection">Conflict Detection</label>
-                <div class="settings-input-group">
-                    <label class="settings-switch">
-                        <input type="checkbox" id="conflict-detection-enabled" checked>
-                        <span class="settings-switch-slider"></span>
-                    </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);"
-                        data-i18n="settings.enableConflictDetection">Enable
-                        automatic conflict detection</span>
-                </div>
-                <p class="settings-hint" data-i18n="settings.conflictDetectionHint">Automatically check for file
-                    conflicts between mods</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.pluginAutoUpdate">Plugin Auto-Update Check</label>
-                <div class="settings-input-group">
-                    <label class="settings-switch">
-                        <input type="checkbox" id="auto-check-plugin-updates-enabled">
-                        <span class="settings-switch-slider"></span>
-                    </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);"
-                        data-i18n="settings.enablePluginAutoUpdate">Check
-                        for plugin updates on startup</span>
-                </div>
-                <p class="settings-hint" data-i18n="settings.pluginAutoUpdateHint">Automatically check for plugin
-                    updates when the application starts</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.tempFiles">Temporary Files</label>
-                <button class="settings-btn-action" id="clear-temp-files-btn">
-                    <i class="bi bi-trash3"></i>
-                    <div class="settings-btn-action-content">
-                        <span class="settings-btn-action-title" data-i18n="settings.clearTempFiles">Clear Temporary
-                            Files</span>
-                        <span class="settings-btn-action-desc" data-i18n="settings.clearTempFilesDesc">Remove temporary
-                            download and extraction files</span>
-                    </div>
-                    <i class="bi bi-arrow-right"></i>
-                </button>
-                <p class="settings-hint" data-i18n="settings.clearTempFilesHint">Clears temporary files left from mod
-                    downloads and installations. Safe to use at any time.</p>
-            </div>
+      <!-- New Mod Installation Section -->
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.modInstallation"
+          >Mod Installation</label
+        >
+        <div class="settings-input-group">
+          <label class="settings-switch">
+            <input type="checkbox" id="auto-disable-mods-enabled" />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span
+            style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.autoDisableMods"
+            >Auto-disable new mods after install</span
+          >
         </div>
+        <p class="settings-hint" data-i18n="settings.autoDisableModsHint">
+          When enabled, newly installed mods will be automatically disabled to
+          prevent conflicts
+        </p>
+      </div>
 
-        <!-- Customization Settings -->
-        <div class="settings-tab-content" id="settings-customization">
-            <h2 class="settings-title" data-i18n="settings.customization">Customization</h2>
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.exportModList"
+          >Export Mod List</label
+        >
+        <button class="settings-btn-action" id="export-mods-list-btn">
+          <i class="bi bi-file-earmark-text"></i>
+          <div class="settings-btn-action-content">
+            <span
+              class="settings-btn-action-title"
+              data-i18n="settings.exportModListTitle"
+              >Export Enabled Mods</span
+            >
+            <span
+              class="settings-btn-action-desc"
+              data-i18n="settings.exportModListDesc"
+              >Export all enabled mods to a text file, grouped by
+              character</span
+            >
+          </div>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+        <p class="settings-hint" data-i18n="settings.exportModListHint">
+          Creates a text file listing all enabled mods, organized by character,
+          making it easy to share your mod list
+        </p>
+      </div>
 
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.customCss">Custom CSS Files</label>
-                <p class="settings-hint" data-i18n="settings.customCssHint">Load custom CSS files to modify the
-                    appearance of FightPlanner</p>
-                <div class="settings-input-group">
-                    <button class="settings-btn" id="add-custom-css">
-                        <i class="bi bi-plus-circle"></i> <span data-i18n="settings.addCssFile">Add CSS File</span>
-                    </button>
-                    <button class="settings-btn" id="reload-all-css">
-                        <i class="bi bi-arrow-clockwise"></i> <span data-i18n="settings.reloadAllCss">Reload All</span>
-                    </button>
-                </div>
-                <div id="custom-css-list" class="custom-files-list">
-                    <!-- CSS files will be listed here -->
-                </div>
-                <p class="settings-hint" style="margin-top: 12px;">
-                    <i class="bi bi-info-circle"></i> <span data-i18n="settings.customCssInfo">Custom CSS files will be
-                        applied in order, on top of the default styles</span>
-                </p>
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.emulatorType"
+          >Emulator Type</label
+        >
+        <div class="custom-select" id="emulator-type-select">
+          <div class="custom-select-trigger">
+            <span class="selected-value" data-i18n="settings.emulatorTypeYuzu"
+              >Yuzu</span
+            >
+            <i class="bi bi-chevron-down"></i>
+          </div>
+          <div class="custom-select-dropdown">
+            <div class="custom-select-option active" data-value="yuzu">
+              <span data-i18n="settings.emulatorTypeYuzu">Yuzu</span>
             </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.customJs">Custom JavaScript Files</label>
-                <p class="settings-hint" data-i18n="settings.customJsHint">Load custom JavaScript files to extend
-                    FightPlanner functionality</p>
-                <div class="settings-input-group">
-                    <button class="settings-btn" id="add-custom-js">
-                        <i class="bi bi-plus-circle"></i> <span data-i18n="settings.addJsFile">Add JS File</span>
-                    </button>
-                </div>
-                <div id="custom-js-list" class="custom-files-list">
-                    <!-- JS files will be listed here -->
-                </div>
-                <p class="settings-hint" style="margin-top: 12px; color: var(--warning-color);">
-                    <i class="bi bi-exclamation-triangle-fill"></i> <strong
-                        data-i18n="settings.customJsWarning">Warning: Only load JavaScript from trusted sources.
-                        Malicious code can harm your system.</strong>
-                </p>
+            <div class="custom-select-option" data-value="ryujinx">
+              <span data-i18n="settings.emulatorTypeRyujinx">Ryujinx</span>
             </div>
-
-            <div class="settings-section"
-                style="background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%); border-color: rgba(255, 152, 0, 0.2);">
-                <label class="settings-label" style="color: var(--warning-color);">
-                    <i class="bi bi-shield-exclamation"></i> <span data-i18n="settings.securityNotice">Security
-                        Notice</span>
-                </label>
-                <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;"
-                    data-i18n="settings.securityNoticeText">
-                    Custom CSS and JavaScript files have full access to the application. Only use files from developers
-                    you trust.
-                </p>
-                <ul style="color: var(--text-muted); margin-left: 20px; line-height: 1.8;">
-                    <li><strong>CSS</strong> <span data-i18n="settings.securityNoticeList1">can modify the visual
-                            appearance and layout</span></li>
-                    <li><strong>JavaScript</strong> <span data-i18n="settings.securityNoticeList2">can access all
-                            application features and data</span></li>
-                    <li data-i18n="settings.securityNoticeList3">Changes take effect after reloading or restarting the
-                        app</li>
-                </ul>
-            </div>
+          </div>
         </div>
+        <p class="settings-hint" data-i18n="settings.emulatorTypeHint">
+          Select which emulator you want to use
+        </p>
+      </div>
 
-        <!-- Logs Settings -->
-        <div class="settings-tab-content" id="settings-logs">
-            <h2 class="settings-title" data-i18n="settings.consoleLogs">Console Logs</h2>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.logsLocation">Log Files Location</label>
-                <button class="settings-btn-action" id="open-logs-folder-btn">
-                    <i class="bi bi-folder2-open"></i>
-                    <div class="settings-btn-action-content">
-                        <span class="settings-btn-action-title" data-i18n="settings.openLogsFolder">Open Logs
-                            Folder</span>
-                        <span class="settings-btn-action-desc" data-i18n="settings.openLogsFolderDesc">View all saved
-                            log files on disk</span>
-                    </div>
-                    <i class="bi bi-arrow-right"></i>
-                </button>
-                <p class="settings-hint" data-i18n="settings.logsHint">Logs are automatically saved daily. Both main
-                    process and renderer logs are captured.</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.liveConsole">Live Console Output</label>
-                <div class="logs-toolbar">
-                    <div class="logs-filter-buttons">
-                        <button class="logs-filter-btn active" data-log-level="all">
-                            <i class="bi bi-list-ul"></i> <span data-i18n="settings.logLevels.all">All</span>
-                        </button>
-                        <button class="logs-filter-btn" data-log-level="log">
-                            <i class="bi bi-info-circle"></i> <span data-i18n="settings.logLevels.log">Log</span>
-                        </button>
-                        <button class="logs-filter-btn" data-log-level="warn">
-                            <i class="bi bi-exclamation-triangle"></i> <span
-                                data-i18n="settings.logLevels.warn">Warn</span>
-                        </button>
-                        <button class="logs-filter-btn" data-log-level="error">
-                            <i class="bi bi-x-circle"></i> <span data-i18n="settings.logLevels.error">Error</span>
-                        </button>
-                    </div>
-                    <div class="logs-action-buttons">
-                        <button class="logs-action-btn" id="clear-logs-btn" data-i18n="settings.clearLogs"
-                            data-i18n-title title="Clear current session">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                        <button class="logs-action-btn" id="copy-logs-btn" data-i18n="settings.copyLogs" data-i18n-title
-                            title="Copy to clipboard">
-                            <i class="bi bi-clipboard"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="logs-container" id="logs-container">
-                    <div class="logs-empty-state">
-                        <i class="bi bi-terminal"></i>
-                        <p data-i18n="settings.logsEmpty">No logs yet. Console output will appear here.</p>
-                    </div>
-                </div>
-                <p class="settings-hint" style="margin-top: 12px;">
-                    <i class="bi bi-info-circle"></i> <span data-i18n="settings.logsInfo">Showing logs from current
-                        session. Use \"Open Logs Folder\" above to view historical logs.</span>
-                </p>
-            </div>
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.emulatorPath"
+          >Emulator Path</label
+        >
+        <div class="settings-input-group">
+          <input
+            type="text"
+            id="emulator-path"
+            class="settings-input"
+            data-i18n="settings.emulatorPathPlaceholder"
+            data-i18n-placeholder
+            placeholder="Select emulator executable..."
+            readonly
+          />
+          <button
+            class="settings-btn"
+            id="browse-emulator-path"
+            data-i18n="settings.browse"
+          >
+            Browse
+          </button>
         </div>
-        <!-- Developer Settings -->
-        <div class="settings-tab-content" id="settings-developer">
-            <h2 class="settings-title" data-i18n="settings.developer">Developer Options</h2>
+        <p class="settings-hint" data-i18n="settings.emulatorPathHint">
+          Select your emulator executable (yuzu.exe or Ryujinx.exe)
+        </p>
+      </div>
 
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.fakeVersion">Fake App Version</label>
-                <div class="settings-input-group">
-                    <input type="text" id="fake-version-input" class="settings-input"
-                        data-i18n="settings.fakeVersionPlaceholder" data-i18n-placeholder placeholder="e.g. 3.0.0">
-                </div>
-                <p class="settings-hint" data-i18n="settings.fakeVersionHint">Override the current app version to test
-                    the update system. LEAVE EMPTY to use real version.</p>
-            </div>
-
-            <div class="settings-section">
-                <label class="settings-label" data-i18n="settings.forceUpdateAvailable">Force Update Available</label>
-                <div class="settings-input-group">
-                    <label class="settings-switch">
-                        <input type="checkbox" id="force-update-enabled">
-                        <span class="settings-switch-slider"></span>
-                    </label>
-                    <span style="margin-left: 12px; color: var(--text-secondary);"
-                        data-i18n="settings.forceUpdateAvailableHint">Force updater to report update available</span>
-                </div>
-            </div>
-
-            <div class="settings-section">
-                <div class="settings-input-group">
-                    <button class="settings-btn-action" id="save-dev-settings-btn">
-                        <i class="bi bi-save"></i>
-                        <div class="settings-btn-action-content">
-                            <span class="settings-btn-action-title" data-i18n="settings.saveDevSettings">Save Developer
-                                Settings</span>
-                        </div>
-                    </button>
-                    <button class="settings-btn" id="reset-dev-settings-btn" style="margin-left: 10px;">
-                        <i class="bi bi-arrow-counterclockwise"></i> <span data-i18n="settings.reset">Reset</span>
-                    </button>
-                    <button class="settings-btn" id="simulate-update-btn" style="margin-left: 10px;">
-                        <i class="bi bi-play-circle"></i> <span data-i18n="settings.simulateUpdate">Simulate
-                            Update</span>
-                    </button>
-                </div>
-            </div>
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.gamePath"
+          >Game Path</label
+        >
+        <div class="settings-input-group">
+          <input
+            type="text"
+            id="game-path"
+            class="settings-input"
+            data-i18n="settings.gamePathPlaceholder"
+            data-i18n-placeholder
+            placeholder="Select game file..."
+            readonly
+          />
+          <button
+            class="settings-btn"
+            id="browse-game-path"
+            data-i18n="settings.browse"
+          >
+            Browse
+          </button>
         </div>
+        <p class="settings-hint" data-i18n="settings.gamePathHint">
+          Select your game file (.xci or .nsp)
+        </p>
+      </div>
 
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.emulatorOptions"
+          >Emulator Options</label
+        >
+        <div class="settings-input-group">
+          <label class="settings-switch">
+            <input type="checkbox" id="emulator-fullscreen-enabled" />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span
+            style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.launchFullscreen"
+            >Launch emulator in fullscreen</span
+          >
+        </div>
+        <p class="settings-hint" data-i18n="settings.launchFullscreenHint">
+          When enabled, adds the -f flag to launch the emulator in fullscreen
+          mode
+        </p>
+      </div>
     </div>
+
+    <!-- Advanced Settings -->
+    <div class="settings-tab-content" id="settings-advanced">
+      <h2 class="settings-title" data-i18n="settings.advanced">
+        Advanced Settings
+      </h2>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.developerMode"
+          >Developer Mode</label
+        >
+        <div class="settings-input-group">
+          <label class="settings-switch">
+            <input type="checkbox" id="developer-mode-enabled" />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span
+            style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.developerModeHint"
+            >Enable advanced developer features</span
+          >
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.switchConnection"
+          >Switch Connection</label
+        >
+
+        <div class="settings-input-group" style="margin-bottom: 12px">
+          <label
+            class="settings-label"
+            style="margin-right: 12px; min-width: 150px"
+            data-i18n="settings.transferMethod"
+            >Transfer Method:</label
+          >
+          <div
+            class="custom-select"
+            id="switch-transfer-method-select"
+            style="flex: 1"
+          >
+            <div class="custom-select-trigger">
+              <span class="selected-value">Select method...</span>
+              <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="custom-select-dropdown">
+              <div class="custom-select-option" data-value="ftp">
+                <span data-i18n="settings.transferMethodFtp">FTP</span>
+              </div>
+              <div class="custom-select-option" data-value="drive">
+                <span data-i18n="settings.transferMethodDrive"
+                  >Local Drive</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="settings-hint" data-i18n="settings.transferMethodHint">
+          Choose how to send mods to Switch: via FTP or directly to SD card
+        </p>
+
+        <!-- FTP Settings -->
+        <div id="switch-ftp-settings" style="margin-top: 12px">
+          <div class="settings-input-group">
+            <input
+              type="text"
+              id="switch-ip"
+              class="settings-input"
+              data-i18n="settings.switchIpPlaceholder"
+              data-i18n-placeholder
+              placeholder="192.168.1.100"
+            />
+            <label class="settings-label" style="margin: 0 10px">:</label>
+            <input
+              type="text"
+              id="switch-port"
+              class="settings-input"
+              data-i18n="settings.switchPortPlaceholder"
+              data-i18n-placeholder
+              placeholder="5000"
+              style="width: 100px"
+            />
+          </div>
+          <p class="settings-hint" data-i18n="settings.switchIpPort">
+            Switch IP address and FTP port (default: 5000)
+          </p>
+
+          <div class="settings-input-group" style="margin-top: 12px">
+            <input
+              type="text"
+              id="switch-ftp-path"
+              class="settings-input"
+              data-i18n="settings.switchFtpPathPlaceholder"
+              data-i18n-placeholder
+              placeholder="/switch/atmosphere/contents"
+            />
+          </div>
+          <p class="settings-hint" data-i18n="settings.switchFtpPath">
+            Remote path on Switch SD card for mods
+          </p>
+        </div>
+
+        <!-- Drive Settings -->
+        <div id="switch-drive-settings" style="margin-top: 12px; display: none">
+          <div class="settings-input-group">
+            <label
+              class="settings-label"
+              style="margin-right: 12px; min-width: 150px"
+              data-i18n="settings.driveLetter"
+              >Drive Letter:</label
+            >
+            <div
+              class="custom-select"
+              id="switch-drive-letter-select"
+              style="flex: 1"
+            >
+              <div class="custom-select-trigger">
+                <span class="selected-value" data-i18n="settings.selectDrive"
+                  >Select Drive</span
+                >
+                <i class="bi bi-chevron-down"></i>
+              </div>
+              <div
+                class="custom-select-dropdown"
+                id="switch-drive-letter-options"
+              >
+                <!-- Drive letters will be populated dynamically -->
+              </div>
+            </div>
+          </div>
+          <p class="settings-hint" data-i18n="settings.driveLetterHint">
+            Select the drive letter of your Switch SD card (e.g., E:)
+          </p>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.conflictDetection"
+          >Conflict Detection</label
+        >
+        <div class="settings-input-group">
+          <label class="settings-switch">
+            <input type="checkbox" id="conflict-detection-enabled" checked />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span
+            style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.enableConflictDetection"
+            >Enable automatic conflict detection</span
+          >
+        </div>
+        <p class="settings-hint" data-i18n="settings.conflictDetectionHint">
+          Automatically check for file conflicts between mods
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.pluginAutoUpdate"
+          >Plugin Auto-Update Check</label
+        >
+        <div class="settings-input-group">
+          <label class="settings-switch">
+            <input type="checkbox" id="auto-check-plugin-updates-enabled" />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span
+            style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.enablePluginAutoUpdate"
+            >Check for plugin updates on startup</span
+          >
+        </div>
+        <p class="settings-hint" data-i18n="settings.pluginAutoUpdateHint">
+          Automatically check for plugin updates when the application starts
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.tempFiles"
+          >Temporary Files</label
+        >
+        <button class="settings-btn-action" id="clear-temp-files-btn">
+          <i class="bi bi-trash3"></i>
+          <div class="settings-btn-action-content">
+            <span
+              class="settings-btn-action-title"
+              data-i18n="settings.clearTempFiles"
+              >Clear Temporary Files</span
+            >
+            <span
+              class="settings-btn-action-desc"
+              data-i18n="settings.clearTempFilesDesc"
+              >Remove temporary download and extraction files</span
+            >
+          </div>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+        <p class="settings-hint" data-i18n="settings.clearTempFilesHint">
+          Clears temporary files left from mod downloads and installations. Safe
+          to use at any time.
+        </p>
+      </div>
+    </div>
+
+    <!-- Customization Settings -->
+    <div class="settings-tab-content" id="settings-customization">
+      <h2 class="settings-title" data-i18n="settings.customization">
+        Customization
+      </h2>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.customCss"
+          >Custom CSS Files</label
+        >
+        <p class="settings-hint" data-i18n="settings.customCssHint">
+          Load custom CSS files to modify the appearance of FightPlanner
+        </p>
+        <div class="settings-input-group">
+          <button class="settings-btn" id="add-custom-css">
+            <i class="bi bi-plus-circle"></i>
+            <span data-i18n="settings.addCssFile">Add CSS File</span>
+          </button>
+          <button class="settings-btn" id="reload-all-css">
+            <i class="bi bi-arrow-clockwise"></i>
+            <span data-i18n="settings.reloadAllCss">Reload All</span>
+          </button>
+        </div>
+        <div id="custom-css-list" class="custom-files-list">
+          <!-- CSS files will be listed here -->
+        </div>
+        <p class="settings-hint" style="margin-top: 12px">
+          <i class="bi bi-info-circle"></i>
+          <span data-i18n="settings.customCssInfo"
+            >Custom CSS files will be applied in order, on top of the default
+            styles</span
+          >
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.customJs"
+          >Custom JavaScript Files</label
+        >
+        <p class="settings-hint" data-i18n="settings.customJsHint">
+          Load custom JavaScript files to extend FightPlanner functionality
+        </p>
+        <div class="settings-input-group">
+          <button class="settings-btn" id="add-custom-js">
+            <i class="bi bi-plus-circle"></i>
+            <span data-i18n="settings.addJsFile">Add JS File</span>
+          </button>
+        </div>
+        <div id="custom-js-list" class="custom-files-list">
+          <!-- JS files will be listed here -->
+        </div>
+        <p
+          class="settings-hint"
+          style="margin-top: 12px; color: var(--warning-color)"
+        >
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <strong data-i18n="settings.customJsWarning"
+            >Warning: Only load JavaScript from trusted sources. Malicious code
+            can harm your system.</strong
+          >
+        </p>
+      </div>
+
+      <div
+        class="settings-section"
+        style="
+          background: linear-gradient(
+            135deg,
+            rgba(255, 152, 0, 0.1) 0%,
+            rgba(255, 152, 0, 0.05) 100%
+          );
+          border-color: rgba(255, 152, 0, 0.2);
+        "
+      >
+        <label class="settings-label" style="color: var(--warning-color)">
+          <i class="bi bi-shield-exclamation"></i>
+          <span data-i18n="settings.securityNotice">Security Notice</span>
+        </label>
+        <p
+          style="
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+          "
+          data-i18n="settings.securityNoticeText"
+        >
+          Custom CSS and JavaScript files have full access to the application.
+          Only use files from developers you trust.
+        </p>
+        <ul
+          style="color: var(--text-muted); margin-left: 20px; line-height: 1.8"
+        >
+          <li>
+            <strong>CSS</strong>
+            <span data-i18n="settings.securityNoticeList1"
+              >can modify the visual appearance and layout</span
+            >
+          </li>
+          <li>
+            <strong>JavaScript</strong>
+            <span data-i18n="settings.securityNoticeList2"
+              >can access all application features and data</span
+            >
+          </li>
+          <li data-i18n="settings.securityNoticeList3">
+            Changes take effect after reloading or restarting the app
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Logs Settings -->
+    <div class="settings-tab-content" id="settings-logs">
+      <h2 class="settings-title" data-i18n="settings.consoleLogs">
+        Console Logs
+      </h2>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.logsLocation"
+          >Log Files Location</label
+        >
+        <button class="settings-btn-action" id="open-logs-folder-btn">
+          <i class="bi bi-folder2-open"></i>
+          <div class="settings-btn-action-content">
+            <span
+              class="settings-btn-action-title"
+              data-i18n="settings.openLogsFolder"
+              >Open Logs Folder</span
+            >
+            <span
+              class="settings-btn-action-desc"
+              data-i18n="settings.openLogsFolderDesc"
+              >View all saved log files on disk</span
+            >
+          </div>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+        <p class="settings-hint" data-i18n="settings.logsHint">
+          Logs are automatically saved daily. Both main process and renderer
+          logs are captured.
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.liveConsole"
+          >Live Console Output</label
+        >
+        <div class="logs-toolbar">
+          <div class="logs-filter-buttons">
+            <button class="logs-filter-btn active" data-log-level="all">
+              <i class="bi bi-list-ul"></i>
+              <span data-i18n="settings.logLevels.all">All</span>
+            </button>
+            <button class="logs-filter-btn" data-log-level="log">
+              <i class="bi bi-info-circle"></i>
+              <span data-i18n="settings.logLevels.log">Log</span>
+            </button>
+            <button class="logs-filter-btn" data-log-level="warn">
+              <i class="bi bi-exclamation-triangle"></i>
+              <span data-i18n="settings.logLevels.warn">Warn</span>
+            </button>
+            <button class="logs-filter-btn" data-log-level="error">
+              <i class="bi bi-x-circle"></i>
+              <span data-i18n="settings.logLevels.error">Error</span>
+            </button>
+          </div>
+          <div class="logs-action-buttons">
+            <button
+              class="logs-action-btn"
+              id="clear-logs-btn"
+              data-i18n="settings.clearLogs"
+              data-i18n-title
+              title="Clear current session"
+            >
+              <i class="bi bi-trash"></i>
+            </button>
+            <button
+              class="logs-action-btn"
+              id="copy-logs-btn"
+              data-i18n="settings.copyLogs"
+              data-i18n-title
+              title="Copy to clipboard"
+            >
+              <i class="bi bi-clipboard"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="logs-container" id="logs-container">
+          <div class="logs-empty-state">
+            <i class="bi bi-terminal"></i>
+            <p data-i18n="settings.logsEmpty">
+              No logs yet. Console output will appear here.
+            </p>
+          </div>
+        </div>
+        <p class="settings-hint" style="margin-top: 12px">
+          <i class="bi bi-info-circle"></i>
+          <span data-i18n="settings.logsInfo"
+            >Showing logs from current session. Use \"Open Logs Folder\" above
+            to view historical logs.</span
+          >
+        </p>
+      </div>
+    </div>
+    <!-- Developer Settings -->
+    <div class="settings-tab-content" id="settings-developer">
+      <h2 class="settings-title" data-i18n="settings.developer">
+        Developer Options
+      </h2>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.fakeVersion"
+          >Fake App Version</label
+        >
+        <div class="settings-input-group">
+          <input
+            type="text"
+            id="fake-version-input"
+            class="settings-input"
+            data-i18n="settings.fakeVersionPlaceholder"
+            data-i18n-placeholder
+            placeholder="e.g. 3.0.0"
+          />
+        </div>
+        <p class="settings-hint" data-i18n="settings.fakeVersionHint">
+          Override the current app version to test the update system. LEAVE
+          EMPTY to use real version.
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.forceUpdateAvailable"
+          >Force Update Available</label
+        >
+        <div class="settings-input-group">
+          <label class="settings-switch">
+            <input type="checkbox" id="force-update-enabled" />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span
+            style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.forceUpdateAvailableHint"
+            >Force updater to report update available</span
+          >
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-input-group">
+          <button class="settings-btn-action" id="save-dev-settings-btn">
+            <i class="bi bi-save"></i>
+            <div class="settings-btn-action-content">
+              <span
+                class="settings-btn-action-title"
+                data-i18n="settings.saveDevSettings"
+                >Save Developer Settings</span
+              >
+            </div>
+          </button>
+          <button
+            class="settings-btn"
+            id="reset-dev-settings-btn"
+            style="margin-left: 10px"
+          >
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span data-i18n="settings.reset">Reset</span>
+          </button>
+          <button
+            class="settings-btn"
+            id="simulate-update-btn"
+            style="margin-left: 10px"
+          >
+            <i class="bi bi-play-circle"></i>
+            <span data-i18n="settings.simulateUpdate">Simulate Update</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

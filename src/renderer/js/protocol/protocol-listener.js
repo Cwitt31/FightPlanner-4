@@ -6,22 +6,23 @@ class ProtocolListener {
 
   setupListeners() {
     if (!window.electronAPI) {
-      console.error("Electron API not available");
+      console.error('Electron API not available');
       return;
     }
 
     window.electronAPI.onModInstallStart((data) => {
-      console.log("Mod installation started:", data);
+      console.log('Mod installation started:', data);
 
       if (window.downloadManager) {
         const rendererId = window.downloadManager.startDownload(
           data.url,
-          data.downloadId
+          data.downloadId,
         );
         this.idMap.set(data.downloadId, rendererId);
-        
+
         if (data.modName && window.downloadManager.activeDownloads) {
-          const download = window.downloadManager.activeDownloads.get(rendererId);
+          const download =
+            window.downloadManager.activeDownloads.get(rendererId);
           if (download) {
             download.modName = data.modName;
           }
@@ -29,7 +30,7 @@ class ProtocolListener {
       }
 
       if (window.toastManager) {
-        window.toastManager.info("toasts.downloadStarted");
+        window.toastManager.info('toasts.downloadStarted');
       }
     });
 
@@ -40,7 +41,7 @@ class ProtocolListener {
           rendererId,
           data.progress,
           data.receivedBytes,
-          data.totalBytes
+          data.totalBytes,
         );
       }
     });
@@ -59,20 +60,24 @@ class ProtocolListener {
     });
 
     window.electronAPI.onModInstallSuccess((data) => {
-      console.log("Mod installed successfully:", data);
+      console.log('Mod installed successfully:', data);
 
       if (window.downloadManager) {
         const rendererId = this.idMap.get(data.downloadId) || data.downloadId;
-        window.downloadManager.completeDownload(rendererId, data.modName, data.folderPath);
+        window.downloadManager.completeDownload(
+          rendererId,
+          data.modName,
+          data.folderPath,
+        );
       }
 
       if (window.toastManager) {
-        window.toastManager.success("toasts.modInstalledSuccess");
+        window.toastManager.success('toasts.modInstalledSuccess');
       }
 
       setTimeout(() => {
         if (window.modManager) {
-          console.log("Refreshing mod list...");
+          console.log('Refreshing mod list...');
           window.modManager.fetchMods();
         }
       }, 500);
@@ -81,7 +86,7 @@ class ProtocolListener {
     });
 
     window.electronAPI.onModInstallError((data) => {
-      console.error("Mod installation failed:", data);
+      console.error('Mod installation failed:', data);
 
       if (window.downloadManager && data.downloadId) {
         const rendererId = this.idMap.get(data.downloadId) || data.downloadId;
@@ -89,7 +94,9 @@ class ProtocolListener {
       }
 
       if (window.toastManager) {
-        window.toastManager.error('toasts.installationFailed', 3000, { error: data.error });
+        window.toastManager.error('toasts.installationFailed', 3000, {
+          error: data.error,
+        });
       }
 
       if (data.downloadId) this.idMap.delete(data.downloadId);
@@ -97,7 +104,7 @@ class ProtocolListener {
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.protocolListener = new ProtocolListener();
-  console.log("Protocol Listener initialized");
+  console.log('Protocol Listener initialized');
 }

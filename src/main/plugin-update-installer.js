@@ -11,54 +11,60 @@ class PluginUpdateInstaller {
   static async downloadFile(url, targetPath) {
     return new Promise((resolve, reject) => {
       const file = fs.createWriteStream(targetPath);
-      
-      https.get(url, {
-        headers: {
-          'User-Agent': 'FightPlanner-Plugin-Updater'
-        }
-      }, (res) => {
-        if (res.statusCode === 302 || res.statusCode === 301) {
-          file.close();
-          fs.unlinkSync(targetPath);
-          return this.downloadFile(res.headers.location, targetPath)
-            .then(resolve)
-            .catch(reject);
-        }
 
-        if (res.statusCode !== 200) {
-          file.close();
-          fs.unlinkSync(targetPath);
-          reject(new Error(`HTTP ${res.statusCode}`));
-          return;
-        }
+      https
+        .get(
+          url,
+          {
+            headers: {
+              'User-Agent': 'FightPlanner-Plugin-Updater',
+            },
+          },
+          (res) => {
+            if (res.statusCode === 302 || res.statusCode === 301) {
+              file.close();
+              fs.unlinkSync(targetPath);
+              return this.downloadFile(res.headers.location, targetPath)
+                .then(resolve)
+                .catch(reject);
+            }
 
-        res.pipe(file);
+            if (res.statusCode !== 200) {
+              file.close();
+              fs.unlinkSync(targetPath);
+              reject(new Error(`HTTP ${res.statusCode}`));
+              return;
+            }
 
-        file.on('finish', () => {
+            res.pipe(file);
+
+            file.on('finish', () => {
+              file.close();
+              resolve(targetPath);
+            });
+          },
+        )
+        .on('error', (err) => {
           file.close();
-          resolve(targetPath);
+          if (fs.existsSync(targetPath)) {
+            fs.unlinkSync(targetPath);
+          }
+          reject(err);
         });
-      }).on('error', (err) => {
-        file.close();
-        if (fs.existsSync(targetPath)) {
-          fs.unlinkSync(targetPath);
-        }
-        reject(err);
-      });
     });
   }
 
   static findNroFile(dir) {
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isFile() && file.toLowerCase().endsWith('.nro')) {
         return filePath;
       }
-      
+
       if (stat.isDirectory()) {
         const found = this.findNroFile(filePath);
         if (found) {
@@ -66,14 +72,14 @@ class PluginUpdateInstaller {
         }
       }
     }
-    
+
     return null;
   }
 
   static async extractZip(zipPath, targetPath) {
     try {
       if (!fs.existsSync(zipPath)) {
-        throw new Error("ZIP file does not exist: " + zipPath);
+        throw new Error('ZIP file does not exist: ' + zipPath);
       }
 
       if (!fs.existsSync(targetPath)) {
@@ -91,7 +97,7 @@ class PluginUpdateInstaller {
           const command = has7z
             ? `"${bundled7z}" x "${zipPath}" -o"${targetPath}" -y`
             : `7z x "${zipPath}" -o"${targetPath}" -y`;
-          
+
           await execAsync(command);
           extracted = true;
         } catch (err) {
@@ -120,12 +126,12 @@ class PluginUpdateInstaller {
       }
 
       if (!extracted) {
-        throw lastError || new Error("All extraction methods failed");
+        throw lastError || new Error('All extraction methods failed');
       }
 
       const extractedFiles = fs.readdirSync(targetPath);
       if (extractedFiles.length === 0) {
-        throw new Error("ZIP extraction resulted in no files");
+        throw new Error('ZIP extraction resulted in no files');
       }
 
       return true;
@@ -139,14 +145,15 @@ class PluginUpdateInstaller {
       if (!downloadUrl) {
         return {
           success: false,
-          error: 'No download URL available'
+          error: 'No download URL available',
         };
       }
 
       const tempDir = os.tmpdir();
-      const isZip = downloadUrl.toLowerCase().endsWith('.zip') || 
-                    downloadUrl.toLowerCase().includes('.zip');
-      
+      const isZip =
+        downloadUrl.toLowerCase().endsWith('.zip') ||
+        downloadUrl.toLowerCase().includes('.zip');
+
       let downloadedFilePath;
       let nroFilePath;
 
@@ -155,13 +162,13 @@ class PluginUpdateInstaller {
       if (isZip) {
         const tempZipName = `plugin-download-${Date.now()}.zip`;
         downloadedFilePath = path.join(tempDir, tempZipName);
-        
+
         await this.downloadFile(downloadUrl, downloadedFilePath);
 
         if (!fs.existsSync(downloadedFilePath)) {
           return {
             success: false,
-            error: 'Downloaded ZIP file not found'
+            error: 'Downloaded ZIP file not found',
           };
         }
 
@@ -179,7 +186,7 @@ class PluginUpdateInstaller {
           }
           return {
             success: false,
-            error: 'No .nro file found in the ZIP archive'
+            error: 'No .nro file found in the ZIP archive',
           };
         }
         actualFileName = path.basename(nroFilePath);
@@ -192,7 +199,7 @@ class PluginUpdateInstaller {
             actualFileName = decodeURIComponent(urlFilename);
           }
         } catch (e) {
-          console.error("Error parsing filename from URL:", e);
+          console.error('Error parsing filename from URL:', e);
         }
 
         // Fallback to pluginPath basename if URL parsing failed
@@ -209,14 +216,14 @@ class PluginUpdateInstaller {
       if (!fs.existsSync(nroFilePath)) {
         return {
           success: false,
-          error: 'Downloaded file not found'
+          error: 'Downloaded file not found',
         };
       }
 
       // actualFileName is already set correctly above
       const pluginDir = path.dirname(pluginPath);
       const finalPluginPath = path.join(pluginDir, actualFileName);
-      
+
       if (!fs.existsSync(pluginDir)) {
         fs.mkdirSync(pluginDir, { recursive: true });
       }
@@ -242,20 +249,19 @@ class PluginUpdateInstaller {
           fs.rmSync(extractDir, { recursive: true, force: true });
         }
       }
-      
+
       return {
         success: true,
         pluginPath: finalPluginPath,
-        actualFileName: actualFileName
+        actualFileName: actualFileName,
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
 }
 
 module.exports = PluginUpdateInstaller;
-

@@ -3,7 +3,7 @@ class CustomizationManager {
     this.pendingJsPath = null;
     this.customCssFiles = []; // Array of {path, element}
     this.customJsFiles = []; // Array of {path, element}
-    
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.initialize());
     } else {
@@ -13,7 +13,7 @@ class CustomizationManager {
 
   async initialize() {
     await this.loadSavedCustomizations();
-    
+
     setTimeout(() => {
       this.setupEventListeners();
     }, 200);
@@ -21,11 +21,11 @@ class CustomizationManager {
 
   setupEventListeners() {
     console.log('Setting up customization event listeners...');
-    
+
     // Render lists
     this.renderCssList();
     this.renderJsList();
-    
+
     const addCssBtn = document.getElementById('add-custom-css');
     if (addCssBtn && !addCssBtn.dataset.listenerAttached) {
       addCssBtn.addEventListener('click', () => this.addCustomCss());
@@ -43,19 +43,19 @@ class CustomizationManager {
       reloadAllCssBtn.addEventListener('click', () => this.reloadAllCss());
       reloadAllCssBtn.dataset.listenerAttached = 'true';
     }
-    
+
     console.log('Customization event listeners setup complete');
   }
 
   async loadSavedCustomizations() {
     console.log('Loading saved customizations...');
-    
+
     if (!window.electronAPI) {
       console.warn('electronAPI not available yet, retrying...');
       setTimeout(() => this.loadSavedCustomizations(), 500);
       return;
     }
-    
+
     if (!window.electronAPI.store) {
       console.warn('store not available yet, retrying...');
       setTimeout(() => this.loadSavedCustomizations(), 500);
@@ -63,8 +63,10 @@ class CustomizationManager {
     }
 
     try {
-      const customCssPaths = await window.electronAPI.store.get('customCssPaths') || [];
-      const customJsPaths = await window.electronAPI.store.get('customJsPaths') || [];
+      const customCssPaths =
+        (await window.electronAPI.store.get('customCssPaths')) || [];
+      const customJsPaths =
+        (await window.electronAPI.store.get('customJsPaths')) || [];
 
       console.log('Saved CSS paths:', customCssPaths);
       console.log('Saved JS paths:', customJsPaths);
@@ -78,7 +80,7 @@ class CustomizationManager {
         console.log('Loading custom JS from:', jsPath);
         await this.loadCustomJsFile(jsPath);
       }
-      
+
       console.log('All customizations loaded');
     } catch (error) {
       console.error('Error loading saved customizations:', error);
@@ -94,13 +96,13 @@ class CustomizationManager {
 
     try {
       const result = await window.electronAPI.selectCustomFile('css');
-      
+
       if (result.canceled || !result.filePath) {
         return;
       }
 
       // Check if already added
-      if (this.customCssFiles.find(f => f.path === result.filePath)) {
+      if (this.customCssFiles.find((f) => f.path === result.filePath)) {
         if (window.toastManager) {
           window.toastManager.warning('toasts.cssFileAlreadyLoaded');
         }
@@ -131,13 +133,13 @@ class CustomizationManager {
 
     try {
       const result = await window.electronAPI.selectCustomFile('js');
-      
+
       if (result.canceled || !result.filePath) {
         return;
       }
 
       // Check if already added
-      if (this.customJsFiles.find(f => f.path === result.filePath)) {
+      if (this.customJsFiles.find((f) => f.path === result.filePath)) {
         if (window.toastManager) {
           window.toastManager.warning('toasts.jsFileAlreadyLoaded');
         }
@@ -162,7 +164,7 @@ class CustomizationManager {
 
     try {
       const result = await window.electronAPI.selectCustomFile('css');
-      
+
       if (result.canceled || !result.filePath) {
         return;
       }
@@ -191,7 +193,7 @@ class CustomizationManager {
 
     try {
       const result = await window.electronAPI.selectCustomFile('js');
-      
+
       if (result.canceled || !result.filePath) {
         return;
       }
@@ -244,9 +246,14 @@ class CustomizationManager {
       </div>
     `;
 
-    this.showCustomModal('Security Warning', message, async () => {
-      await this.confirmLoadJs();
-    }, true);
+    this.showCustomModal(
+      'Security Warning',
+      message,
+      async () => {
+        await this.confirmLoadJs();
+      },
+      true,
+    );
   }
 
   showCustomModal(title, message, onConfirm, requireCheckbox = false) {
@@ -257,12 +264,12 @@ class CustomizationManager {
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.id = 'custom-warning-modal';
-    
-    const headerStyle = requireCheckbox 
+
+    const headerStyle = requireCheckbox
       ? 'background: linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 152, 0, 0.1) 100%); border-bottom-color: rgba(255, 152, 0, 0.3);'
       : '';
-    
-    const titleIcon = requireCheckbox 
+
+    const titleIcon = requireCheckbox
       ? '<i class="bi bi-shield-exclamation" style="color: #ff9800;"></i>'
       : '<i class="bi bi-info-circle"></i>';
 
@@ -278,10 +285,10 @@ class CustomizationManager {
       </div>
       <div class="modal-footer">
         <button class="modal-btn modal-btn-cancel" id="custom-modal-cancel-btn">
-          <i class="bi bi-x-lg"></i> ${t("common.cancel")}
+          <i class="bi bi-x-lg"></i> ${t('common.cancel')}
         </button>
         <button class="modal-btn ${requireCheckbox ? 'modal-btn-danger' : 'modal-btn-primary'}" id="custom-modal-confirm-btn" ${requireCheckbox ? 'disabled' : ''}>
-          ${requireCheckbox ? `<i class="bi bi-shield-exclamation"></i> ${t("customization.loadJsFile")}` : `<i class="bi bi-check-lg"></i> ${t("customization.confirm")}`}
+          ${requireCheckbox ? `<i class="bi bi-shield-exclamation"></i> ${t('customization.loadJsFile')}` : `<i class="bi bi-check-lg"></i> ${t('customization.confirm')}`}
         </button>
       </div>
     `;
@@ -368,7 +375,7 @@ class CustomizationManager {
 
     try {
       const result = await window.electronAPI.readCustomFile(filePath);
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to read CSS file');
       }
@@ -399,7 +406,7 @@ class CustomizationManager {
 
     try {
       const result = await window.electronAPI.readCustomFile(filePath);
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to read JS file');
       }
@@ -421,17 +428,17 @@ class CustomizationManager {
   }
 
   async saveCssPaths() {
-    const paths = this.customCssFiles.map(f => f.path);
+    const paths = this.customCssFiles.map((f) => f.path);
     await window.electronAPI.store.set('customCssPaths', paths);
   }
 
   async saveJsPaths() {
-    const paths = this.customJsFiles.map(f => f.path);
+    const paths = this.customJsFiles.map((f) => f.path);
     await window.electronAPI.store.set('customJsPaths', paths);
   }
 
   async removeCustomCssFile(filePath) {
-    const index = this.customCssFiles.findIndex(f => f.path === filePath);
+    const index = this.customCssFiles.findIndex((f) => f.path === filePath);
     if (index === -1) return;
 
     const file = this.customCssFiles[index];
@@ -449,7 +456,7 @@ class CustomizationManager {
   }
 
   async removeCustomJsFile(filePath) {
-    const index = this.customJsFiles.findIndex(f => f.path === filePath);
+    const index = this.customJsFiles.findIndex((f) => f.path === filePath);
     if (index === -1) return;
 
     const file = this.customJsFiles[index];
@@ -467,7 +474,7 @@ class CustomizationManager {
   }
 
   async reloadCustomCssFile(filePath) {
-    const index = this.customCssFiles.findIndex(f => f.path === filePath);
+    const index = this.customCssFiles.findIndex((f) => f.path === filePath);
     if (index === -1) return;
 
     const file = this.customCssFiles[index];
@@ -485,8 +492,8 @@ class CustomizationManager {
   }
 
   async reloadAllCss() {
-    const paths = [...this.customCssFiles.map(f => f.path)];
-    
+    const paths = [...this.customCssFiles.map((f) => f.path)];
+
     // Remove all
     for (const file of this.customCssFiles) {
       if (file.element) {
@@ -599,7 +606,7 @@ class CustomizationManager {
 
   async loadCustomCss(filePath) {
     console.log('loadCustomCss called with path:', filePath);
-    
+
     if (this.customCssElement) {
       console.log('Removing existing custom CSS element');
       this.customCssElement.remove();
@@ -613,9 +620,9 @@ class CustomizationManager {
     try {
       console.log('Reading custom CSS file...');
       const result = await window.electronAPI.readCustomFile(filePath);
-      
+
       console.log('Read result:', result);
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to read CSS file');
       }
@@ -625,18 +632,23 @@ class CustomizationManager {
       this.customCssElement.textContent = result.content;
       document.head.appendChild(this.customCssElement);
 
-      console.log('Custom CSS element added to head, content length:', result.content.length);
+      console.log(
+        'Custom CSS element added to head, content length:',
+        result.content.length,
+      );
       console.log('Custom CSS applied successfully from:', filePath);
     } catch (error) {
       console.error('Error loading custom CSS:', error);
-      
+
       if (window.toastManager) {
-        window.toastManager.error(`Failed to load custom CSS: ${error.message}`);
+        window.toastManager.error(
+          `Failed to load custom CSS: ${error.message}`,
+        );
       }
-      
+
       await window.electronAPI.store.delete('customCssPath');
       this.updateCssPathUI('');
-      
+
       throw error;
     }
   }
@@ -653,7 +665,7 @@ class CustomizationManager {
 
     try {
       const result = await window.electronAPI.readCustomFile(filePath);
-      
+
       if (!result.success) {
         throw new Error(result.error || 'Failed to read JavaScript file');
       }
@@ -711,7 +723,7 @@ class CustomizationManager {
 
     try {
       const customCssPath = await window.electronAPI.store.get('customCssPath');
-      
+
       if (!customCssPath) {
         if (window.toastManager) {
           window.toastManager.info('toasts.noCustomCssToReload');
@@ -734,7 +746,9 @@ class CustomizationManager {
 
   async reloadCustomJs() {
     if (window.toastManager) {
-      window.toastManager.info('Please restart the application to reload custom JavaScript');
+      window.toastManager.info(
+        'Please restart the application to reload custom JavaScript',
+      );
     }
   }
 

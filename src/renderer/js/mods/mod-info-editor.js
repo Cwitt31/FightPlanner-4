@@ -14,7 +14,7 @@ class ModInfoEditor {
 
     if (!modPath) {
       if (window.modalManager) {
-        window.modalManager.showAlert("error", "Error", "No mod selected");
+        window.modalManager.showAlert('error', 'Error', 'No mod selected');
       }
       return;
     }
@@ -25,7 +25,7 @@ class ModInfoEditor {
   openEditor(modPath, currentInfo) {
     this.currentModPath = modPath;
     this.currentInfo = currentInfo;
-    
+
     if (window.modalManager) {
       window.modalManager.openEditInfoModal(modPath, currentInfo, (info) => {
         this.saveInfo(info);
@@ -39,37 +39,53 @@ class ModInfoEditor {
     window.modalManager.closeEditInfoModal();
 
     try {
-      const rawContent = await window.electronAPI.readModInfoRaw(this.currentModPath);
-      
+      const rawContent = await window.electronAPI.readModInfoRaw(
+        this.currentModPath,
+      );
+
       setTimeout(() => {
-        window.modalManager.openAdvancedInfoModal(this.currentModPath, rawContent);
+        window.modalManager.openAdvancedInfoModal(
+          this.currentModPath,
+          rawContent,
+        );
       }, 350);
     } catch (error) {
-      window.modalManager.showAlert('error', 'Error', 'Failed to load info.toml content');
+      window.modalManager.showAlert(
+        'error',
+        'Error',
+        'Failed to load info.toml content',
+      );
     }
   }
 
   async saveInfo(info) {
     try {
-      const result = await window.electronAPI.saveModInfo(this.currentModPath, info);
-      
+      const result = await window.electronAPI.saveModInfo(
+        this.currentModPath,
+        info,
+      );
+
       if (result.success) {
         if (window.toastManager) {
           window.toastManager.success('toasts.infoTomlSaved');
         }
-        
+
         if (window.modManager && window.modManager.selectedMod) {
           window.modManager.selectMod(window.modManager.selectedMod.id);
         }
       } else {
         if (window.toastManager) {
-          window.toastManager.error('toasts.failedToSaveInfoToml', 3000, { error: result.error });
+          window.toastManager.error('toasts.failedToSaveInfoToml', 3000, {
+            error: result.error,
+          });
         }
       }
     } catch (error) {
       console.error('Error saving mod info:', error);
       if (window.toastManager) {
-        window.toastManager.error('toasts.failedToSaveInfoToml', 3000, { error: '' });
+        window.toastManager.error('toasts.failedToSaveInfoToml', 3000, {
+          error: '',
+        });
       }
     }
   }

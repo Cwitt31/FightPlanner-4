@@ -16,27 +16,32 @@ async function detectWindowsDrives() {
 
   try {
     // Use wmic to get drive information
-    const { stdout } = await execAsync('wmic logicaldisk get name,volumename,drivetype');
+    const { stdout } = await execAsync(
+      'wmic logicaldisk get name,volumename,drivetype',
+    );
     console.log('WMIC output:', stdout);
-    
+
     // Split by lines and filter out headers and empty lines
-    const lines = stdout.split('\n')
-      .map(line => line.trim())
-      .filter(line => {
+    const lines = stdout
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => {
         if (!line) return false;
         const upperLine = line.toUpperCase();
-        return !upperLine.includes('NAME') && 
-               !upperLine.includes('VOLUMENAME') && 
-               !upperLine.includes('DRIVETYPE') &&
-               /^[A-Z]:/.test(line);
+        return (
+          !upperLine.includes('NAME') &&
+          !upperLine.includes('VOLUMENAME') &&
+          !upperLine.includes('DRIVETYPE') &&
+          /^[A-Z]:/.test(line)
+        );
       });
-    
+
     console.log('Filtered lines:', lines);
-    
+
     const drives = [];
     for (const line of lines) {
       if (!line) continue;
-      
+
       // Parse the line - format can vary: "C:    Windows    3" or "C:  Windows  3" or "C:              3"
       // Extract drive letter (should be at the start, format "X:")
       const driveMatch = line.match(/^([A-Z]):/i);
@@ -44,28 +49,31 @@ async function detectWindowsDrives() {
         console.log('No drive match for line:', line);
         continue;
       }
-      
+
       const letter = driveMatch[1].toUpperCase();
-      
+
       // Extract drive type (should be at the end, a single digit)
       const typeMatch = line.match(/\s+(\d+)\s*$/);
       if (!typeMatch) {
         console.log('No type match for line:', line);
         continue;
       }
-      
+
       const type = typeMatch[1];
-      
+
       // Extract volume name (everything between drive letter and type)
       let label = 'Local Disk';
       // Try to extract label - remove drive letter and type, get what's in between
-      const labelPart = line.replace(/^[A-Z]:\s*/, '').replace(/\s+\d+\s*$/, '').trim();
+      const labelPart = line
+        .replace(/^[A-Z]:\s*/, '')
+        .replace(/\s+\d+\s*$/, '')
+        .trim();
       if (labelPart && labelPart.length > 0) {
         label = labelPart;
       }
-      
+
       console.log(`Drive found: ${letter}:, label: ${label}, type: ${type}`);
-      
+
       // Filter for removable drives (type 2) and fixed drives (type 3)
       // We include both because SD cards can sometimes show as fixed
       // Exclude C: drive (system drive)
@@ -74,19 +82,19 @@ async function detectWindowsDrives() {
           letter: letter,
           label: label,
           type: type === '2' ? 'removable' : 'fixed',
-          path: `${letter}:\\`
+          path: `${letter}:\\`,
         });
       }
     }
-    
+
     console.log('Detected drives:', drives);
-    
+
     // If no drives found with wmic, try fallback
     if (drives.length === 0) {
       console.log('No drives found with wmic, trying fallback method...');
       return await fallbackWindowsDetection();
     }
-    
+
     return drives;
   } catch (error) {
     console.error('Error detecting drives with wmic:', error);
@@ -101,33 +109,36 @@ async function fallbackWindowsDetection() {
   console.log('Using fallback drive detection...');
   const fallbackDrives = [];
   const driveLetters = 'CDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-  
+
   for (const letter of driveLetters) {
     // Exclude C: drive (system drive)
     if (letter === 'C') continue;
-    
+
     const drivePath = `${letter}:\\`;
     try {
       if (fs.existsSync(drivePath)) {
         // Try to get volume label
         let label = 'Unknown';
         try {
-          const { stdout } = await execAsync(`wmic logicaldisk where "name='${letter}:'" get volumename`);
-          const labelLines = stdout.split('\n')
-            .map(l => l.trim())
-            .filter(l => l && !l.toUpperCase().includes('VOLUMENAME'));
+          const { stdout } = await execAsync(
+            `wmic logicaldisk where "name='${letter}:'" get volumename`,
+          );
+          const labelLines = stdout
+            .split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l && !l.toUpperCase().includes('VOLUMENAME'));
           if (labelLines.length > 0 && labelLines[0]) {
             label = labelLines[0];
           }
         } catch (e) {
           // Keep default label
         }
-        
+
         fallbackDrives.push({
           letter: letter,
           label: label || 'Unknown',
           type: 'unknown',
-          path: drivePath
+          path: drivePath,
         });
         console.log(`Fallback: Found drive ${letter}:`);
       }
@@ -135,7 +146,7 @@ async function fallbackWindowsDetection() {
       // Drive doesn't exist or isn't accessible
     }
   }
-  
+
   console.log('Fallback detected drives:', fallbackDrives);
   return fallbackDrives;
 }
@@ -152,8 +163,8 @@ async function detectLinuxDrives() {
   try {
     // Use lsblk to get mounted drives
     const { stdout } = await execAsync('lsblk -n -o MOUNTPOINT,LABEL,TYPE');
-    const lines = stdout.split('\n').filter(line => line.trim());
-    
+    const lines = stdout.split('\n').filter((line) => line.trim());
+
     const drives = [];
     for (const line of lines) {
       const parts = line.trim().split(/\s+/);
@@ -161,38 +172,48 @@ async function detectLinuxDrives() {
         const mountPoint = parts[0];
         const label = parts[1] || 'Unknown';
         const type = parts[2] || 'unknown';
-        
+
         // Skip root filesystem and system mounts
-        if (mountPoint === '/' || mountPoint.startsWith('/boot') || mountPoint.startsWith('/sys') || mountPoint.startsWith('/proc')) {
+        if (
+          mountPoint === '/' ||
+          mountPoint.startsWith('/boot') ||
+          mountPoint.startsWith('/sys') ||
+          mountPoint.startsWith('/proc')
+        ) {
           continue;
         }
-        
+
         // Extract a simple identifier from mount point
-        const mountName = path.basename(mountPoint) || mountPoint.replace(/\//g, '_');
-        
+        const mountName =
+          path.basename(mountPoint) || mountPoint.replace(/\//g, '_');
+
         drives.push({
           letter: mountName,
           label: label,
           type: type === 'disk' ? 'fixed' : 'removable',
-          path: mountPoint
+          path: mountPoint,
         });
       }
     }
-    
+
     return drives;
   } catch (error) {
     console.error('Error detecting drives on Linux:', error);
-    
+
     // Fallback: use df to get mounted filesystems
     try {
-      const { stdout } = await execAsync('df -h | grep -E "^/dev/" | awk \'{print $6}\'');
-      const mountPoints = stdout.split('\n').filter(mp => mp.trim() && mp !== '/');
-      
-      return mountPoints.map(mountPoint => ({
+      const { stdout } = await execAsync(
+        'df -h | grep -E "^/dev/" | awk \'{print $6}\'',
+      );
+      const mountPoints = stdout
+        .split('\n')
+        .filter((mp) => mp.trim() && mp !== '/');
+
+      return mountPoints.map((mountPoint) => ({
         letter: path.basename(mountPoint) || mountPoint.replace(/\//g, '_'),
         label: 'Unknown',
         type: 'unknown',
-        path: mountPoint.trim()
+        path: mountPoint.trim(),
       }));
     } catch (fallbackError) {
       console.error('Fallback drive detection failed:', fallbackError);
@@ -212,43 +233,53 @@ async function detectMacOSDrives() {
 
   try {
     // Use diskutil to list mounted volumes
-    const { stdout } = await execAsync('diskutil list -plist external physical');
-    
+    const { stdout } = await execAsync(
+      'diskutil list -plist external physical',
+    );
+
     // Parse plist output (simplified - for production, use a plist parser)
     // For now, use df as a simpler alternative
-    const { stdout: dfOutput } = await execAsync('df -h | grep -E "^/dev/disk"');
-    const lines = dfOutput.split('\n').filter(line => line.trim());
-    
+    const { stdout: dfOutput } = await execAsync(
+      'df -h | grep -E "^/dev/disk"',
+    );
+    const lines = dfOutput.split('\n').filter((line) => line.trim());
+
     const drives = [];
     for (const line of lines) {
       const parts = line.trim().split(/\s+/);
       if (parts.length >= 6) {
         const mountPoint = parts[parts.length - 1];
-        
+
         // Skip system volumes
-        if (mountPoint === '/' || mountPoint.startsWith('/System') || mountPoint.startsWith('/private')) {
+        if (
+          mountPoint === '/' ||
+          mountPoint.startsWith('/System') ||
+          mountPoint.startsWith('/private')
+        ) {
           continue;
         }
-        
+
         // Get volume name
         let label = 'Unknown';
         try {
-          const { stdout: labelOutput } = await execAsync(`diskutil info "${mountPoint}" | grep "Volume Name" | awk -F': ' '{print $2}'`);
+          const { stdout: labelOutput } = await execAsync(
+            `diskutil info "${mountPoint}" | grep "Volume Name" | awk -F': ' '{print $2}'`,
+          );
           label = labelOutput.trim() || 'Unknown';
         } catch (e) {
           // Use mount point name as fallback
           label = path.basename(mountPoint) || 'Unknown';
         }
-        
+
         drives.push({
           letter: path.basename(mountPoint) || mountPoint.replace(/\//g, '_'),
           label: label,
           type: 'removable',
-          path: mountPoint
+          path: mountPoint,
         });
       }
     }
-    
+
     return drives;
   } catch (error) {
     console.error('Error detecting drives on macOS:', error);
@@ -268,7 +299,9 @@ async function detectDrives() {
   } else if (process.platform === 'darwin') {
     return await detectMacOSDrives();
   } else {
-    console.warn(`Drive detection not implemented for platform: ${process.platform}`);
+    console.warn(
+      `Drive detection not implemented for platform: ${process.platform}`,
+    );
     return [];
   }
 }
@@ -307,14 +340,5 @@ module.exports = {
   detectMacOSDrives,
   detectDrives,
   isDriveAccessible,
-  isSwitchSdCard
+  isSwitchSdCard,
 };
-
-
-
-
-
-
-
-
-

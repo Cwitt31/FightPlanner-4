@@ -23,21 +23,21 @@ const ErrorCodes = {
   LOCALE_LOAD_ERROR: 'LOCALE_LOAD_ERROR',
   TUTORIAL_WINDOW_ERROR: 'TUTORIAL_WINDOW_ERROR',
   MIGRATION_ERROR: 'MIGRATION_ERROR',
-  UNKNOWN_ERROR: 'UNKNOWN_ERROR'
+  UNKNOWN_ERROR: 'UNKNOWN_ERROR',
 };
 
 function handleError(error, context) {
   const errorMessage = error?.message || String(error);
   const errorStack = error?.stack;
-  
+
   console.error(`[${context}] Error:`, errorMessage);
   if (errorStack && process.env.NODE_ENV !== 'production') {
     console.error(`[${context}] Stack:`, errorStack);
   }
-  
+
   return {
     error: errorMessage,
-    context
+    context,
   };
 }
 
@@ -46,30 +46,12 @@ function createErrorResponse(code, message, details = {}) {
     success: false,
     error: message,
     code: code,
-    details: details
+    details: details,
   };
 }
 
 module.exports = {
   ErrorCodes,
   handleError,
-  createErrorResponse
+  createErrorResponse,
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
