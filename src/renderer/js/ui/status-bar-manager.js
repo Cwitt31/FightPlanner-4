@@ -13,7 +13,9 @@ class StatusBarManager {
   }
 
   updateStatus(tabName) {
-    const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+    const statusText =
+      document.querySelector('.bottom-text-left') ||
+      document.querySelector('.bottom-text');
     if (!statusText) return;
 
     const modalOpen = this.hasModalOpen();
@@ -28,12 +30,25 @@ class StatusBarManager {
       this.preservedStatus = null;
     }
 
-    const validTabs = ["social", "downloads", "tools", "plugins", "settings", "characters", "stages", "fightplanner"];
-    
+    const validTabs = [
+      'social',
+      'downloads',
+      'tools',
+      'plugins',
+      'settings',
+      'characters',
+      'stages',
+      'fightplanner',
+    ];
+
     if (typeof tabName === 'string') {
       if (validTabs.includes(tabName)) {
         this.currentTab = tabName;
-      } else if (tabName.startsWith("statusBar.") || tabName.includes("...") || tabName.includes("…")) {
+      } else if (
+        tabName.startsWith('statusBar.') ||
+        tabName.includes('...') ||
+        tabName.includes('…')
+      ) {
         if (!this.preservedStatus) {
           this.animateStatusChange(statusText, () => {
             this.setStatusText(this.t(tabName));
@@ -59,25 +74,25 @@ class StatusBarManager {
       this.animateStatusChange(statusText, () => {
         const tab = this.currentTab;
         switch (tab) {
-          case "social":
+          case 'social':
             this.updateSocialStatus(statusText);
             break;
-          case "downloads":
+          case 'downloads':
             this.updateDownloadsStatus(statusText);
             break;
-          case "tools":
+          case 'tools':
             this.updateToolsStatus(statusText);
             break;
-          case "plugins":
+          case 'plugins':
             this.updatePluginsStatus(statusText);
             break;
-          case "settings":
+          case 'settings':
             this.updateSettingsStatus(statusText);
             break;
-          case "characters":
+          case 'characters':
             this.updateCharactersStatus(statusText);
             break;
-          case "stages":
+          case 'stages':
             this.updateStagesStatus(statusText);
             break;
           default:
@@ -90,48 +105,52 @@ class StatusBarManager {
   }
 
   animateStatusChange(statusText, callback) {
-    if (this.preservedStatus || (this.hasModalOpen() && !this.checkActiveDownloads())) {
+    if (
+      this.preservedStatus ||
+      (this.hasModalOpen() && !this.checkActiveDownloads())
+    ) {
       return;
     }
 
-    const isReducedAnimations = document.body.classList.contains("reduced-animations");
-    const isNoAnimations = document.body.classList.contains("no-animations");
+    const isReducedAnimations =
+      document.body.classList.contains('reduced-animations');
+    const isNoAnimations = document.body.classList.contains('no-animations');
 
     if (isNoAnimations) {
       callback();
       return;
     }
 
-    statusText.classList.add("status-changing");
-    
+    statusText.classList.add('status-changing');
+
     if (isReducedAnimations) {
-      statusText.style.transition = "opacity 0.1s ease";
-      statusText.style.opacity = "0";
+      statusText.style.transition = 'opacity 0.1s ease';
+      statusText.style.opacity = '0';
       setTimeout(() => {
         callback();
         setTimeout(() => {
-          statusText.style.opacity = "1";
-          statusText.style.transform = "translateY(0)";
-          statusText.classList.remove("status-changing");
+          statusText.style.opacity = '1';
+          statusText.style.transform = 'translateY(0)';
+          statusText.classList.remove('status-changing');
         }, 10);
       }, 100);
     } else {
-      statusText.style.transition = "opacity 0.2s ease, transform 0.2s ease";
-      statusText.style.opacity = "0";
-      statusText.style.transform = "translateY(5px)";
+      statusText.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+      statusText.style.opacity = '0';
+      statusText.style.transform = 'translateY(5px)';
 
       setTimeout(() => {
         callback();
 
         setTimeout(() => {
-          statusText.style.opacity = "1";
-          statusText.style.transform = "translateY(0)";
-          
+          statusText.style.opacity = '1';
+          statusText.style.transform = 'translateY(0)';
+
           setTimeout(() => {
-            statusText.style.transition = "";
-            statusText.style.opacity = "";
-            statusText.style.transform = "";
-            statusText.classList.remove("status-changing");
+            statusText.style.transition = '';
+            statusText.style.opacity = '';
+            statusText.style.transform = '';
+            statusText.classList.remove('status-changing');
           }, 200);
         }, 10);
       }, 200);
@@ -139,14 +158,16 @@ class StatusBarManager {
   }
 
   hasModalOpen() {
-    const overlay = document.getElementById("modal-overlay");
-    if (overlay && overlay.style.display === "block") {
+    const overlay = document.getElementById('modal-overlay');
+    if (overlay && overlay.style.display === 'block') {
       return true;
     }
-    
-    const allModals = document.querySelectorAll('.modal, .character-modal-overlay');
+
+    const allModals = document.querySelectorAll(
+      '.modal, .character-modal-overlay',
+    );
     for (const modal of allModals) {
-      if (modal.style.display === "block" || modal.style.display === "flex") {
+      if (modal.style.display === 'block' || modal.style.display === 'flex') {
         return true;
       }
     }
@@ -154,18 +175,32 @@ class StatusBarManager {
   }
 
   preserveCurrentStatus() {
-    const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+    const statusText =
+      document.querySelector('.bottom-text-left') ||
+      document.querySelector('.bottom-text');
     if (statusText) {
       const currentStatus = statusText.textContent || statusText.innerHTML;
-      if (currentStatus && currentStatus.trim() && currentStatus !== this.t("statusBar.ready") && currentStatus !== "Ready" && currentStatus !== "Prêt") {
+      if (
+        currentStatus &&
+        currentStatus.trim() &&
+        currentStatus !== this.t('statusBar.ready') &&
+        currentStatus !== 'Ready' &&
+        currentStatus !== 'Prêt'
+      ) {
         this.preservedStatus = currentStatus;
       }
     }
   }
 
   restorePreservedStatus() {
-    if (this.preservedStatus && !this.checkActiveDownloads() && !this.hasModalOpen()) {
-      const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+    if (
+      this.preservedStatus &&
+      !this.checkActiveDownloads() &&
+      !this.hasModalOpen()
+    ) {
+      const statusText =
+        document.querySelector('.bottom-text-left') ||
+        document.querySelector('.bottom-text');
       if (statusText) {
         statusText.textContent = this.preservedStatus;
         this.preservedStatus = null;
@@ -186,7 +221,9 @@ class StatusBarManager {
     if (this.preservedStatus) {
       return false;
     }
-    const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+    const statusText =
+      document.querySelector('.bottom-text-left') ||
+      document.querySelector('.bottom-text');
     if (statusText) {
       if (useInnerHTML) {
         statusText.innerHTML = content;
@@ -203,10 +240,10 @@ class StatusBarManager {
     if (window.downloadManager && window.downloadManager.ftpTransfer) {
       return true;
     }
-    
+
     if (window.downloadManager && window.downloadManager.activeDownloads) {
       const activeDownloads = Array.from(
-        window.downloadManager.activeDownloads.values()
+        window.downloadManager.activeDownloads.values(),
       );
       return activeDownloads.length > 0;
     }
@@ -221,8 +258,10 @@ class StatusBarManager {
       this.preserveCurrentStatus();
       return;
     }
-    
-    const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+
+    const statusText =
+      document.querySelector('.bottom-text-left') ||
+      document.querySelector('.bottom-text');
     if (!statusText) return;
 
     if (hasActiveDownloads) {
@@ -231,8 +270,8 @@ class StatusBarManager {
         this.updateDownloadsStatus(statusText);
       });
     } else if (this.currentTab && !modalOpen) {
-      if (statusText.classList.contains("status-downloading")) {
-        statusText.classList.remove("status-downloading");
+      if (statusText.classList.contains('status-downloading')) {
+        statusText.classList.remove('status-downloading');
         statusText.offsetHeight;
       }
       this.updateStatus(this.currentTab);
@@ -243,7 +282,11 @@ class StatusBarManager {
 
   async updateSocialStatus(statusText) {
     const updateStatus = async () => {
-      if (this.currentTab !== "social" || this.checkActiveDownloads() || this.hasModalOpen()) {
+      if (
+        this.currentTab !== 'social' ||
+        this.checkActiveDownloads() ||
+        this.hasModalOpen()
+      ) {
         if (this.updateInterval) {
           clearInterval(this.updateInterval);
           this.updateInterval = null;
@@ -267,14 +310,16 @@ class StatusBarManager {
             const modsData = await window.socialManager.fetchWithCache(
               `${window.socialManager.API_URL}/list/links?idToken=${window.socialManager.authToken}`,
               {},
-              'links'
+              'links',
             );
-            
-            const mods = Array.isArray(modsData) ? modsData : (modsData.documents || []);
+
+            const mods = Array.isArray(modsData)
+              ? modsData
+              : modsData.documents || [];
 
             if (Array.isArray(mods)) {
               const usernameEl = document.getElementById(
-                "social-profile-username"
+                'social-profile-username',
               );
               const username = usernameEl ? usernameEl.textContent : null;
               const myMods = mods.filter((mod) => {
@@ -288,39 +333,43 @@ class StatusBarManager {
               const friendsData = await window.socialManager.fetchWithCache(
                 `${window.socialManager.API_URL}/links-friends`,
                 {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
                   body: JSON.stringify({
                     idToken: window.socialManager.authToken,
                   }),
                 },
-                'friends'
+                'friends',
               );
 
               let friendsCount = 0;
               if (friendsData.friends && Array.isArray(friendsData.friends)) {
                 friendsCount = friendsData.friends.filter(
-                  (f) => f.status === "accepted"
+                  (f) => f.status === 'accepted',
                 ).length;
               }
 
-              this.setStatusText(this.t("statusBar.socialModsShared", {
-                count: myMods.length,
-                plural: myMods.length !== 1 ? "s" : "",
-                friends: friendsCount,
-                friendsPlural: friendsCount !== 1 ? "s" : ""
-              }));
+              this.setStatusText(
+                this.t('statusBar.socialModsShared', {
+                  count: myMods.length,
+                  plural: myMods.length !== 1 ? 's' : '',
+                  friends: friendsCount,
+                  friendsPlural: friendsCount !== 1 ? 's' : '',
+                }),
+              );
             } else {
-              this.setStatusText(this.t("statusBar.socialConnected"));
+              this.setStatusText(this.t('statusBar.socialConnected'));
             }
           } catch (e) {
-            this.setStatusText(this.t("statusBar.socialConnected"));
+            this.setStatusText(this.t('statusBar.socialConnected'));
           }
         } else {
-          this.setStatusText(this.t("statusBar.socialNotConnected"));
+          this.setStatusText(this.t('statusBar.socialNotConnected'));
         }
       } catch (error) {
-        this.setStatusText(this.t("statusBar.socialReady"));
+        this.setStatusText(this.t('statusBar.socialReady'));
       }
     };
 
@@ -343,42 +392,47 @@ class StatusBarManager {
       if (this.hasModalOpen() && !this.checkActiveDownloads()) {
         return;
       }
-      
+
       try {
         // Check for FTP transfer first
         if (window.downloadManager && window.downloadManager.ftpTransfer) {
           const ftp = window.downloadManager.ftpTransfer;
-          const dots = ".".repeat(animationFrame % 4);
+          const dots = '.'.repeat(animationFrame % 4);
           animationFrame++;
-          
+
           let statusContent;
           if (ftp.totalMods > 0) {
-            statusContent = this.t("statusBar.ftpSending", {
+            statusContent = this.t('statusBar.ftpSending', {
               current: ftp.currentMod || 0,
-              total: ftp.totalMods || 0
+              total: ftp.totalMods || 0,
             });
           } else {
-            statusContent = this.t("statusBar.ftpSending", {
-              current: "",
-              total: ""
-            }).replace(" • / mods", "");
+            statusContent = this.t('statusBar.ftpSending', {
+              current: '',
+              total: '',
+            }).replace(' • / mods', '');
           }
           statusContent += dots;
-          
-            if (this.setStatusText(statusContent, true)) {
-              const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
-              if (statusText && !statusText.classList.contains("status-downloading")) {
-                statusText.classList.add("status-downloading");
-              }
+
+          if (this.setStatusText(statusContent, true)) {
+            const statusText =
+              document.querySelector('.bottom-text-left') ||
+              document.querySelector('.bottom-text');
+            if (
+              statusText &&
+              !statusText.classList.contains('status-downloading')
+            ) {
+              statusText.classList.add('status-downloading');
             }
-          
+          }
+
           setTimeout(() => updateStatus(), 200);
           return;
         }
 
         if (window.downloadManager && window.downloadManager.activeDownloads) {
           const activeDownloads = Array.from(
-            window.downloadManager.activeDownloads.values()
+            window.downloadManager.activeDownloads.values(),
           );
           const activeCount = activeDownloads.length;
           const completedCount = window.downloadManager.completedDownloads
@@ -390,8 +444,8 @@ class StatusBarManager {
             const currentTime = Date.now();
             const timeDelta = (currentTime - lastUpdateTime) / 1000;
 
-            let speedText = "";
-            let progressText = "";
+            let speedText = '';
+            let progressText = '';
 
             if (
               firstDownload.receivedBytes !== undefined &&
@@ -399,7 +453,7 @@ class StatusBarManager {
               firstDownload.totalBytes > 0
             ) {
               const progress = Math.round(
-                (firstDownload.receivedBytes / firstDownload.totalBytes) * 100
+                (firstDownload.receivedBytes / firstDownload.totalBytes) * 100,
               );
               progressText = `${progress}%`;
 
@@ -417,56 +471,61 @@ class StatusBarManager {
               progressText = `${Math.round(firstDownload.progress)}%`;
             }
 
-            let sizeInfo = "";
+            let sizeInfo = '';
             if (
               firstDownload.totalBytes !== undefined &&
               firstDownload.totalBytes > 0
             ) {
               const received = firstDownload.receivedBytes || 0;
               sizeInfo = `${this.formatBytes(received)} / ${this.formatBytes(
-                firstDownload.totalBytes
+                firstDownload.totalBytes,
               )}`;
             }
 
             const fileName =
               firstDownload.modName ||
               firstDownload.fileName ||
-              firstDownload.url?.split("/").pop() ||
-              "Downloading...";
+              firstDownload.url?.split('/').pop() ||
+              'Downloading...';
             const shortFileName =
               fileName.length > 30
-                ? fileName.substring(0, 27) + "..."
+                ? fileName.substring(0, 27) + '...'
                 : fileName;
 
-            const dots = ".".repeat(animationFrame % 4);
+            const dots = '.'.repeat(animationFrame % 4);
             const animIndicator =
-              activeCount > 1 ? ` [${activeCount} active]` : "";
+              activeCount > 1 ? ` [${activeCount} active]` : '';
 
-            let progressPart = progressText ? ` • ${progressText}` : "";
-            let sizePart = sizeInfo ? ` • ${sizeInfo}` : "";
-            let speedPart = speedText ? ` • ${speedText}` : "";
-            
-            let statusContent = this.t("statusBar.downloadsDownloading", {
+            let progressPart = progressText ? ` • ${progressText}` : '';
+            let sizePart = sizeInfo ? ` • ${sizeInfo}` : '';
+            let speedPart = speedText ? ` • ${speedText}` : '';
+
+            let statusContent = this.t('statusBar.downloadsDownloading', {
               fileName: shortFileName,
               progress: progressPart,
               size: sizePart,
-              speed: speedPart
+              speed: speedPart,
             });
             statusContent += dots;
             if (animIndicator) statusContent += animIndicator;
 
             if (this.setStatusText(statusContent, true)) {
-              const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
-              if (statusText && !statusText.classList.contains("status-downloading")) {
-                statusText.classList.add("status-downloading");
+              const statusText =
+                document.querySelector('.bottom-text-left') ||
+                document.querySelector('.bottom-text');
+              if (
+                statusText &&
+                !statusText.classList.contains('status-downloading')
+              ) {
+                statusText.classList.add('status-downloading');
               }
             }
 
             lastUpdateTime = currentTime;
             animationFrame++;
           } else {
-            if (statusText.classList.contains("status-downloading")) {
-              statusText.classList.remove("status-downloading");
+            if (statusText.classList.contains('status-downloading')) {
+              statusText.classList.remove('status-downloading');
 
               statusText.offsetHeight;
             }
@@ -476,7 +535,7 @@ class StatusBarManager {
               this.updateInterval = null;
             }
 
-            if (this.currentTab !== "downloads") {
+            if (this.currentTab !== 'downloads') {
               if (!this.hasModalOpen() && !this.preservedStatus) {
                 this.updateStatus(this.currentTab);
               }
@@ -485,18 +544,20 @@ class StatusBarManager {
 
             if (!this.hasModalOpen() && !this.preservedStatus) {
               if (completedCount > 0) {
-                this.setStatusText(this.t("statusBar.downloadsCompleted", {
-                  count: completedCount,
-                  plural: completedCount !== 1 ? "s" : ""
-                }));
+                this.setStatusText(
+                  this.t('statusBar.downloadsCompleted', {
+                    count: completedCount,
+                    plural: completedCount !== 1 ? 's' : '',
+                  }),
+                );
               } else {
-                this.setStatusText(this.t("statusBar.downloadsNoActive"));
+                this.setStatusText(this.t('statusBar.downloadsNoActive'));
               }
             }
           }
         } else {
-          if (statusText.classList.contains("status-downloading")) {
-            statusText.classList.remove("status-downloading");
+          if (statusText.classList.contains('status-downloading')) {
+            statusText.classList.remove('status-downloading');
 
             statusText.offsetHeight;
           }
@@ -506,7 +567,7 @@ class StatusBarManager {
             this.updateInterval = null;
           }
 
-          if (this.currentTab !== "downloads") {
+          if (this.currentTab !== 'downloads') {
             if (!this.hasModalOpen() && !this.preservedStatus) {
               this.updateStatus(this.currentTab);
             }
@@ -514,14 +575,14 @@ class StatusBarManager {
           }
 
           if (!this.hasModalOpen() && !this.preservedStatus) {
-            this.setStatusText(this.t("statusBar.downloadsReady"));
+            this.setStatusText(this.t('statusBar.downloadsReady'));
           }
         }
       } catch (error) {
-        console.error("Status bar error:", error);
-        statusText.classList.remove("status-downloading");
+        console.error('Status bar error:', error);
+        statusText.classList.remove('status-downloading');
 
-        if (this.currentTab !== "downloads") {
+        if (this.currentTab !== 'downloads') {
           if (!this.hasModalOpen() && !this.preservedStatus) {
             this.updateStatus(this.currentTab);
           }
@@ -529,7 +590,7 @@ class StatusBarManager {
         }
 
         if (!this.hasModalOpen() && !this.preservedStatus) {
-          this.setStatusText("Downloads • Ready");
+          this.setStatusText('Downloads • Ready');
         }
       }
     };
@@ -549,23 +610,25 @@ class StatusBarManager {
           this.updateInterval = null;
         }
 
-        if (statusText.classList.contains("status-downloading")) {
-          statusText.classList.remove("status-downloading");
+        if (statusText.classList.contains('status-downloading')) {
+          statusText.classList.remove('status-downloading');
           statusText.offsetHeight;
         }
 
-        if (this.currentTab && this.currentTab !== "downloads") {
+        if (this.currentTab && this.currentTab !== 'downloads') {
           this.updateStatus(this.currentTab);
-        } else if (this.currentTab === "downloads") {
+        } else if (this.currentTab === 'downloads') {
           const completedCount =
             window.downloadManager?.completedDownloads?.length || 0;
           if (completedCount > 0) {
-            this.setStatusText(this.t("statusBar.downloadsCompleted", {
-              count: completedCount,
-              plural: completedCount !== 1 ? "s" : ""
-            }));
+            this.setStatusText(
+              this.t('statusBar.downloadsCompleted', {
+                count: completedCount,
+                plural: completedCount !== 1 ? 's' : '',
+              }),
+            );
           } else {
-            this.setStatusText(this.t("statusBar.downloadsNoActive"));
+            this.setStatusText(this.t('statusBar.downloadsNoActive'));
           }
         }
       }
@@ -576,19 +639,19 @@ class StatusBarManager {
    * Format bytes to human readable format
    */
   formatBytes(bytes) {
-    if (!bytes || bytes === 0) return "0 B";
+    if (!bytes || bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
+    const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
   /**
    * Format download speed
    */
   formatSpeed(bytesPerSecond) {
-    if (!bytesPerSecond || bytesPerSecond === 0) return "";
-    return this.formatBytes(bytesPerSecond) + "/s";
+    if (!bytesPerSecond || bytesPerSecond === 0) return '';
+    return this.formatBytes(bytesPerSecond) + '/s';
   }
 
   /**
@@ -596,7 +659,11 @@ class StatusBarManager {
    */
   updateToolsStatus(statusText) {
     const updateStatus = () => {
-      if (this.currentTab !== "tools" || this.checkActiveDownloads() || this.hasModalOpen()) {
+      if (
+        this.currentTab !== 'tools' ||
+        this.checkActiveDownloads() ||
+        this.hasModalOpen()
+      ) {
         if (this.updateInterval) {
           clearInterval(this.updateInterval);
           this.updateInterval = null;
@@ -615,20 +682,22 @@ class StatusBarManager {
             return;
           }
           const enabledMods = mods.filter(
-            (mod) => mod.status === "active"
+            (mod) => mod.status === 'active',
           ).length;
           const totalMods = mods.length;
 
-          this.setStatusText(this.t("statusBar.modsEnabled", {
-            enabled: enabledMods,
-            total: totalMods,
-            plural: totalMods !== 1 ? "s" : ""
-          }));
+          this.setStatusText(
+            this.t('statusBar.modsEnabled', {
+              enabled: enabledMods,
+              total: totalMods,
+              plural: totalMods !== 1 ? 's' : '',
+            }),
+          );
         } else {
-          this.setStatusText(this.t("statusBar.modsReady"));
+          this.setStatusText(this.t('statusBar.modsReady'));
         }
       } catch (error) {
-        this.setStatusText(this.t("statusBar.modsReady"));
+        this.setStatusText(this.t('statusBar.modsReady'));
       }
     };
 
@@ -642,7 +711,11 @@ class StatusBarManager {
    */
   updatePluginsStatus(statusText) {
     const updateStatus = () => {
-      if (this.currentTab !== "plugins" || this.checkActiveDownloads() || this.hasModalOpen()) {
+      if (
+        this.currentTab !== 'plugins' ||
+        this.checkActiveDownloads() ||
+        this.hasModalOpen()
+      ) {
         if (this.updateInterval) {
           clearInterval(this.updateInterval);
           this.updateInterval = null;
@@ -658,19 +731,21 @@ class StatusBarManager {
         if (window.pluginManager) {
           const plugins = window.pluginManager.plugins || [];
           const enabledPlugins = plugins.filter(
-            (p) => p.enabled !== false
+            (p) => p.enabled !== false,
           ).length;
 
-          this.setStatusText(this.t("statusBar.pluginsEnabled", {
-            enabled: enabledPlugins,
-            total: plugins.length,
-            plural: plugins.length !== 1 ? "s" : ""
-          }));
+          this.setStatusText(
+            this.t('statusBar.pluginsEnabled', {
+              enabled: enabledPlugins,
+              total: plugins.length,
+              plural: plugins.length !== 1 ? 's' : '',
+            }),
+          );
         } else {
-          this.setStatusText(this.t("statusBar.pluginsReady"));
+          this.setStatusText(this.t('statusBar.pluginsReady'));
         }
       } catch (error) {
-        this.setStatusText(this.t("statusBar.pluginsReady"));
+        this.setStatusText(this.t('statusBar.pluginsReady'));
       }
     };
 
@@ -682,7 +757,7 @@ class StatusBarManager {
    * Update status for Settings tab
    */
   updateSettingsStatus(statusText) {
-    this.setStatusText(this.t("statusBar.settings"));
+    this.setStatusText(this.t('statusBar.settings'));
   }
 
   /**
@@ -690,7 +765,11 @@ class StatusBarManager {
    */
   updateCharactersStatus(statusText) {
     const updateStatus = () => {
-      if (this.currentTab !== "characters" || this.checkActiveDownloads() || this.hasModalOpen()) {
+      if (
+        this.currentTab !== 'characters' ||
+        this.checkActiveDownloads() ||
+        this.hasModalOpen()
+      ) {
         if (this.updateInterval) {
           clearInterval(this.updateInterval);
           this.updateInterval = null;
@@ -705,20 +784,27 @@ class StatusBarManager {
       try {
         if (window.charactersManager && window.charactersManager.characters) {
           const characters = window.charactersManager.characters;
-          const count = characters instanceof Map ? characters.size : (Array.isArray(characters) ? characters.length : 0);
+          const count =
+            characters instanceof Map
+              ? characters.size
+              : Array.isArray(characters)
+                ? characters.length
+                : 0;
           if (count > 0) {
-            this.setStatusText(this.t("statusBar.charactersAvailable", {
-              count: count,
-              plural: count !== 1 ? "s" : ""
-            }));
+            this.setStatusText(
+              this.t('statusBar.charactersAvailable', {
+                count: count,
+                plural: count !== 1 ? 's' : '',
+              }),
+            );
           } else {
-            this.setStatusText(this.t("statusBar.charactersReady"));
+            this.setStatusText(this.t('statusBar.charactersReady'));
           }
         } else {
-          this.setStatusText(this.t("statusBar.charactersReady"));
+          this.setStatusText(this.t('statusBar.charactersReady'));
         }
       } catch (error) {
-        this.setStatusText(this.t("statusBar.charactersReady"));
+        this.setStatusText(this.t('statusBar.charactersReady'));
       }
     };
 
@@ -726,29 +812,29 @@ class StatusBarManager {
     this.updateInterval = setInterval(updateStatus, 10000);
   }
   updateStagesStatus(statusText) {
-    this.setStatusText(this.t("statusBar.stages"));
+    this.setStatusText(this.t('statusBar.stages'));
   }
 
   updateCheckingConflictsStatus() {
-    const statusRight = document.querySelector(".bottom-text-right");
+    const statusRight = document.querySelector('.bottom-text-right');
     if (!statusRight) return;
 
     statusRight.innerHTML = '';
-    const checkingText = document.createElement("span");
-    checkingText.textContent = this.t("statusBar.checkingConflicts");
+    const checkingText = document.createElement('span');
+    checkingText.textContent = this.t('statusBar.checkingConflicts');
     statusRight.appendChild(checkingText);
   }
 
   updateConflictStatus(conflictCount) {
-    const statusRight = document.querySelector(".bottom-text-right");
+    const statusRight = document.querySelector('.bottom-text-right');
     if (!statusRight) return;
 
     statusRight.innerHTML = '';
 
     if (conflictCount > 0) {
-      const conflictText = document.createElement("span");
-      conflictText.className = "conflict-link";
-      conflictText.addEventListener("click", (e) => {
+      const conflictText = document.createElement('span');
+      conflictText.className = 'conflict-link';
+      conflictText.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -759,9 +845,9 @@ class StatusBarManager {
           window.conflictModalManager.showConflictModal();
         }
       });
-      conflictText.textContent = this.t("statusBar.conflictsDetected", {
+      conflictText.textContent = this.t('statusBar.conflictsDetected', {
         count: conflictCount,
-        plural: conflictCount !== 1 ? 's' : ''
+        plural: conflictCount !== 1 ? 's' : '',
       });
       statusRight.appendChild(conflictText);
     }
@@ -773,12 +859,14 @@ class StatusBarManager {
       this.updateInterval = null;
     }
     if (!this.preservedStatus) {
-      const statusText = document.querySelector(".bottom-text-left") || document.querySelector(".bottom-text");
+      const statusText =
+        document.querySelector('.bottom-text-left') ||
+        document.querySelector('.bottom-text');
       if (statusText && !this.currentTab) {
-        statusText.textContent = this.t("statusBar.ready");
+        statusText.textContent = this.t('statusBar.ready');
       }
     }
-    const statusRight = document.querySelector(".bottom-text-right");
+    const statusRight = document.querySelector('.bottom-text-right');
     if (statusRight) {
       statusRight.innerHTML = '';
     }
@@ -786,15 +874,17 @@ class StatusBarManager {
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.statusBarManager = new StatusBarManager();
-  
+
   // Écouter les changements de langue pour mettre à jour la status bar
   window.addEventListener('localeChanged', () => {
     if (window.statusBarManager && window.statusBarManager.currentTab) {
       // Mettre à jour le statut avec l'onglet actuel pour appliquer les nouvelles traductions
       setTimeout(() => {
-        window.statusBarManager.updateStatus(window.statusBarManager.currentTab);
+        window.statusBarManager.updateStatus(
+          window.statusBarManager.currentTab,
+        );
       }, 100);
     }
   });

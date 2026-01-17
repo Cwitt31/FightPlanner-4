@@ -5,9 +5,9 @@ class ResizeHandler {
   }
 
   initResize() {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () =>
-        this.setupResizeHandlers()
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () =>
+        this.setupResizeHandlers(),
       );
     } else {
       this.setupResizeHandlers();
@@ -16,36 +16,36 @@ class ResizeHandler {
 
   async loadSavedWidth() {
     try {
-      const saved = await window.electronAPI.store.get("panelWidth");
+      const saved = await window.electronAPI.store.get('panelWidth');
       if (saved) {
         return saved;
       }
     } catch (error) {
-      console.error("Failed to load panel width:", error);
+      console.error('Failed to load panel width:', error);
     }
     return null;
   }
 
   async saveWidth(width) {
     try {
-      await window.electronAPI.store.set("panelWidth", width);
+      await window.electronAPI.store.set('panelWidth', width);
     } catch (error) {
-      console.error("Failed to save panel width:", error);
+      console.error('Failed to save panel width:', error);
     }
   }
 
   async setupResizeHandlers() {
-    const resizeHandle = document.getElementById("resize-handle");
-    const rightPanel = document.getElementById("right-panel");
+    const resizeHandle = document.getElementById('resize-handle');
+    const rightPanel = document.getElementById('right-panel');
 
     if (resizeHandle && rightPanel) {
       await this.setupResizeForPanel(resizeHandle, rightPanel);
     }
 
     const resizeHandlePlugins = document.getElementById(
-      "resize-handle-plugins"
+      'resize-handle-plugins',
     );
-    const rightPanelPlugins = document.getElementById("right-panel-plugins");
+    const rightPanelPlugins = document.getElementById('right-panel-plugins');
 
     if (resizeHandlePlugins && rightPanelPlugins) {
       await this.setupResizeForPanel(resizeHandlePlugins, rightPanelPlugins);
@@ -58,15 +58,15 @@ class ResizeHandler {
       rightPanel.style.width = `${savedWidth}px`;
     }
 
-    resizeHandle.addEventListener("mousedown", (e) => {
+    resizeHandle.addEventListener('mousedown', (e) => {
       this.isResizing = true;
       this.currentPanel = rightPanel;
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
       e.preventDefault();
     });
 
-    document.addEventListener("mousemove", (e) => {
+    document.addEventListener('mousemove', (e) => {
       if (!this.isResizing || !this.currentPanel) return;
 
       const containerWidth = this.currentPanel.parentElement.offsetWidth;
@@ -84,11 +84,11 @@ class ResizeHandler {
       this.currentPanel.style.width = `${constrainedWidth}px`;
     });
 
-    document.addEventListener("mouseup", () => {
+    document.addEventListener('mouseup', () => {
       if (this.isResizing && this.currentPanel) {
         this.isResizing = false;
-        document.body.style.cursor = "";
-        document.body.style.userSelect = "";
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
 
         const currentWidth = parseInt(this.currentPanel.style.width, 10);
         if (!isNaN(currentWidth)) {
@@ -101,7 +101,7 @@ class ResizeHandler {
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.resizeHandler = new ResizeHandler();
-  console.log("Resize Handler initialized");
+  console.log('Resize Handler initialized');
 }

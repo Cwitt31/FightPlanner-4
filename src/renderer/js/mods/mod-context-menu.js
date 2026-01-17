@@ -5,21 +5,21 @@ class ModContextMenuHandler {
   }
 
   setupContextMenu() {
-    document.addEventListener("click", (e) => {
-      const contextMenu = document.getElementById("mod-context-menu");
+    document.addEventListener('click', (e) => {
+      const contextMenu = document.getElementById('mod-context-menu');
       if (
         contextMenu &&
         !contextMenu.contains(e.target) &&
-        contextMenu.style.display !== "none"
+        contextMenu.style.display !== 'none'
       ) {
         this.closeContextMenu();
       }
     });
 
-    const contextMenu = document.getElementById("mod-context-menu");
+    const contextMenu = document.getElementById('mod-context-menu');
     if (contextMenu) {
-      contextMenu.addEventListener("click", async (e) => {
-        const item = e.target.closest(".context-menu-item");
+      contextMenu.addEventListener('click', async (e) => {
+        const item = e.target.closest('.context-menu-item');
         if (!item) return;
 
         const action = item.dataset.action;
@@ -32,19 +32,19 @@ class ModContextMenuHandler {
 
         if (this.modManager.operations) {
           switch (action) {
-            case "rename":
+            case 'rename':
               await this.modManager.operations.renameMod(mod);
               break;
-            case "change-slot":
+            case 'change-slot':
               await this.modManager.operations.changeSlot(mod);
               break;
-            case "toggle":
+            case 'toggle':
               await this.modManager.operations.toggleModStatus(mod);
               break;
-            case "open-folder":
+            case 'open-folder':
               await this.modManager.operations.openModFolder(mod);
               break;
-            case "uninstall":
+            case 'uninstall':
               await this.modManager.operations.uninstallMod(mod);
               break;
           }
@@ -54,19 +54,19 @@ class ModContextMenuHandler {
   }
 
   closeContextMenu() {
-    const contextMenu = document.getElementById("mod-context-menu");
+    const contextMenu = document.getElementById('mod-context-menu');
     if (!contextMenu) return;
 
-    const noAnimations = document.body.classList.contains("no-animations");
+    const noAnimations = document.body.classList.contains('no-animations');
 
     if (noAnimations) {
-      contextMenu.style.display = "none";
+      contextMenu.style.display = 'none';
     } else {
-      contextMenu.classList.add("closing");
+      contextMenu.classList.add('closing');
 
       setTimeout(() => {
-        contextMenu.style.display = "none";
-        contextMenu.classList.remove("closing");
+        contextMenu.style.display = 'none';
+        contextMenu.classList.remove('closing');
       }, 150);
     }
   }
@@ -74,33 +74,33 @@ class ModContextMenuHandler {
   showContextMenu(e, mod) {
     e.preventDefault();
 
-    const contextMenu = document.getElementById("mod-context-menu");
+    const contextMenu = document.getElementById('mod-context-menu');
     if (!contextMenu) return;
 
-    const toggleText = document.getElementById("toggle-text");
-    const toggleIcon = document.getElementById("toggle-icon");
+    const toggleText = document.getElementById('toggle-text');
+    const toggleIcon = document.getElementById('toggle-icon');
 
     const t = (key) => {
       return window.i18n && window.i18n.t ? window.i18n.t(key) : key;
     };
 
-    if (mod.status === "disabled") {
-      if (toggleText) toggleText.textContent = t("contextMenu.enable");
-      if (toggleIcon) toggleIcon.className = "bi bi-toggle-off";
+    if (mod.status === 'disabled') {
+      if (toggleText) toggleText.textContent = t('contextMenu.enable');
+      if (toggleIcon) toggleIcon.className = 'bi bi-toggle-off';
     } else {
-      if (toggleText) toggleText.textContent = t("contextMenu.disable");
-      if (toggleIcon) toggleIcon.className = "bi bi-toggle-on";
+      if (toggleText) toggleText.textContent = t('contextMenu.disable');
+      if (toggleIcon) toggleIcon.className = 'bi bi-toggle-on';
     }
 
     contextMenu.dataset.modId = mod.id;
 
-    contextMenu.classList.remove("closing");
-    contextMenu.style.display = "none";
+    contextMenu.classList.remove('closing');
+    contextMenu.style.display = 'none';
     void contextMenu.offsetWidth;
 
     contextMenu.style.left = `${e.clientX}px`;
     contextMenu.style.top = `${e.clientY}px`;
-    contextMenu.style.display = "block";
+    contextMenu.style.display = 'block';
 
     setTimeout(() => {
       const rect = contextMenu.getBoundingClientRect();
@@ -114,6 +114,6 @@ class ModContextMenuHandler {
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.ModContextMenuHandler = ModContextMenuHandler;
 }

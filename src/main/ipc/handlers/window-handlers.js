@@ -24,21 +24,3 @@ function registerWindowHandlers(ipcMain) {
 }
 
 module.exports = { registerWindowHandlers };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

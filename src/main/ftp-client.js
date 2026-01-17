@@ -39,7 +39,7 @@ class FTPClient {
     try {
       remotePath = remotePath.replace(/\\/g, '/');
       console.log(`Uploading directory: ${localPath} -> ${remotePath}`);
-      
+
       const stats = fs.statSync(localPath);
       if (!stats.isDirectory()) {
         throw new Error(`${localPath} is not a directory`);
@@ -51,11 +51,14 @@ class FTPClient {
       for (const file of files) {
         const localFilePath = path.join(localPath, file);
         let remoteFilePath = `${remotePath}/${file}`;
-        
+
         const fileStats = fs.statSync(localFilePath);
-        
+
         if (fileStats.isDirectory()) {
-          const count = await this.uploadDirectory(localFilePath, remoteFilePath);
+          const count = await this.uploadDirectory(
+            localFilePath,
+            remoteFilePath,
+          );
           uploadedCount += count;
         } else if (fileStats.isFile()) {
           const remoteDir = remotePath;
@@ -64,7 +67,7 @@ class FTPClient {
           } catch (dirError) {
             console.warn(`Could not ensure dir ${remoteDir}, continuing...`);
           }
-          
+
           await this.client.uploadFrom(localFilePath, remoteFilePath);
           uploadedCount++;
           console.log(`Uploaded: ${remoteFilePath}`);
@@ -113,4 +116,3 @@ class FTPClient {
 }
 
 module.exports = FTPClient;
-

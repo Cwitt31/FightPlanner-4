@@ -12,20 +12,22 @@ class ModalManager {
   }
 
   showOverlay() {
-    const overlay = document.getElementById("modal-overlay");
+    const overlay = document.getElementById('modal-overlay');
     if (overlay) {
-      overlay.classList.remove("closing");
-      overlay.style.display = "block";
+      overlay.classList.remove('closing');
+      overlay.style.display = 'block';
       // Ensure overlay is visible and reset any potential interference
-      overlay.style.opacity = "1";
-      overlay.style.zIndex = "9999";
+      overlay.style.opacity = '1';
+      overlay.style.zIndex = '9999';
     }
   }
 
   hideOverlay() {
     // Check if any modal is displayed (block) and NOT closing
-    const visibleModals = Array.from(document.querySelectorAll('.modal')).filter(m => 
-      m.style.display === 'block' && !m.classList.contains('closing')
+    const visibleModals = Array.from(
+      document.querySelectorAll('.modal'),
+    ).filter(
+      (m) => m.style.display === 'block' && !m.classList.contains('closing'),
     );
 
     if (visibleModals.length > 0) {
@@ -33,23 +35,26 @@ class ModalManager {
       return;
     }
 
-    const overlay = document.getElementById("modal-overlay");
+    const overlay = document.getElementById('modal-overlay');
     if (overlay) {
-      overlay.classList.add("closing");
+      overlay.classList.add('closing');
       setTimeout(() => {
         // Re-check before hiding
-        const stillVisibleModals = Array.from(document.querySelectorAll('.modal')).filter(m => 
-             m.style.display === 'block' && !m.classList.contains('closing')
+        const stillVisibleModals = Array.from(
+          document.querySelectorAll('.modal'),
+        ).filter(
+          (m) =>
+            m.style.display === 'block' && !m.classList.contains('closing'),
         );
-        
+
         if (stillVisibleModals.length === 0) {
-            overlay.style.display = "none";
-            overlay.classList.remove("closing");
+          overlay.style.display = 'none';
+          overlay.classList.remove('closing');
         } else {
-            // Restore overlay if a modal appeared
-            overlay.classList.remove("closing");
-            overlay.style.display = "block";
-            overlay.style.opacity = "1";
+          // Restore overlay if a modal appeared
+          overlay.classList.remove('closing');
+          overlay.style.display = 'block';
+          overlay.style.opacity = '1';
         }
       }, 250);
     }
@@ -59,14 +64,14 @@ class ModalManager {
     this.currentMod = mod;
     this.renameCallback = callback;
 
-    const modal = document.getElementById("rename-modal");
-    const input = document.getElementById("rename-input");
+    const modal = document.getElementById('rename-modal');
+    const input = document.getElementById('rename-input');
 
     if (modal && input) {
-      modal.classList.remove("closing");
+      modal.classList.remove('closing');
       input.value = mod.name;
       this.showOverlay();
-      modal.style.display = "block";
+      modal.style.display = 'block';
 
       if (window.i18n && window.i18n.updateDOM) {
         window.i18n.updateDOM();
@@ -78,9 +83,9 @@ class ModalManager {
       }, 100);
 
       input.onkeydown = (e) => {
-        if (e.key === "Enter") {
+        if (e.key === 'Enter') {
           this.confirmRename();
-        } else if (e.key === "Escape") {
+        } else if (e.key === 'Escape') {
           this.closeRenameModal();
         }
       };
@@ -88,12 +93,12 @@ class ModalManager {
   }
 
   closeRenameModal() {
-    const modal = document.getElementById("rename-modal");
+    const modal = document.getElementById('rename-modal');
     if (modal) {
-      modal.classList.add("closing");
+      modal.classList.add('closing');
       setTimeout(() => {
-        modal.style.display = "none";
-        modal.classList.remove("closing");
+        modal.style.display = 'none';
+        modal.classList.remove('closing');
       }, 300);
     }
     this.hideOverlay();
@@ -102,11 +107,11 @@ class ModalManager {
   }
 
   confirmRename() {
-    const input = document.getElementById("rename-input");
+    const input = document.getElementById('rename-input');
     const newName = input.value.trim();
 
     if (!newName) {
-      this.showAlert("error", "Error", "Mod name cannot be empty");
+      this.showAlert('error', 'Error', 'Mod name cannot be empty');
       return;
     }
 
@@ -126,14 +131,14 @@ class ModalManager {
     this.currentMod = mod;
     this.uninstallCallback = callback;
 
-    const modal = document.getElementById("uninstall-modal");
-    const modNameEl = document.getElementById("uninstall-mod-name");
+    const modal = document.getElementById('uninstall-modal');
+    const modNameEl = document.getElementById('uninstall-mod-name');
 
     if (modal && modNameEl) {
-      modal.classList.remove("closing");
+      modal.classList.remove('closing');
       modNameEl.textContent = mod.name;
       this.showOverlay();
-      modal.style.display = "block";
+      modal.style.display = 'block';
 
       if (window.i18n && window.i18n.updateDOM) {
         window.i18n.updateDOM();
@@ -142,12 +147,12 @@ class ModalManager {
   }
 
   closeUninstallModal() {
-    const modal = document.getElementById("uninstall-modal");
+    const modal = document.getElementById('uninstall-modal');
     if (modal) {
-      modal.classList.add("closing");
+      modal.classList.add('closing');
       setTimeout(() => {
-        modal.style.display = "none";
-        modal.classList.remove("closing");
+        modal.style.display = 'none';
+        modal.classList.remove('closing');
       }, 300);
     }
     this.hideOverlay();
@@ -163,10 +168,10 @@ class ModalManager {
   }
 
   showAlert(type, title, message, params = {}) {
-    const modal = document.getElementById("alert-modal");
-    const header = document.getElementById("alert-modal-header");
-    const titleEl = document.getElementById("alert-modal-title");
-    const messageEl = document.getElementById("alert-modal-message");
+    const modal = document.getElementById('alert-modal');
+    const header = document.getElementById('alert-modal-header');
+    const titleEl = document.getElementById('alert-modal-title');
+    const messageEl = document.getElementById('alert-modal-message');
 
     if (!modal || !header || !titleEl || !messageEl) return;
 
@@ -177,31 +182,39 @@ class ModalManager {
       return key;
     };
 
-    modal.classList.remove("closing");
-    let icon = "bi-info-circle";
-    header.className = "modal-header";
+    modal.classList.remove('closing');
+    let icon = 'bi-info-circle';
+    header.className = 'modal-header';
 
-    if (type === "success") {
-      icon = "bi-check-circle";
-    } else if (type === "error") {
-      icon = "bi-x-circle";
-      header.classList.add("modal-header-danger");
-    } else if (type === "warning") {
-      icon = "bi-exclamation-triangle";
+    if (type === 'success') {
+      icon = 'bi-check-circle';
+    } else if (type === 'error') {
+      icon = 'bi-x-circle';
+      header.classList.add('modal-header-danger');
+    } else if (type === 'warning') {
+      icon = 'bi-exclamation-triangle';
     }
 
-    const translatedTitle = title && (title.startsWith("modals.") || title.startsWith("common.") || title.startsWith("toasts."))
-      ? t(title, params) 
-      : (title || "");
-    const translatedMessage = message && (message.startsWith("modals.") || message.startsWith("common.") || message.startsWith("toasts."))
-      ? t(message, params)
-      : (message || "");
+    const translatedTitle =
+      title &&
+      (title.startsWith('modals.') ||
+        title.startsWith('common.') ||
+        title.startsWith('toasts.'))
+        ? t(title, params)
+        : title || '';
+    const translatedMessage =
+      message &&
+      (message.startsWith('modals.') ||
+        message.startsWith('common.') ||
+        message.startsWith('toasts.'))
+        ? t(message, params)
+        : message || '';
 
     titleEl.innerHTML = `<i class="bi ${icon}"></i> ${this.escapeHtml(translatedTitle)}`;
     messageEl.textContent = translatedMessage;
 
     this.showOverlay();
-    modal.style.display = "block";
+    modal.style.display = 'block';
 
     if (window.i18n && window.i18n.updateDOM) {
       window.i18n.updateDOM();
@@ -209,18 +222,18 @@ class ModalManager {
   }
 
   escapeHtml(text) {
-    const div = document.createElement("div");
+    const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 
   closeAlertModal() {
-    const modal = document.getElementById("alert-modal");
+    const modal = document.getElementById('alert-modal');
     if (modal) {
-      modal.classList.add("closing");
+      modal.classList.add('closing');
       setTimeout(() => {
-        modal.style.display = "none";
-        modal.classList.remove("closing");
+        modal.style.display = 'none';
+        modal.classList.remove('closing');
       }, 300);
     }
     this.hideOverlay();
@@ -230,14 +243,14 @@ class ModalManager {
     this.currentPlugin = plugin;
     this.deletePluginCallback = callback;
 
-    const modal = document.getElementById("delete-plugin-modal");
-    const pluginNameEl = document.getElementById("delete-plugin-name");
+    const modal = document.getElementById('delete-plugin-modal');
+    const pluginNameEl = document.getElementById('delete-plugin-name');
 
     if (modal && pluginNameEl) {
-      modal.classList.remove("closing");
+      modal.classList.remove('closing');
       pluginNameEl.textContent = plugin.name;
       this.showOverlay();
-      modal.style.display = "block";
+      modal.style.display = 'block';
 
       if (window.i18n && window.i18n.updateDOM) {
         window.i18n.updateDOM();
@@ -246,12 +259,12 @@ class ModalManager {
   }
 
   closeDeletePluginModal() {
-    const modal = document.getElementById("delete-plugin-modal");
+    const modal = document.getElementById('delete-plugin-modal');
     if (modal) {
-      modal.classList.add("closing");
+      modal.classList.add('closing');
       setTimeout(() => {
-        modal.style.display = "none";
-        modal.classList.remove("closing");
+        modal.style.display = 'none';
+        modal.classList.remove('closing');
       }, 300);
     }
     this.hideOverlay();
@@ -276,14 +289,14 @@ class ModalManager {
       isNew: false,
     }));
 
-    const modal = document.getElementById("change-slot-modal");
-    const container = document.getElementById("slot-list-container");
+    const modal = document.getElementById('change-slot-modal');
+    const container = document.getElementById('slot-list-container');
 
     if (modal && container) {
-      modal.classList.remove("closing");
+      modal.classList.remove('closing');
       this.renderSlotList();
       this.showOverlay();
-      modal.style.display = "block";
+      modal.style.display = 'block';
 
       if (window.i18n && window.i18n.updateDOM) {
         window.i18n.updateDOM();
@@ -292,12 +305,12 @@ class ModalManager {
   }
 
   closeChangeSlotModal() {
-    const modal = document.getElementById("change-slot-modal");
+    const modal = document.getElementById('change-slot-modal');
     if (modal) {
-      modal.classList.add("closing");
+      modal.classList.add('closing');
       setTimeout(() => {
-        modal.style.display = "none";
-        modal.classList.remove("closing");
+        modal.style.display = 'none';
+        modal.classList.remove('closing');
       }, 300);
     }
     this.hideOverlay();
@@ -307,91 +320,101 @@ class ModalManager {
   }
 
   renderSlotList() {
-    const container = document.getElementById("slot-list-container");
+    const container = document.getElementById('slot-list-container');
     if (!container || !this.slotData) return;
 
     const t = (key, params = {}) => {
       return window.i18n && window.i18n.t ? window.i18n.t(key, params) : key;
     };
 
-    container.innerHTML = "";
+    container.innerHTML = '';
 
     this.slotData.forEach((slot, index) => {
-      const slotItem = document.createElement("div");
-      slotItem.className = `slot-item ${slot.isNew ? "slot-item-new" : ""}`;
+      const slotItem = document.createElement('div');
+      slotItem.className = `slot-item ${slot.isNew ? 'slot-item-new' : ''}`;
       slotItem.dataset.index = index;
 
-      const content = document.createElement("div");
-      content.className = "slot-item-content";
+      const content = document.createElement('div');
+      content.className = 'slot-item-content';
 
-      const info = document.createElement("div");
-      info.className = "slot-item-info";
+      const info = document.createElement('div');
+      info.className = 'slot-item-info';
 
-      const label = document.createElement("span");
-      label.className = "slot-item-label";
+      const label = document.createElement('span');
+      label.className = 'slot-item-label';
       label.textContent = slot.isNew
-        ? t("modals.changeSlot.newSlot")
-        : t("modals.changeSlot.currentSlot", { slot: slot.originalSlot });
+        ? t('modals.changeSlot.newSlot')
+        : t('modals.changeSlot.currentSlot', {
+            slot: slot.originalSlot,
+          });
 
-      const arrow = document.createElement("i");
-      arrow.className = "bi bi-arrow-right slot-arrow";
+      const arrow = document.createElement('i');
+      arrow.className = 'bi bi-arrow-right slot-arrow';
 
       // Create custom select structure
-      const selectContainer = document.createElement("div");
-      selectContainer.className = "custom-select slot-select-custom";
+      const selectContainer = document.createElement('div');
+      selectContainer.className = 'custom-select slot-select-custom';
       selectContainer.dataset.index = index;
 
-      const selectTrigger = document.createElement("div");
-      selectTrigger.className = "custom-select-trigger";
-      
-      const selectedValueSpan = document.createElement("span");
-      selectedValueSpan.className = "selected-value";
-      selectedValueSpan.textContent = t("modals.changeSlot.slotOption", { slot: slot.newSlot });
-      
-      const triggerIcon = document.createElement("i");
-      triggerIcon.className = "bi bi-chevron-down";
+      const selectTrigger = document.createElement('div');
+      selectTrigger.className = 'custom-select-trigger';
+
+      const selectedValueSpan = document.createElement('span');
+      selectedValueSpan.className = 'selected-value';
+      selectedValueSpan.textContent = t('modals.changeSlot.slotOption', {
+        slot: slot.newSlot,
+      });
+
+      const triggerIcon = document.createElement('i');
+      triggerIcon.className = 'bi bi-chevron-down';
 
       selectTrigger.appendChild(selectedValueSpan);
       selectTrigger.appendChild(triggerIcon);
 
-      const selectDropdown = document.createElement("div");
-      selectDropdown.className = "custom-select-dropdown";
+      const selectDropdown = document.createElement('div');
+      selectDropdown.className = 'custom-select-dropdown';
 
       for (let i = 0; i <= 7; i++) {
-        const option = document.createElement("div");
-        option.className = "custom-select-option";
+        const option = document.createElement('div');
+        option.className = 'custom-select-option';
         if (i === slot.newSlot) {
-          option.classList.add("active");
+          option.classList.add('active');
         }
         option.dataset.value = i;
-        
-        const optionText = document.createElement("span");
-        optionText.textContent = t("modals.changeSlot.slotOption", { slot: i });
-        
-        option.appendChild(optionText);
-        
-        option.addEventListener("click", (e) => {
-            e.stopPropagation();
-            // Update data
-            this.slotData[index].newSlot = i;
-            
-            // Update UI
-            selectedValueSpan.textContent = t("modals.changeSlot.slotOption", { slot: i });
-            
-            // Close and restore
-            selectContainer.classList.remove("open");
-            selectDropdown.style.transition = 'none'; // Disable transition
-            selectContainer.appendChild(selectDropdown);
-            selectDropdown.style.cssText = "";
-            void selectDropdown.offsetWidth; // Force reflow
-            delete selectDropdown.dataset.parentId;
-            
-            // Update active state in dropdown
-            const allOptions = selectDropdown.querySelectorAll(".custom-select-option");
-            allOptions.forEach(opt => opt.classList.remove("active"));
-            option.classList.add("active");
+
+        const optionText = document.createElement('span');
+        optionText.textContent = t('modals.changeSlot.slotOption', {
+          slot: i,
         });
-        
+
+        option.appendChild(optionText);
+
+        option.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // Update data
+          this.slotData[index].newSlot = i;
+
+          // Update UI
+          selectedValueSpan.textContent = t('modals.changeSlot.slotOption', {
+            slot: i,
+          });
+
+          // Close and restore
+          selectContainer.classList.remove('open');
+          selectDropdown.style.transition = 'none'; // Disable transition
+          selectContainer.appendChild(selectDropdown);
+          selectDropdown.style.cssText = '';
+          void selectDropdown.offsetWidth; // Force reflow
+          delete selectDropdown.dataset.parentId;
+
+          // Update active state in dropdown
+          const allOptions = selectDropdown.querySelectorAll(
+            '.custom-select-option',
+          );
+          allOptions.forEach((opt) => opt.classList.remove('active'));
+          option.classList.add('active');
+        });
+
         selectDropdown.appendChild(option);
       }
 
@@ -399,90 +422,96 @@ class ModalManager {
       selectContainer.appendChild(selectDropdown);
 
       // Toggle dropdown
-      selectTrigger.addEventListener("click", (e) => {
-          e.stopPropagation();
-          
-          const wasOpen = selectContainer.classList.contains("open");
+      selectTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
 
-      // Close other open selects and restore them
-      document.querySelectorAll(".custom-select.open").forEach(el => {
+        const wasOpen = selectContainer.classList.contains('open');
+
+        // Close other open selects and restore them
+        document.querySelectorAll('.custom-select.open').forEach((el) => {
           if (el !== selectContainer) {
-              el.classList.remove("open");
-              const drop = document.body.querySelector(`.custom-select-dropdown[data-parent-id="${el.dataset.index}"]`);
-              if (drop) {
-                  drop.style.transition = 'none'; // Disable transition
-                  el.appendChild(drop);
-                  drop.style.cssText = "";
-                  void drop.offsetWidth; // Force reflow
-                  delete drop.dataset.parentId;
-              } else {
-                  // Fallback for non-portaled ones or if already moved back
-                  const internalDrop = el.querySelector('.custom-select-dropdown');
-                  if (internalDrop) internalDrop.style.cssText = "";
-              }
+            el.classList.remove('open');
+            const drop = document.body.querySelector(
+              `.custom-select-dropdown[data-parent-id="${el.dataset.index}"]`,
+            );
+            if (drop) {
+              drop.style.transition = 'none'; // Disable transition
+              el.appendChild(drop);
+              drop.style.cssText = '';
+              void drop.offsetWidth; // Force reflow
+              delete drop.dataset.parentId;
+            } else {
+              // Fallback for non-portaled ones or if already moved back
+              const internalDrop = el.querySelector('.custom-select-dropdown');
+              if (internalDrop) internalDrop.style.cssText = '';
+            }
           }
-      });
-          
-          if (!wasOpen) {
-              selectContainer.classList.add("open");
-              
-              // Portal logic: Move to body and position fixed
-              selectDropdown.dataset.parentId = index;
-              
-              // CRITICAL: Disable transition before appending to body to prevent "flying from bottom"
-              selectDropdown.style.transition = 'none';
-              
-              document.body.appendChild(selectDropdown);
-              
-              const rect = selectContainer.getBoundingClientRect();
-              selectDropdown.style.position = 'fixed';
-              selectDropdown.style.top = `${rect.bottom + 5}px`;
-              selectDropdown.style.left = `${rect.left}px`;
-              selectDropdown.style.width = `${rect.width}px`;
-              selectDropdown.style.zIndex = '100005'; 
-              
-              // Set start state for animation
-              selectDropdown.style.opacity = '0';
-              selectDropdown.style.transform = 'translateY(-10px)';
-              selectDropdown.style.pointerEvents = 'all';
-              
-              // Force reflow
-              void selectDropdown.offsetWidth;
-              
-              // Enable transition for entrance animation
-              selectDropdown.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-              
-              // Trigger animation
-              requestAnimationFrame(() => {
-                  selectDropdown.style.opacity = '1';
-                  selectDropdown.style.transform = 'translateY(0)';
-              });
-          } else {
-              selectContainer.classList.remove("open");
-              // Disable transition temporarily to avoid "flying" animation when reparenting
-              selectDropdown.style.transition = 'none';
-              selectContainer.appendChild(selectDropdown);
-              selectDropdown.style.cssText = "";
-              // Restore transition after a frame if needed (though cssText="" restores class styles which include transition)
-              // The browser needs a reflow to apply the new position without animating from the old one
-              void selectDropdown.offsetWidth; 
-              delete selectDropdown.dataset.parentId;
-          }
+        });
+
+        if (!wasOpen) {
+          selectContainer.classList.add('open');
+
+          // Portal logic: Move to body and position fixed
+          selectDropdown.dataset.parentId = index;
+
+          // CRITICAL: Disable transition before appending to body to prevent "flying from bottom"
+          selectDropdown.style.transition = 'none';
+
+          document.body.appendChild(selectDropdown);
+
+          const rect = selectContainer.getBoundingClientRect();
+          selectDropdown.style.position = 'fixed';
+          selectDropdown.style.top = `${rect.bottom + 5}px`;
+          selectDropdown.style.left = `${rect.left}px`;
+          selectDropdown.style.width = `${rect.width}px`;
+          selectDropdown.style.zIndex = '100005';
+
+          // Set start state for animation
+          selectDropdown.style.opacity = '0';
+          selectDropdown.style.transform = 'translateY(-10px)';
+          selectDropdown.style.pointerEvents = 'all';
+
+          // Force reflow
+          void selectDropdown.offsetWidth;
+
+          // Enable transition for entrance animation
+          selectDropdown.style.transition =
+            'opacity 0.2s ease, transform 0.2s ease';
+
+          // Trigger animation
+          requestAnimationFrame(() => {
+            selectDropdown.style.opacity = '1';
+            selectDropdown.style.transform = 'translateY(0)';
+          });
+        } else {
+          selectContainer.classList.remove('open');
+          // Disable transition temporarily to avoid "flying" animation when reparenting
+          selectDropdown.style.transition = 'none';
+          selectContainer.appendChild(selectDropdown);
+          selectDropdown.style.cssText = '';
+          // Restore transition after a frame if needed (though cssText="" restores class styles which include transition)
+          // The browser needs a reflow to apply the new position without animating from the old one
+          void selectDropdown.offsetWidth;
+          delete selectDropdown.dataset.parentId;
+        }
       });
 
       // Close when clicking outside
-      document.addEventListener("click", (e) => {
-          if (!selectContainer.contains(e.target) && !selectDropdown.contains(e.target)) {
-              if (selectContainer.classList.contains("open")) {
-                  selectContainer.classList.remove("open");
-                  // Move dropdown back to container
-                  selectDropdown.style.transition = 'none'; // Disable transition
-                  selectContainer.appendChild(selectDropdown);
-                  selectDropdown.style.cssText = ""; // Clear fixed positioning styles
-                  void selectDropdown.offsetWidth; // Force reflow
-                  delete selectDropdown.dataset.parentId;
-              }
+      document.addEventListener('click', (e) => {
+        if (
+          !selectContainer.contains(e.target) &&
+          !selectDropdown.contains(e.target)
+        ) {
+          if (selectContainer.classList.contains('open')) {
+            selectContainer.classList.remove('open');
+            // Move dropdown back to container
+            selectDropdown.style.transition = 'none'; // Disable transition
+            selectContainer.appendChild(selectDropdown);
+            selectDropdown.style.cssText = ''; // Clear fixed positioning styles
+            void selectDropdown.offsetWidth; // Force reflow
+            delete selectDropdown.dataset.parentId;
           }
+        }
       });
 
       info.appendChild(label);
@@ -491,24 +520,29 @@ class ModalManager {
       }
       info.appendChild(selectContainer);
 
-      const filesInfo = document.createElement("div");
-      filesInfo.className = "slot-item-files";
+      const filesInfo = document.createElement('div');
+      filesInfo.className = 'slot-item-files';
 
       if (slot.files.length > 0) {
-        const filesList = document.createElement("details");
+        const filesList = document.createElement('details');
 
-        const summary = document.createElement("summary");
-        summary.textContent = t("modals.changeSlot.filesWillBeModified", { count: slot.files.length });
+        const summary = document.createElement('summary');
+        summary.textContent = t('modals.changeSlot.filesWillBeModified', {
+          count: slot.files.length,
+        });
 
-        const fileListContainer = document.createElement("div");
-        fileListContainer.className = "slot-file-list";
+        const fileListContainer = document.createElement('div');
+        fileListContainer.className = 'slot-file-list';
 
         slot.files.forEach((file) => {
-          const fileItem = document.createElement("div");
-          fileItem.className = "slot-file-item";
+          const fileItem = document.createElement('div');
+          fileItem.className = 'slot-file-item';
 
-          const icon = file.type === "directory" ? "📁" : "📄";
-          const typeLabel = file.type === "directory" ? t("modals.changeSlot.directory") : t("modals.changeSlot.file");
+          const icon = file.type === 'directory' ? '📁' : '📄';
+          const typeLabel =
+            file.type === 'directory'
+              ? t('modals.changeSlot.directory')
+              : t('modals.changeSlot.file');
           fileItem.textContent = `${icon} ${typeLabel} ${file.path}`;
           fileListContainer.appendChild(fileItem);
         });
@@ -517,20 +551,19 @@ class ModalManager {
         filesList.appendChild(fileListContainer);
         filesInfo.appendChild(filesList);
       } else {
-        filesInfo.innerHTML =
-          `<span style="color: #555; font-style: italic;">${t("modals.changeSlot.newSlotNoFiles")}</span>`;
+        filesInfo.innerHTML = `<span style="color: #555; font-style: italic;">${t('modals.changeSlot.newSlotNoFiles')}</span>`;
       }
 
       content.appendChild(info);
       content.appendChild(filesInfo);
 
-      const actions = document.createElement("div");
-      actions.className = "slot-item-actions";
+      const actions = document.createElement('div');
+      actions.className = 'slot-item-actions';
 
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "slot-action-btn slot-action-delete";
-      deleteBtn.innerHTML = `<i class="bi bi-trash3"></i> ${t("modals.changeSlot.delete")}`;
-      deleteBtn.addEventListener("click", () => {
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'slot-action-btn slot-action-delete';
+      deleteBtn.innerHTML = `<i class="bi bi-trash3"></i> ${t('modals.changeSlot.delete')}`;
+      deleteBtn.addEventListener('click', () => {
         this.deleteSlot(index);
       });
 
@@ -574,12 +607,12 @@ class ModalManager {
     this.slotData.forEach((slot) => {
       if (slot.isNew) {
         changes.modifications.push({
-          type: "add",
+          type: 'add',
           targetSlot: slot.newSlot,
         });
       } else if (slot.originalSlot !== slot.newSlot) {
         changes.modifications.push({
-          type: "change",
+          type: 'change',
           originalSlot: slot.originalSlot,
           newSlot: slot.newSlot,
           files: slot.files,
@@ -598,36 +631,40 @@ class ModalManager {
   openEditInfoModal(modPath, currentInfo, callback) {
     this.editInfoCallback = callback;
 
-    const modal = document.getElementById("edit-info-modal");
-    const displayNameInput = document.getElementById("edit-info-display-name");
-    const authorsInput = document.getElementById("edit-info-authors");
-    const versionInput = document.getElementById("edit-info-version");
-    const categorySelect = document.getElementById("edit-info-category");
-    const urlInput = document.getElementById("edit-info-url");
-    const descriptionTextarea = document.getElementById("edit-info-description");
+    const modal = document.getElementById('edit-info-modal');
+    const displayNameInput = document.getElementById('edit-info-display-name');
+    const authorsInput = document.getElementById('edit-info-authors');
+    const versionInput = document.getElementById('edit-info-version');
+    const categorySelect = document.getElementById('edit-info-category');
+    const urlInput = document.getElementById('edit-info-url');
+    const descriptionTextarea = document.getElementById(
+      'edit-info-description',
+    );
 
     if (modal) {
-      modal.classList.remove("closing");
+      modal.classList.remove('closing');
 
-      if (displayNameInput) displayNameInput.value = currentInfo?.display_name || '';
+      if (displayNameInput)
+        displayNameInput.value = currentInfo?.display_name || '';
       if (authorsInput) authorsInput.value = currentInfo?.authors || '';
       if (versionInput) versionInput.value = currentInfo?.version || '';
       if (categorySelect) categorySelect.value = currentInfo?.category || '';
       if (urlInput) urlInput.value = currentInfo?.url || '';
-      if (descriptionTextarea) descriptionTextarea.value = currentInfo?.description || '';
+      if (descriptionTextarea)
+        descriptionTextarea.value = currentInfo?.description || '';
 
       this.showOverlay();
-      modal.style.display = "block";
+      modal.style.display = 'block';
     }
   }
 
   closeEditInfoModal() {
-    const modal = document.getElementById("edit-info-modal");
+    const modal = document.getElementById('edit-info-modal');
     if (modal) {
-      modal.classList.add("closing");
+      modal.classList.add('closing');
       setTimeout(() => {
-        modal.style.display = "none";
-        modal.classList.remove("closing");
+        modal.style.display = 'none';
+        modal.classList.remove('closing');
       }, 300);
     }
     this.hideOverlay();
@@ -635,7 +672,7 @@ class ModalManager {
   }
 
   confirmEditInfo() {
-    const form = document.getElementById("mod-info-form");
+    const form = document.getElementById('mod-info-form');
     if (!form) return;
 
     const formData = new FormData(form);
@@ -656,26 +693,26 @@ class ModalManager {
 
   openAdvancedInfoModal(modPath, currentTomlContent) {
     this.currentModPath = modPath;
-    
-    const modal = document.getElementById("advanced-info-modal");
-    const textarea = document.getElementById("advanced-info-textarea");
+
+    const modal = document.getElementById('advanced-info-modal');
+    const textarea = document.getElementById('advanced-info-textarea');
 
     if (modal && textarea) {
-      modal.classList.remove("closing");
+      modal.classList.remove('closing');
       textarea.value = currentTomlContent || '';
 
       this.showOverlay();
-      modal.style.display = "block";
+      modal.style.display = 'block';
     }
   }
 
   closeAdvancedInfoModal() {
-    const modal = document.getElementById("advanced-info-modal");
+    const modal = document.getElementById('advanced-info-modal');
     if (modal) {
-      modal.classList.add("closing");
+      modal.classList.add('closing');
       setTimeout(() => {
-        modal.style.display = "none";
-        modal.classList.remove("closing");
+        modal.style.display = 'none';
+        modal.classList.remove('closing');
       }, 300);
     }
     this.hideOverlay();
@@ -684,38 +721,45 @@ class ModalManager {
   }
 
   async confirmAdvancedInfo() {
-    const textarea = document.getElementById("advanced-info-textarea");
+    const textarea = document.getElementById('advanced-info-textarea');
     if (!textarea || !this.currentModPath) return;
 
     const tomlContent = textarea.value;
 
     try {
-      const result = await window.electronAPI.saveModInfoRaw(this.currentModPath, tomlContent);
-      
+      const result = await window.electronAPI.saveModInfoRaw(
+        this.currentModPath,
+        tomlContent,
+      );
+
       if (result.success) {
         if (window.toastManager) {
           window.toastManager.success('toasts.infoTomlSaved');
         }
         this.closeAdvancedInfoModal();
-        
+
         if (window.modManager && window.modManager.selectedMod) {
           window.modManager.selectMod(window.modManager.selectedMod.id);
         }
       } else {
         if (window.toastManager) {
-          window.toastManager.error('toasts.failedToSaveInfoToml', 3000, { error: result.error });
+          window.toastManager.error('toasts.failedToSaveInfoToml', 3000, {
+            error: result.error,
+          });
         }
       }
     } catch (error) {
       if (window.toastManager) {
-        window.toastManager.error('toasts.failedToSaveInfoToml', 3000, { error: '' });
+        window.toastManager.error('toasts.failedToSaveInfoToml', 3000, {
+          error: '',
+        });
       }
     }
   }
 
-  async openInstallConfirmModal(url, downloadId, modId, modType = "Mod") {
+  async openInstallConfirmModal(url, downloadId, modId, modType = 'Mod') {
     this.pendingInstallData = { url, downloadId, modId, modType };
-    
+
     const urlDisplay = document.getElementById('install-url-display');
     if (urlDisplay) {
       urlDisplay.textContent = url;
@@ -728,22 +772,28 @@ class ModalManager {
       modal.style.display = 'block';
     }
 
-    const previewContainer = document.getElementById('install-preview-container');
+    const previewContainer = document.getElementById(
+      'install-preview-container',
+    );
     if (previewContainer) {
-      if (modType === "Sound") {
+      if (modType === 'Sound') {
         previewContainer.style.display = 'none';
       } else {
         previewContainer.style.display = 'flex';
       }
     }
 
-    if (modId && modType !== "Sound" && window.electronAPI?.fetchGameBananaPreview) {
+    if (
+      modId &&
+      modType !== 'Sound' &&
+      window.electronAPI?.fetchGameBananaPreview
+    ) {
       const previewImage = document.getElementById('install-preview-image');
       const previewLoading = document.querySelector('.install-preview-loading');
-      
+
       try {
         const result = await window.electronAPI.fetchGameBananaPreview(modId);
-        
+
         if (result.success && result.imageUrl) {
           previewImage.onload = () => {
             previewImage.classList.add('loaded');
@@ -758,7 +808,7 @@ class ModalManager {
         console.error('Failed to fetch preview:', error);
         if (previewLoading) previewLoading.style.display = 'none';
       }
-    } else if (modType === "Sound") {
+    } else if (modType === 'Sound') {
       const previewLoading = document.querySelector('.install-preview-loading');
       if (previewLoading) previewLoading.style.display = 'none';
     }
@@ -771,10 +821,14 @@ class ModalManager {
       setTimeout(() => {
         modal.style.display = 'none';
         modal.classList.remove('closing');
-        
-        const previewContainer = document.getElementById('install-preview-container');
+
+        const previewContainer = document.getElementById(
+          'install-preview-container',
+        );
         const previewImage = document.getElementById('install-preview-image');
-        const previewLoading = document.querySelector('.install-preview-loading');
+        const previewLoading = document.querySelector(
+          '.install-preview-loading',
+        );
         if (previewContainer) {
           previewContainer.style.display = 'flex';
         }
@@ -796,7 +850,7 @@ class ModalManager {
     if (this.pendingInstallData && window.electronAPI?.confirmProtocolInstall) {
       const { url, downloadId } = this.pendingInstallData;
       this.closeInstallConfirmModal();
-      
+
       try {
         await window.electronAPI.confirmProtocolInstall(url, downloadId);
       } catch (error) {
@@ -817,15 +871,20 @@ class ModalManager {
   }
 
   openPluginUpdateModal(updates, plugins) {
-    const modal = document.createElement("div");
-    modal.className = "modal";
-    modal.id = "plugin-update-modal";
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'plugin-update-modal';
 
-    const updatesList = updates.map(update => {
-      const plugin = plugins.find(p => p.name === update.pluginName || p.name.replace('.nro', '') === update.pluginName);
-      const pluginPath = plugin ? plugin.filePath : null;
-      
-      return `
+    const updatesList = updates
+      .map((update) => {
+        const plugin = plugins.find(
+          (p) =>
+            p.name === update.pluginName ||
+            p.name.replace('.nro', '') === update.pluginName,
+        );
+        const pluginPath = plugin ? plugin.filePath : null;
+
+        return `
         <div class="plugin-update-item" data-plugin-name="${update.pluginName}">
           <div class="plugin-update-info">
             <span class="plugin-update-name">${this.escapeHtml(update.pluginName)}</span>
@@ -842,7 +901,8 @@ class ModalManager {
           </button>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
 
     modal.innerHTML = `
       <div class="modal-header">
@@ -866,35 +926,37 @@ class ModalManager {
       </div>
     `;
 
-    const overlay = document.getElementById("modal-overlay");
+    const overlay = document.getElementById('modal-overlay');
     if (!overlay) {
-      const newOverlay = document.createElement("div");
-      newOverlay.id = "modal-overlay";
+      const newOverlay = document.createElement('div');
+      newOverlay.id = 'modal-overlay';
       document.body.appendChild(newOverlay);
     }
 
     document.body.appendChild(modal);
     this.showOverlay();
-    modal.style.display = "block";
+    modal.style.display = 'block';
 
-    const closeBtn = modal.querySelector("#close-plugin-update-modal");
-    closeBtn.addEventListener("click", () => {
+    const closeBtn = modal.querySelector('#close-plugin-update-modal');
+    closeBtn.addEventListener('click', () => {
       this.closePluginUpdateModal();
     });
 
-    const updateAllBtn = modal.querySelector("#update-all-plugins-btn");
-    updateAllBtn.addEventListener("click", async () => {
-      const updateButtons = modal.querySelectorAll(".update-plugin-btn:not(:disabled)");
-      
+    const updateAllBtn = modal.querySelector('#update-all-plugins-btn');
+    updateAllBtn.addEventListener('click', async () => {
+      const updateButtons = modal.querySelectorAll(
+        '.update-plugin-btn:not(:disabled)',
+      );
+
       if (updateButtons.length === 0) {
         if (window.toastManager) {
-          window.toastManager.info("No plugins to update");
+          window.toastManager.info('No plugins to update');
         }
         return;
       }
 
       updateAllBtn.disabled = true;
-      updateAllBtn.textContent = "Updating all...";
+      updateAllBtn.textContent = 'Updating all...';
 
       for (const btn of updateButtons) {
         const pluginName = btn.dataset.pluginName;
@@ -907,29 +969,36 @@ class ModalManager {
         }
 
         btn.disabled = true;
-        btn.textContent = "Updating...";
+        btn.textContent = 'Updating...';
 
         if (window.pluginManager) {
-          await window.pluginManager.updatePlugin(pluginName, downloadUrl, pluginPath, targetVersion);
+          await window.pluginManager.updatePlugin(
+            pluginName,
+            downloadUrl,
+            pluginPath,
+            targetVersion,
+          );
         }
 
-        const updateItem = modal.querySelector(`[data-plugin-name="${pluginName}"]`);
+        const updateItem = modal.querySelector(
+          `[data-plugin-name="${pluginName}"]`,
+        );
         if (updateItem) {
-          updateItem.style.opacity = "0.5";
+          updateItem.style.opacity = '0.5';
         }
       }
 
       setTimeout(() => {
         this.closePluginUpdateModal();
         if (window.toastManager) {
-          window.toastManager.success("All updates completed");
+          window.toastManager.success('All updates completed');
         }
       }, 1000);
     });
 
-    const updateButtons = modal.querySelectorAll(".update-plugin-btn");
-    updateButtons.forEach(btn => {
-      btn.addEventListener("click", async () => {
+    const updateButtons = modal.querySelectorAll('.update-plugin-btn');
+    updateButtons.forEach((btn) => {
+      btn.addEventListener('click', async () => {
         const pluginName = btn.dataset.pluginName;
         const downloadUrl = btn.dataset.downloadUrl;
         const pluginPath = btn.dataset.pluginPath;
@@ -937,36 +1006,49 @@ class ModalManager {
 
         if (!downloadUrl) {
           if (window.toastManager) {
-            window.toastManager.error(`No download URL available for ${pluginName}`);
+            window.toastManager.error(
+              `No download URL available for ${pluginName}`,
+            );
           }
           return;
         }
 
         if (!pluginPath) {
           if (window.toastManager) {
-            window.toastManager.error(`Plugin path not found for ${pluginName}`);
+            window.toastManager.error(
+              `Plugin path not found for ${pluginName}`,
+            );
           }
           return;
         }
 
         btn.disabled = true;
-        btn.textContent = "Updating...";
+        btn.textContent = 'Updating...';
 
         if (window.pluginManager) {
-          await window.pluginManager.updatePlugin(pluginName, downloadUrl, pluginPath, targetVersion);
+          await window.pluginManager.updatePlugin(
+            pluginName,
+            downloadUrl,
+            pluginPath,
+            targetVersion,
+          );
         }
 
-        const updateItem = modal.querySelector(`[data-plugin-name="${pluginName}"]`);
+        const updateItem = modal.querySelector(
+          `[data-plugin-name="${pluginName}"]`,
+        );
         if (updateItem) {
-          updateItem.style.opacity = "0.5";
+          updateItem.style.opacity = '0.5';
         }
 
-        const remainingUpdates = modal.querySelectorAll(".plugin-update-item:not([style*='opacity: 0.5'])");
+        const remainingUpdates = modal.querySelectorAll(
+          ".plugin-update-item:not([style*='opacity: 0.5'])",
+        );
         if (remainingUpdates.length === 0) {
           setTimeout(() => {
             this.closePluginUpdateModal();
             if (window.toastManager) {
-              window.toastManager.success("All updates completed");
+              window.toastManager.success('All updates completed');
             }
           }, 1000);
         }
@@ -974,18 +1056,18 @@ class ModalManager {
     });
 
     const escapeHandler = (e) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         this.closePluginUpdateModal();
-        document.removeEventListener("keydown", escapeHandler);
+        document.removeEventListener('keydown', escapeHandler);
       }
     };
-    document.addEventListener("keydown", escapeHandler);
+    document.addEventListener('keydown', escapeHandler);
   }
 
   closePluginUpdateModal() {
-    const modal = document.getElementById("plugin-update-modal");
+    const modal = document.getElementById('plugin-update-modal');
     if (modal) {
-      modal.classList.add("closing");
+      modal.classList.add('closing');
       setTimeout(() => {
         modal.remove();
       }, 300);
@@ -994,9 +1076,9 @@ class ModalManager {
   }
 
   openPluginMarketplaceModal() {
-    const modal = document.createElement("div");
-    modal.className = "modal modal-large modal-marketplace";
-    modal.id = "plugin-marketplace-modal";
+    const modal = document.createElement('div');
+    modal.className = 'modal modal-large modal-marketplace';
+    modal.id = 'plugin-marketplace-modal';
 
     modal.innerHTML = `
       <div class="modal-header">
@@ -1013,40 +1095,40 @@ class ModalManager {
       </div>
     `;
 
-    const overlay = document.getElementById("modal-overlay");
+    const overlay = document.getElementById('modal-overlay');
     if (!overlay) {
-      const newOverlay = document.createElement("div");
-      newOverlay.id = "modal-overlay";
+      const newOverlay = document.createElement('div');
+      newOverlay.id = 'modal-overlay';
       document.body.appendChild(newOverlay);
     }
 
     document.body.appendChild(modal);
     this.showOverlay();
-    modal.style.display = "block";
+    modal.style.display = 'block';
 
     if (window.i18n) {
       window.i18n.updateDOM();
     }
 
-    const resultsContainer = modal.querySelector("#marketplace-results");
+    const resultsContainer = modal.querySelector('#marketplace-results');
 
     if (window.pluginMarketplace) {
       const plugins = window.pluginMarketplace.getPlugins();
       this.renderMarketplaceResults(plugins, resultsContainer);
     }
 
-    const closeBtn = modal.querySelector("#close-marketplace-modal");
-    closeBtn.addEventListener("click", () => {
+    const closeBtn = modal.querySelector('#close-marketplace-modal');
+    closeBtn.addEventListener('click', () => {
       this.closePluginMarketplaceModal();
     });
 
     const escapeHandler = (e) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         this.closePluginMarketplaceModal();
-        document.removeEventListener("keydown", escapeHandler);
+        document.removeEventListener('keydown', escapeHandler);
       }
     };
-    document.addEventListener("keydown", escapeHandler);
+    document.addEventListener('keydown', escapeHandler);
   }
 
   renderMarketplaceResults(plugins, container) {
@@ -1063,7 +1145,9 @@ class ModalManager {
       return;
     }
 
-    const pluginsGrid = plugins.map(plugin => `
+    const pluginsGrid = plugins
+      .map(
+        (plugin) => `
       <div class="marketplace-plugin-card">
         <div class="marketplace-card-header">
           <div class="marketplace-card-title-section">
@@ -1087,7 +1171,9 @@ class ModalManager {
           </button>
         </div>
       </div>
-    `).join('');
+    `,
+      )
+      .join('');
 
     container.innerHTML = `<div class="marketplace-grid">${pluginsGrid}</div>`;
 
@@ -1095,53 +1181,69 @@ class ModalManager {
       window.i18n.updateDOM();
     }
 
-    const githubLinks = container.querySelectorAll(".marketplace-card-link");
-    githubLinks.forEach(link => {
-      link.addEventListener("click", async (e) => {
+    const githubLinks = container.querySelectorAll('.marketplace-card-link');
+    githubLinks.forEach((link) => {
+      link.addEventListener('click', async (e) => {
         e.preventDefault();
-        const url = link.getAttribute("href");
+        const url = link.getAttribute('href');
         if (url && window.electronAPI && window.electronAPI.openUrl) {
           await window.electronAPI.openUrl(url);
         } else if (url) {
-          window.open(url, "_blank");
+          window.open(url, '_blank');
         }
       });
     });
 
-    const installButtons = container.querySelectorAll(".marketplace-card-install-btn");
-    installButtons.forEach(btn => {
-      btn.addEventListener("click", async () => {
+    const installButtons = container.querySelectorAll(
+      '.marketplace-card-install-btn',
+    );
+    installButtons.forEach((btn) => {
+      btn.addEventListener('click', async () => {
         const pluginName = btn.dataset.pluginName;
         const pluginRepo = btn.dataset.pluginRepo;
 
         btn.disabled = true;
-        btn.innerHTML = '<i class="bi bi-arrow-repeat" style="animation: spin 1s linear infinite;"></i> <span data-i18n="plugins.installing">Installing...</span>';
+        btn.innerHTML =
+          '<i class="bi bi-arrow-repeat" style="animation: spin 1s linear infinite;"></i> <span data-i18n="plugins.installing">Installing...</span>';
         if (window.i18n) {
           window.i18n.updateDOM();
         }
 
         if (window.pluginMarketplace) {
-          const downloadUrl = await window.pluginMarketplace.getLatestReleaseDownloadUrl(pluginRepo);
-          
+          const downloadUrl =
+            await window.pluginMarketplace.getLatestReleaseDownloadUrl(
+              pluginRepo,
+            );
+
           if (downloadUrl) {
-            await window.pluginMarketplace.downloadAndInstallPlugin(pluginName, pluginRepo, downloadUrl);
-            
+            await window.pluginMarketplace.downloadAndInstallPlugin(
+              pluginName,
+              pluginRepo,
+              downloadUrl,
+            );
+
             const card = btn.closest('.marketplace-plugin-card');
             if (card) {
               card.classList.add('installed');
               btn.disabled = false;
-              btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> <span data-i18n="plugins.installed">Installed</span>';
+              btn.innerHTML =
+                '<i class="bi bi-check-circle-fill"></i> <span data-i18n="plugins.installed">Installed</span>';
               if (window.i18n) {
                 window.i18n.updateDOM();
               }
             }
           } else {
-            console.error(`Failed to get download URL for ${pluginName} from repo ${pluginRepo}`);
+            console.error(
+              `Failed to get download URL for ${pluginName} from repo ${pluginRepo}`,
+            );
             if (window.toastManager) {
-              window.toastManager.error(`No .nro or .zip file found in latest release for ${pluginName}. Please check the GitHub repository.`);
+              window.toastManager.error(
+                `No .nro or .zip file found in latest release for ${pluginName}. Please check the GitHub repository.`,
+              );
             }
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-download"></i> <span data-i18n="plugins.install">Install</span>';
+            btn.innerHTML =
+              '<i class="bi bi-download"></i> <span data-i18n="plugins.install">Install</span>';
             if (window.i18n) {
               window.i18n.updateDOM();
             }
@@ -1152,9 +1254,9 @@ class ModalManager {
   }
 
   closePluginMarketplaceModal() {
-    const modal = document.getElementById("plugin-marketplace-modal");
+    const modal = document.getElementById('plugin-marketplace-modal');
     if (modal) {
-      modal.classList.add("closing");
+      modal.classList.add('closing');
       setTimeout(() => {
         modal.remove();
       }, 300);
@@ -1163,14 +1265,14 @@ class ModalManager {
   }
 
   openPluginUpdateIntroModal(onEnable, onDisable) {
-    const modal = document.createElement("div");
-    modal.className = "modal";
-    modal.id = "plugin-intro-modal";
-    modal.style.maxWidth = "500px";
-    modal.dataset.blocking = "true"; // Mark as blocking to prevent global overlay click close
-    
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'plugin-intro-modal';
+    modal.style.maxWidth = '500px';
+    modal.dataset.blocking = 'true'; // Mark as blocking to prevent global overlay click close
+
     // Ensure modal has transform for shake animation centering
-    modal.style.transform = "translate(-50%, -50%)";
+    modal.style.transform = 'translate(-50%, -50%)';
 
     modal.innerHTML = `
       <div class="modal-header">
@@ -1193,20 +1295,20 @@ class ModalManager {
 
     document.body.appendChild(modal);
     this.showOverlay();
-    modal.style.display = "block";
+    modal.style.display = 'block';
 
     if (window.i18n) {
       window.i18n.updateDOM();
     }
 
-    const enableBtn = modal.querySelector("#enable-plugin-updates");
-    const disableBtn = modal.querySelector("#disable-plugin-updates");
-    const overlay = document.getElementById("modal-overlay");
+    const enableBtn = modal.querySelector('#enable-plugin-updates');
+    const disableBtn = modal.querySelector('#disable-plugin-updates');
+    const overlay = document.getElementById('modal-overlay');
 
     // Inject shake style dynamically to ensure it's present
-    if (!document.getElementById("shake-style")) {
-      const style = document.createElement("style");
-      style.id = "shake-style";
+    if (!document.getElementById('shake-style')) {
+      const style = document.createElement('style');
+      style.id = 'shake-style';
       style.textContent = `
         @keyframes shake {
             0%, 100% { transform: translate(-50%, -50%); }
@@ -1222,27 +1324,27 @@ class ModalManager {
 
     const shakeHandler = (e) => {
       if (e.target === overlay) {
-        console.log("Shake handler triggered");
+        console.log('Shake handler triggered');
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        
-        modal.classList.remove("shake-animation");
+
+        modal.classList.remove('shake-animation');
         void modal.offsetWidth; // Trigger reflow
-        modal.classList.add("shake-animation");
+        modal.classList.add('shake-animation');
       }
     };
 
     if (overlay) {
       // Use capture to try to intercept before other handlers
-      overlay.addEventListener("click", shakeHandler, true);
+      overlay.addEventListener('click', shakeHandler, true);
     }
 
     const close = (keepOverlay = false) => {
       if (overlay) {
-        overlay.removeEventListener("click", shakeHandler, true);
+        overlay.removeEventListener('click', shakeHandler, true);
       }
-      modal.classList.add("closing");
+      modal.classList.add('closing');
       setTimeout(() => {
         modal.remove();
       }, 300);
@@ -1251,43 +1353,49 @@ class ModalManager {
       }
     };
 
-    enableBtn.addEventListener("click", () => {
+    enableBtn.addEventListener('click', () => {
       if (onEnable) {
         // Pass close function to callback so it can control closure/overlay
         // Or just call it with keepOverlay = true if we know we are opening another modal?
         // Let's change the contract: onEnable returns true if it wants to keep overlay
-        const keepOverlay = onEnable(); 
+        const keepOverlay = onEnable();
         close(keepOverlay === true);
       } else {
         close();
       }
     });
 
-    disableBtn.addEventListener("click", () => {
+    disableBtn.addEventListener('click', () => {
       if (onDisable) onDisable();
       close();
     });
   }
 
   escapeHtml(text) {
-    const div = document.createElement("div");
+    const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.modalManager = new ModalManager();
-  console.log("Modal Manager initialized");
+  console.log('Modal Manager initialized');
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const overlay = document.getElementById("modal-overlay");
+  document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('modal-overlay');
     if (overlay) {
-      overlay.addEventListener("click", (e) => {
+      overlay.addEventListener('click', (e) => {
         // Check for blocking modals
-        const blockingModal = document.querySelector('.modal[data-blocking="true"]');
-        if (blockingModal && blockingModal.style.display !== 'none' && !blockingModal.classList.contains('closing')) {
-            return; // Do not close other modals if a blocking modal is active
+        const blockingModal = document.querySelector(
+          '.modal[data-blocking="true"]',
+        );
+        if (
+          blockingModal &&
+          blockingModal.style.display !== 'none' &&
+          !blockingModal.classList.contains('closing')
+        ) {
+          return; // Do not close other modals if a blocking modal is active
         }
 
         window.modalManager.closeRenameModal();
@@ -1307,8 +1415,8 @@ if (typeof window !== "undefined") {
       });
     }
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
         window.modalManager.closeRenameModal();
         window.modalManager.closeUninstallModal();
         window.modalManager.closeAlertModal();

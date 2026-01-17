@@ -5,17 +5,17 @@ class ModKeybindsHandler {
   }
 
   setupKeybinds() {
-    document.addEventListener("keydown", async (e) => {
-      const activeTab = document.querySelector(".tab-content.active");
-      if (!activeTab || activeTab.id !== "tab-tools") {
+    document.addEventListener('keydown', async (e) => {
+      const activeTab = document.querySelector('.tab-content.active');
+      if (!activeTab || activeTab.id !== 'tab-tools') {
         return;
       }
 
       const activeElement = document.activeElement;
       if (
         activeElement &&
-        (activeElement.tagName === "INPUT" ||
-          activeElement.tagName === "TEXTAREA" ||
+        (activeElement.tagName === 'INPUT' ||
+          activeElement.tagName === 'TEXTAREA' ||
           activeElement.isContentEditable)
       ) {
         return;
@@ -30,28 +30,28 @@ class ModKeybindsHandler {
       const isShift = e.shiftKey;
 
       switch (e.key) {
-        case "Delete":
-        case "Backspace":
-          if (isCtrlOrCmd || e.key === "Delete") {
+        case 'Delete':
+        case 'Backspace':
+          if (isCtrlOrCmd || e.key === 'Delete') {
             e.preventDefault();
             await this.handleDelete(selectedMod);
           }
           break;
 
-        case " ":
-        case "Space":
+        case ' ':
+        case 'Space':
           if (!isCtrlOrCmd && !isShift) {
             e.preventDefault();
             await this.handleToggle(selectedMod);
           }
           break;
 
-        case "F2":
+        case 'F2':
           e.preventDefault();
           await this.handleRename(selectedMod);
           break;
 
-        case "Enter":
+        case 'Enter':
           if (isCtrlOrCmd) {
             e.preventDefault();
             await this.handleOpenFolder(selectedMod);
@@ -61,8 +61,8 @@ class ModKeybindsHandler {
           }
           break;
 
-        case "o":
-        case "O":
+        case 'o':
+        case 'O':
           if (isCtrlOrCmd && isShift) {
             e.preventDefault();
             await this.handleOpenFolder(selectedMod);
@@ -102,7 +102,7 @@ class ModKeybindsHandler {
   async handleOpenModFile(selectedMod) {
     if (!selectedMod.folderPath) {
       if (window.toastManager) {
-        window.toastManager.error("toasts.cannotOpenFile");
+        window.toastManager.error('toasts.cannotOpenFile');
       }
       return;
     }
@@ -115,16 +115,16 @@ class ModKeybindsHandler {
     }
 
     const commonFiles = [
-      "info.toml",
-      "config.json",
-      "mod.json",
-      "info.json",
-      "modinfo.json",
-      "meta.json",
-      "readme.txt",
-      "readme.md",
-      "README.txt",
-      "README.md",
+      'info.toml',
+      'config.json',
+      'mod.json',
+      'info.json',
+      'modinfo.json',
+      'meta.json',
+      'readme.txt',
+      'readme.md',
+      'README.txt',
+      'README.md',
     ];
 
     for (const fileName of commonFiles) {
@@ -147,25 +147,25 @@ class ModKeybindsHandler {
       this.modManager.modsPath
     ) {
       const result = await window.electronAPI.openFolder(
-        this.modManager.modsPath
+        this.modManager.modsPath,
       );
       if (!result.success) {
         if (window.toastManager) {
           window.toastManager.error(
-            `Failed to open mods folder: ${result.error}`
+            `Failed to open mods folder: ${result.error}`,
           );
         }
       }
     } else {
       if (window.toastManager) {
         window.toastManager.error(
-          "Cannot open mods folder - path not available"
+          'Cannot open mods folder - path not available',
         );
       }
     }
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.ModKeybindsHandler = ModKeybindsHandler;
 }

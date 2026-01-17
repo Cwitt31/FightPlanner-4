@@ -1,16 +1,16 @@
-document.querySelector(".minimize").addEventListener("click", () => {
+document.querySelector('.minimize').addEventListener('click', () => {
   if (window.electronAPI) {
     window.electronAPI.minimize();
   }
 });
 
-document.querySelector(".maximize").addEventListener("click", () => {
+document.querySelector('.maximize').addEventListener('click', () => {
   if (window.electronAPI) {
     window.electronAPI.maximize();
   }
 });
 
-document.querySelector(".close").addEventListener("click", () => {
+document.querySelector('.close').addEventListener('click', () => {
   if (window.electronAPI) {
     window.electronAPI.close();
   }
@@ -23,7 +23,7 @@ async function switchTab(tabName) {
     currentTimeline.kill();
   }
 
-  const currentTab = document.querySelector(".tab-content.active");
+  const currentTab = document.querySelector('.tab-content.active');
   const selectedTab = document.getElementById(`tab-${tabName}`);
 
   if (currentTab === selectedTab) return;
@@ -38,29 +38,29 @@ async function switchTab(tabName) {
   } else {
     // Fallback if Animation Manager isn't loaded for some reason
     if (selectedTab) {
-      selectedTab.classList.add("active");
-      selectedTab.style.display = "flex";
+      selectedTab.classList.add('active');
+      selectedTab.style.display = 'flex';
     }
     if (currentTab) {
-      currentTab.classList.remove("active");
-      currentTab.style.display = "none";
+      currentTab.classList.remove('active');
+      currentTab.style.display = 'none';
     }
   }
 
-  document.querySelectorAll(".sidebar-btn").forEach((btn) => {
-    btn.classList.remove("active");
+  document.querySelectorAll('.sidebar-btn').forEach((btn) => {
+    btn.classList.remove('active');
   });
 
   const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
   if (activeButton) {
-    activeButton.classList.add("active");
+    activeButton.classList.add('active');
   }
 
   console.log(`Switched to tab: ${tabName}`);
 
   // Reapply theme after tab switch
   if (window.settingsManager) {
-    const currentTheme = window.settingsManager.settings.theme || "dark";
+    const currentTheme = window.settingsManager.settings.theme || 'dark';
     window.settingsManager.applyTheme(currentTheme);
   }
 
@@ -69,24 +69,24 @@ async function switchTab(tabName) {
   }
 }
 
-const sidebarButtons = document.querySelectorAll(".sidebar-btn");
+const sidebarButtons = document.querySelectorAll('.sidebar-btn');
 sidebarButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const tabName = btn.getAttribute("data-tab");
+  btn.addEventListener('click', () => {
+    const tabName = btn.getAttribute('data-tab');
     if (tabName) {
       switchTab(tabName);
     }
   });
 });
 
-const actionButtons = document.querySelectorAll(".action-btn");
+const actionButtons = document.querySelectorAll('.action-btn');
 actionButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    console.log("Action button clicked:", btn.title);
+  btn.addEventListener('click', () => {
+    console.log('Action button clicked:', btn.title);
   });
 });
 
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener('DOMContentLoaded', () => {
   if (window.tabLoader) {
     window.tabLoader.initializeTabs();
   }
@@ -97,15 +97,15 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   setTimeout(() => {
-    const activeTab = document.querySelector(".tab-content.active");
+    const activeTab = document.querySelector('.tab-content.active');
     if (activeTab) {
-      const tabId = activeTab.id.replace("tab-", "");
+      const tabId = activeTab.id.replace('tab-', '');
       if (window.statusBarManager && tabId) {
         window.statusBarManager.updateStatus(tabId);
       }
     } else {
       if (window.statusBarManager) {
-        window.statusBarManager.updateStatus("tools");
+        window.statusBarManager.updateStatus('tools');
       }
     }
   }, 100);
@@ -118,9 +118,9 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 2000); // Reduced delay slightly as checkForUpdatesOnStartup has its own delays if needed
 });
 
-document.addEventListener("keydown", async (e) => {
+document.addEventListener('keydown', async (e) => {
   const isCtrlOrCmd = e.ctrlKey || e.metaKey;
-  if (isCtrlOrCmd && e.altKey && (e.key === "r" || e.key === "R")) {
+  if (isCtrlOrCmd && e.altKey && (e.key === 'r' || e.key === 'R')) {
     e.preventDefault();
     try {
       if (
@@ -130,13 +130,13 @@ document.addEventListener("keydown", async (e) => {
       ) {
         await window.electronAPI.store.clear();
         if (window.toastManager) {
-          window.toastManager.success("toasts.electronStoreReset");
+          window.toastManager.success('toasts.electronStoreReset');
         }
       }
     } catch (err) {
-      console.error("Failed to reset store:", err);
+      console.error('Failed to reset store:', err);
       if (window.toastManager) {
-        window.toastManager.error("toasts.failedToResetStore");
+        window.toastManager.error('toasts.failedToResetStore');
       }
     }
   }

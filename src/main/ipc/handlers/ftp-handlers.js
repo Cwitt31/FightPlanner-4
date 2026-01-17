@@ -2,7 +2,11 @@ const { ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const FTPClient = require('../../ftp-client');
-const { handleError, createErrorResponse, ErrorCodes } = require('../../utils/error-handler');
+const {
+  handleError,
+  createErrorResponse,
+  ErrorCodes,
+} = require('../../utils/error-handler');
 
 /**
  * Copy directory recursively
@@ -20,7 +24,7 @@ function copyRecursiveSync(src, dest) {
     fs.readdirSync(src).forEach((childItemName) => {
       copyRecursiveSync(
         path.join(src, childItemName),
-        path.join(dest, childItemName)
+        path.join(dest, childItemName),
       );
     });
   } else {
@@ -29,7 +33,7 @@ function copyRecursiveSync(src, dest) {
 }
 
 /**
- * Send mods to Switch via local drive. 
+ * Send mods to Switch via local drive.
  */
 async function sendModsToDrive(config) {
   try {
@@ -39,7 +43,10 @@ async function sendModsToDrive(config) {
     }
 
     let drivePath;
-    if (driveIdentifier.includes(':\\') || (driveIdentifier.length === 1 && /^[A-Z]$/i.test(driveIdentifier))) {
+    if (
+      driveIdentifier.includes(':\\') ||
+      (driveIdentifier.length === 1 && /^[A-Z]$/i.test(driveIdentifier))
+    ) {
       if (driveIdentifier.length === 1) {
         drivePath = `${driveIdentifier}:\\`;
       } else {
@@ -62,7 +69,7 @@ async function sendModsToDrive(config) {
     }
 
     const targetBasePath = path.join(drivePath, 'ultimate', 'mods');
-    
+
     if (!fs.existsSync(targetBasePath)) {
       fs.mkdirSync(targetBasePath, { recursive: true });
       console.log(`Created directory: ${targetBasePath}`);
@@ -80,16 +87,26 @@ async function sendModsToDrive(config) {
             const modFolderName = mod.modName || mod.id;
             localModPath = path.join(config.modsPath, modFolderName);
           }
-          
-          if (localModPath && fs.existsSync(localModPath) && fs.statSync(localModPath).isDirectory()) {
-            const targetModPath = path.join(targetBasePath, path.basename(localModPath));
-            
+
+          if (
+            localModPath &&
+            fs.existsSync(localModPath) &&
+            fs.statSync(localModPath).isDirectory()
+          ) {
+            const targetModPath = path.join(
+              targetBasePath,
+              path.basename(localModPath),
+            );
+
             if (fs.existsSync(targetModPath)) {
-              fs.rmSync(targetModPath, { recursive: true, force: true });
+              fs.rmSync(targetModPath, {
+                recursive: true,
+                force: true,
+              });
             }
-            
+
             copyRecursiveSync(localModPath, targetModPath);
-            
+
             // Count files transferred
             const countFiles = (dir) => {
               let count = 0;
@@ -104,10 +121,12 @@ async function sendModsToDrive(config) {
               }
               return count;
             };
-            
+
             const fileCount = countFiles(targetModPath);
             transferredCount += fileCount;
-            console.log(`Successfully copied mod: ${path.basename(localModPath)} (${fileCount} files)`);
+            console.log(
+              `Successfully copied mod: ${path.basename(localModPath)} (${fileCount} files)`,
+            );
           } else {
             console.warn(`Mod folder not found: ${localModPath}`);
           }
@@ -122,13 +141,16 @@ async function sendModsToDrive(config) {
           const localModPath = path.join(config.modsPath, file);
           if (fs.statSync(localModPath).isDirectory()) {
             const targetModPath = path.join(targetBasePath, file);
-            
+
             if (fs.existsSync(targetModPath)) {
-              fs.rmSync(targetModPath, { recursive: true, force: true });
+              fs.rmSync(targetModPath, {
+                recursive: true,
+                force: true,
+              });
             }
-            
+
             copyRecursiveSync(localModPath, targetModPath);
-            
+
             const countFiles = (dir) => {
               let count = 0;
               const items = fs.readdirSync(dir);
@@ -142,16 +164,20 @@ async function sendModsToDrive(config) {
               }
               return count;
             };
-            
+
             const fileCount = countFiles(targetModPath);
             transferredCount += fileCount;
-            console.log(`Successfully copied mod: ${file} (${fileCount} files)`);
+            console.log(
+              `Successfully copied mod: ${file} (${fileCount} files)`,
+            );
           }
         }
       }
     }
 
-    console.log(`Successfully transferred ${transferredCount} files to drive ${driveLetter}:`);
+    console.log(
+      `Successfully transferred ${transferredCount} files to drive ${driveLetter}:`,
+    );
     return { success: true, transferredCount };
   } catch (error) {
     handleError(error, 'send-mods-to-drive');
@@ -162,24 +188,27 @@ async function sendModsToDrive(config) {
 function registerFtpHandlers(ipcMain) {
   ipcMain.handle('send-mods-to-switch', async (event, config) => {
     const transferMethod = config.switchTransferMethod || 'ftp';
-    
+
     if (transferMethod === 'drive') {
       return await sendModsToDrive(config);
     }
-    
+
     const ftpClient = new FTPClient();
     let transferredCount = 0;
-    
+
     try {
-      let remoteBasePath = (config.switchFtpPath || '/switch').replace(/\\/g, '/');
+      let remoteBasePath = (config.switchFtpPath || '/switch').replace(
+        /\\/g,
+        '/',
+      );
       if (!remoteBasePath.startsWith('/')) {
         remoteBasePath = '/' + remoteBasePath;
       }
-      
+
       console.log('Starting FTP transfer to Switch:', {
         ip: config.switchIp,
         port: config.switchPort,
-        remotePath: remoteBasePath
+        remotePath: remoteBasePath,
       });
 
       await ftpClient.connect(config.switchIp, config.switchPort);
@@ -194,12 +223,21 @@ function registerFtpHandlers(ipcMain) {
               const modFolderName = mod.modName || mod.id;
               localModPath = path.join(config.modsPath, modFolderName);
             }
-            
-            if (localModPath && fs.existsSync(localModPath) && fs.statSync(localModPath).isDirectory()) {
+
+            if (
+              localModPath &&
+              fs.existsSync(localModPath) &&
+              fs.statSync(localModPath).isDirectory()
+            ) {
               const remoteModPath = `${remoteBasePath}/${path.basename(localModPath)}`;
-              const count = await ftpClient.uploadDirectory(localModPath, remoteModPath);
+              const count = await ftpClient.uploadDirectory(
+                localModPath,
+                remoteModPath,
+              );
               transferredCount += count;
-              console.log(`Successfully sent mod: ${path.basename(localModPath)} (${count} files)`);
+              console.log(
+                `Successfully sent mod: ${path.basename(localModPath)} (${count} files)`,
+              );
             } else {
               console.warn(`Mod folder not found: ${localModPath}`);
             }
@@ -214,7 +252,10 @@ function registerFtpHandlers(ipcMain) {
             const localModPath = path.join(config.modsPath, file);
             if (fs.statSync(localModPath).isDirectory()) {
               const remoteModPath = `${remoteBasePath}/${file}`;
-              const count = await ftpClient.uploadDirectory(localModPath, remoteModPath);
+              const count = await ftpClient.uploadDirectory(
+                localModPath,
+                remoteModPath,
+              );
               transferredCount += count;
             }
           }
@@ -222,30 +263,19 @@ function registerFtpHandlers(ipcMain) {
       }
 
       await ftpClient.disconnect();
-      
-      console.log(`Successfully transferred ${transferredCount} files to Switch`);
+
+      console.log(
+        `Successfully transferred ${transferredCount} files to Switch`,
+      );
       return { success: true, transferredCount };
     } catch (error) {
       handleError(error, 'send-mods-to-switch');
       try {
         await ftpClient.disconnect();
-      } catch (disconnectError) {
-      }
+      } catch (disconnectError) {}
       return createErrorResponse(ErrorCodes.FTP_TRANSFER_ERROR, error.message);
     }
   });
 }
 
 module.exports = { registerFtpHandlers };
-
-
-
-
-
-
-
-
-
-
-
-

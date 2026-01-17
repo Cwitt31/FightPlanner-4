@@ -3,7 +3,11 @@ const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
 const { getProtocolHandler } = require('../../main-protocol-setup');
-const { handleError, createErrorResponse, ErrorCodes } = require('../../utils/error-handler');
+const {
+  handleError,
+  createErrorResponse,
+  ErrorCodes,
+} = require('../../utils/error-handler');
 const { PATHS, TEMP_FOLDERS } = require('../../config');
 
 function registerSystemHandlers(ipcMain) {
@@ -20,14 +24,20 @@ function registerSystemHandlers(ipcMain) {
   ipcMain.handle('open-fightplanner-link', async (event, url) => {
     try {
       if (!url || !url.startsWith('fightplanner:')) {
-        return createErrorResponse(ErrorCodes.INVALID_PROTOCOL_LINK, 'Invalid fightplanner link');
+        return createErrorResponse(
+          ErrorCodes.INVALID_PROTOCOL_LINK,
+          'Invalid fightplanner link',
+        );
       }
       const handler = getProtocolHandler();
       if (handler) {
         handler.handleDeepLink(url);
         return { success: true };
       } else {
-        return createErrorResponse(ErrorCodes.PROTOCOL_HANDLER_NOT_INITIALIZED, 'Protocol handler not initialized');
+        return createErrorResponse(
+          ErrorCodes.PROTOCOL_HANDLER_NOT_INITIALIZED,
+          'Protocol handler not initialized',
+        );
       }
     } catch (error) {
       handleError(error, 'open-fightplanner-link');
@@ -41,7 +51,10 @@ function registerSystemHandlers(ipcMain) {
       if (handler) {
         return handler.cancelDownload(downloadId);
       } else {
-        return createErrorResponse(ErrorCodes.PROTOCOL_HANDLER_NOT_INITIALIZED, 'Protocol handler not initialized');
+        return createErrorResponse(
+          ErrorCodes.PROTOCOL_HANDLER_NOT_INITIALIZED,
+          'Protocol handler not initialized',
+        );
       }
     } catch (error) {
       handleError(error, 'cancel-download');
@@ -71,14 +84,14 @@ function registerSystemHandlers(ipcMain) {
     try {
       const tempPath = PATHS.tempDir();
       const foldersToClean = TEMP_FOLDERS;
-      
+
       let deletedFiles = 0;
       let deletedFolders = 0;
       let totalSize = 0;
 
       for (const folderName of foldersToClean) {
         const folderPath = path.join(tempPath, folderName);
-        
+
         if (fs.existsSync(folderPath)) {
           const calculateSize = (dirPath) => {
             let size = 0;
@@ -118,7 +131,7 @@ function registerSystemHandlers(ipcMain) {
         success: true,
         deletedFiles,
         deletedFolders,
-        totalSize: sizeMB
+        totalSize: sizeMB,
       };
     } catch (error) {
       handleError(error, 'clear-temp-files');
@@ -126,58 +139,75 @@ function registerSystemHandlers(ipcMain) {
     }
   });
 
-  ipcMain.handle('launch-emulator', async (event, emulatorType, emulatorPath, gamePath, fullscreen) => {
-    try {
-      if (!fs.existsSync(emulatorPath)) {
-        return createErrorResponse(ErrorCodes.FILE_NOT_FOUND, 'Emulator not found at specified path');
+  ipcMain.handle(
+    'launch-emulator',
+    async (event, emulatorType, emulatorPath, gamePath, fullscreen) => {
+      try {
+        if (!fs.existsSync(emulatorPath)) {
+          return createErrorResponse(
+            ErrorCodes.FILE_NOT_FOUND,
+            'Emulator not found at specified path',
+          );
+        }
+
+        if (!fs.existsSync(gamePath)) {
+          return createErrorResponse(
+            ErrorCodes.FILE_NOT_FOUND,
+            'Game file not found at specified path',
+          );
+        }
+
+        console.log('Launching emulator:', emulatorType);
+        console.log('Emulator path:', emulatorPath);
+        console.log('With game:', gamePath);
+        console.log('Fullscreen:', fullscreen);
+
+        let args;
+        if (emulatorType === 'yuzu') {
+          args = fullscreen ? ['-f', '-g', gamePath] : ['-g', gamePath];
+        } else {
+          args = ['-g', gamePath];
+        }
+
+        const emulatorProcess = spawn(emulatorPath, args, {
+          detached: true,
+          stdio: 'ignore',
+        });
+
+        emulatorProcess.unref();
+
+        console.log('Emulator launched successfully with args:', args);
+        return { success: true };
+      } catch (error) {
+        handleError(error, 'launch-emulator');
+        return createErrorResponse(
+          ErrorCodes.EMULATOR_LAUNCH_ERROR,
+          error.message,
+        );
       }
-      
-      if (!fs.existsSync(gamePath)) {
-        return createErrorResponse(ErrorCodes.FILE_NOT_FOUND, 'Game file not found at specified path');
-      }
-      
-      console.log('Launching emulator:', emulatorType);
-      console.log('Emulator path:', emulatorPath);
-      console.log('With game:', gamePath);
-      console.log('Fullscreen:', fullscreen);
-      
-      let args;
-      if (emulatorType === 'yuzu') {
-        args = fullscreen ? ['-f', '-g', gamePath] : ['-g', gamePath];
-      } else {
-        args = ['-g', gamePath];
-      }
-      
-      const emulatorProcess = spawn(emulatorPath, args, {
-        detached: true,
-        stdio: 'ignore'
-      });
-      
-      emulatorProcess.unref();
-      
-      console.log('Emulator launched successfully with args:', args);
-      return { success: true };
-    } catch (error) {
-      handleError(error, 'launch-emulator');
-      return createErrorResponse(ErrorCodes.EMULATOR_LAUNCH_ERROR, error.message);
-    }
-  });
+    },
+  );
 
   ipcMain.handle('load-locale', async (event, locale) => {
     try {
       const localesPath = PATHS.localesDir();
       const localePath = path.join(localesPath, `${locale}.json`);
-      
+
       if (!fs.existsSync(localePath)) {
-        console.warn(`Locale file not found: ${localePath}, falling back to English`);
+        console.warn(
+          `Locale file not found: ${localePath}, falling back to English`,
+        );
         const enPath = path.join(localesPath, 'en.json');
         if (fs.existsSync(enPath)) {
           const content = fs.readFileSync(enPath, 'utf8');
           return { success: true, translations: JSON.parse(content) };
         }
-        return createErrorResponse(ErrorCodes.LOCALE_LOAD_ERROR, 'Locale file not found');
+        return createErrorResponse(
+          ErrorCodes.LOCALE_LOAD_ERROR,
+          'Locale file not found',
+        );
       }
-      
+
       const content = fs.readFileSync(localePath, 'utf8');
       const translations = JSON.parse(content);
       console.log(`Locale loaded successfully: ${locale}`);
@@ -201,4 +231,3 @@ function registerSystemHandlers(ipcMain) {
 }
 
 module.exports = { registerSystemHandlers };
-

@@ -13,19 +13,19 @@ class DownloadManager {
   }
 
   initialize() {
-    console.log("Initializing Download Manager...");
+    console.log('Initializing Download Manager...');
 
-    this.activeDownloadsList = document.getElementById("active-downloads-list");
+    this.activeDownloadsList = document.getElementById('active-downloads-list');
     this.completedDownloadsList = document.getElementById(
-      "completed-downloads-list"
+      'completed-downloads-list',
     );
-    this.downloadsEmpty = document.getElementById("downloads-empty");
-    this.downloadsCount = document.getElementById("downloads-count");
-    this.clearCompletedBtn = document.getElementById("clear-completed-btn");
-    this.sendToSwitchBtn = document.getElementById("send-to-switch-btn");
+    this.downloadsEmpty = document.getElementById('downloads-empty');
+    this.downloadsCount = document.getElementById('downloads-count');
+    this.clearCompletedBtn = document.getElementById('clear-completed-btn');
+    this.sendToSwitchBtn = document.getElementById('send-to-switch-btn');
 
     if (!this.activeDownloadsList || !this.completedDownloadsList) {
-      console.error("Download lists not found");
+      console.error('Download lists not found');
       return;
     }
 
@@ -37,7 +37,7 @@ class DownloadManager {
 
     this.updateUI();
 
-    console.log("Download Manager initialized");
+    console.log('Download Manager initialized');
   }
 
   /**
@@ -45,10 +45,10 @@ class DownloadManager {
    */
   renderAllDownloads() {
     if (this.activeDownloadsList) {
-      this.activeDownloadsList.innerHTML = "";
+      this.activeDownloadsList.innerHTML = '';
     }
     if (this.completedDownloadsList) {
-      this.completedDownloadsList.innerHTML = "";
+      this.completedDownloadsList.innerHTML = '';
     }
 
     this.activeDownloads.forEach((download) => {
@@ -62,13 +62,13 @@ class DownloadManager {
 
   setupEventListeners() {
     if (this.clearCompletedBtn) {
-      this.clearCompletedBtn.addEventListener("click", () => {
+      this.clearCompletedBtn.addEventListener('click', () => {
         this.clearCompleted();
       });
     }
 
     if (this.sendToSwitchBtn) {
-      this.sendToSwitchBtn.addEventListener("click", () => {
+      this.sendToSwitchBtn.addEventListener('click', () => {
         this.sendToSwitch();
       });
     }
@@ -83,7 +83,7 @@ class DownloadManager {
       id: downloadId,
       url: url,
       fileName: this.extractFileName(url),
-      status: "downloading",
+      status: 'downloading',
       progress: 0,
       receivedBytes: 0,
       totalBytes: 0,
@@ -120,11 +120,11 @@ class DownloadManager {
     download.totalBytes = totalBytes;
 
     const element = document.querySelector(
-      `[data-download-id="${downloadId}"]`
+      `[data-download-id="${downloadId}"]`,
     );
     if (element) {
-      const progressBar = element.querySelector(".download-progress-fill");
-      const progressText = element.querySelector(".download-progress-text");
+      const progressBar = element.querySelector('.download-progress-fill');
+      const progressText = element.querySelector('.download-progress-text');
 
       if (progressBar) {
         progressBar.style.width = `${progress}%`;
@@ -132,7 +132,7 @@ class DownloadManager {
 
       if (progressText) {
         progressText.textContent = `${progress}% (${this.formatBytes(
-          receivedBytes
+          receivedBytes,
         )} / ${this.formatBytes(totalBytes)})`;
       }
     }
@@ -145,14 +145,14 @@ class DownloadManager {
     const download = this.activeDownloads.get(downloadId);
     if (!download) return;
     const element = document.querySelector(
-      `[data-download-id="${downloadId}"]`
+      `[data-download-id="${downloadId}"]`,
     );
     if (element) {
-      const statusText = element.querySelector(".download-status-text");
-      const progressText = element.querySelector(".download-progress-text");
+      const statusText = element.querySelector('.download-status-text');
+      const progressText = element.querySelector('.download-progress-text');
       if (statusText)
         statusText.innerHTML = '<i class="bi bi-file-zip"></i> Extracting...';
-      if (progressText) progressText.textContent = "Processing...";
+      if (progressText) progressText.textContent = 'Processing...';
     }
   }
 
@@ -170,7 +170,7 @@ class DownloadManager {
       return;
     }
 
-    download.status = "completed";
+    download.status = 'completed';
     download.progress = 100;
     download.modName = modName || download.fileName;
     download.folderPath = folderPath;
@@ -181,7 +181,7 @@ class DownloadManager {
 
     if (this.initialized) {
       const element = document.querySelector(
-        `[data-download-id="${downloadId}"]`
+        `[data-download-id="${downloadId}"]`,
       );
       if (element) {
         element.remove();
@@ -212,18 +212,18 @@ class DownloadManager {
       return;
     }
 
-    download.status = "failed";
+    download.status = 'failed';
     download.error = error;
 
     const element = document.querySelector(
-      `[data-download-id="${downloadId}"]`
+      `[data-download-id="${downloadId}"]`,
     );
     if (element) {
-      element.classList.add("download-failed");
-      const statusText = element.querySelector(".download-status-text");
+      element.classList.add('download-failed');
+      const statusText = element.querySelector('.download-status-text');
       if (statusText) {
         statusText.innerHTML = `<i class="bi bi-x-circle"></i> Failed: ${error}`;
-        statusText.style.color = "#ff4444";
+        statusText.style.color = '#ff4444';
       }
     }
 
@@ -247,9 +247,9 @@ class DownloadManager {
   renderActiveDownload(download) {
     if (!this.activeDownloadsList) return;
 
-    const element = document.createElement("div");
-    element.className = "download-item download-active";
-    element.setAttribute("data-download-id", download.id);
+    const element = document.createElement('div');
+    element.className = 'download-item download-active';
+    element.setAttribute('data-download-id', download.id);
     element.innerHTML = `
 <div class="download-icon">
 <i class="bi bi-download"></i>
@@ -274,8 +274,8 @@ class DownloadManager {
     const cancelBtn = element.querySelector('[data-action="cancel"]');
 
     if (cancelBtn) {
-      cancelBtn.addEventListener("click", () =>
-        this.cancelDownload(download.id)
+      cancelBtn.addEventListener('click', () =>
+        this.cancelDownload(download.id),
       );
     }
 
@@ -288,27 +288,27 @@ class DownloadManager {
   renderCompletedDownload(download) {
     if (!this.completedDownloadsList) return;
 
-    const element = document.createElement("div");
-    element.className = "download-item download-completed";
-    element.setAttribute("data-download-id", download.id);
+    const element = document.createElement('div');
+    element.className = 'download-item download-completed';
+    element.setAttribute('data-download-id', download.id);
 
     // Safely format duration
-    let duration = "N/A";
+    let duration = 'N/A';
     if (download.endTime && download.startTime) {
       try {
         duration = this.formatDuration(download.endTime - download.startTime);
       } catch (e) {
-        console.warn("Error formatting duration:", e);
+        console.warn('Error formatting duration:', e);
       }
     }
 
     // Safely format file size
-    let fileSize = "Unknown";
+    let fileSize = 'Unknown';
     if (download.totalBytes) {
       try {
         fileSize = this.formatBytes(download.totalBytes);
       } catch (e) {
-        console.warn("Error formatting bytes:", e);
+        console.warn('Error formatting bytes:', e);
       }
     }
 
@@ -338,22 +338,22 @@ class DownloadManager {
     const hasAnyDownloads = hasActiveDownloads || hasCompletedDownloads;
 
     if (this.downloadsEmpty) {
-      this.downloadsEmpty.style.display = hasAnyDownloads ? "none" : "flex";
+      this.downloadsEmpty.style.display = hasAnyDownloads ? 'none' : 'flex';
     }
 
-    const activeSections = document.getElementById("active-downloads-section");
+    const activeSections = document.getElementById('active-downloads-section');
     const completedSections = document.getElementById(
-      "completed-downloads-section"
+      'completed-downloads-section',
     );
 
     if (activeSections) {
-      activeSections.style.display = hasActiveDownloads ? "block" : "none";
+      activeSections.style.display = hasActiveDownloads ? 'block' : 'none';
     }
 
     if (completedSections) {
       completedSections.style.display = hasCompletedDownloads
-        ? "block"
-        : "none";
+        ? 'block'
+        : 'none';
     }
 
     if (this.downloadsCount) {
@@ -364,8 +364,8 @@ class DownloadManager {
 
     if (this.clearCompletedBtn) {
       this.clearCompletedBtn.style.display = hasCompletedDownloads
-        ? "block"
-        : "none";
+        ? 'block'
+        : 'none';
     }
   }
 
@@ -376,20 +376,20 @@ class DownloadManager {
     const downloadsBtn = document.querySelector('[data-tab="downloads"]');
     if (!downloadsBtn) return;
 
-    let badge = downloadsBtn.querySelector(".notification-badge");
+    let badge = downloadsBtn.querySelector('.notification-badge');
 
     if (this.activeDownloads.size > 0) {
       if (!badge) {
-        badge = document.createElement("span");
-        badge.className = "notification-badge";
-        downloadsBtn.style.position = "relative";
+        badge = document.createElement('span');
+        badge.className = 'notification-badge';
+        downloadsBtn.style.position = 'relative';
         downloadsBtn.appendChild(badge);
       }
       badge.textContent = this.activeDownloads.size;
-      badge.style.display = "flex";
+      badge.style.display = 'flex';
     } else {
       if (badge) {
-        badge.style.display = "none";
+        badge.style.display = 'none';
       }
     }
   }
@@ -410,7 +410,7 @@ class DownloadManager {
   clearCompleted() {
     this.completedDownloads = [];
     if (this.completedDownloadsList) {
-      this.completedDownloadsList.innerHTML = "";
+      this.completedDownloadsList.innerHTML = '';
     }
     this.updateUI();
   }
@@ -422,10 +422,10 @@ class DownloadManager {
     try {
       const urlObj = new URL(url);
       const pathname = urlObj.pathname;
-      const filename = pathname.substring(pathname.lastIndexOf("/") + 1);
-      return filename || "mod.zip";
+      const filename = pathname.substring(pathname.lastIndexOf('/') + 1);
+      return filename || 'mod.zip';
     } catch {
-      return "mod.zip";
+      return 'mod.zip';
     }
   }
 
@@ -434,7 +434,7 @@ class DownloadManager {
    */
   shortenUrl(url) {
     if (url.length > 60) {
-      return url.substring(0, 57) + "...";
+      return url.substring(0, 57) + '...';
     }
     return url;
   }
@@ -443,11 +443,11 @@ class DownloadManager {
    * Format bytes
    */
   formatBytes(bytes) {
-    if (bytes === 0) return "0 B";
+    if (bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
+    const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
   /**
@@ -470,36 +470,36 @@ class DownloadManager {
     // Check if Switch settings are configured
     if (!window.settingsManager || !window.settingsManager.hasSwitchConfig()) {
       if (window.toastManager) {
-        window.toastManager.error("toasts.switchSettingsNotConfigured");
+        window.toastManager.error('toasts.switchSettingsNotConfigured');
       } else {
-        alert("Please configure Switch settings in Settings > Advanced");
+        alert('Please configure Switch settings in Settings > Advanced');
       }
       return;
     }
 
     const transferMethod = window.settingsManager.getSwitchTransferMethod();
-    
-    if (transferMethod === "none") {
+
+    if (transferMethod === 'none') {
       if (window.toastManager) {
-        window.toastManager.error("toasts.switchSettingsNotConfigured");
+        window.toastManager.error('toasts.switchSettingsNotConfigured');
       } else {
-        alert("Please configure Switch transfer method in Settings > Advanced");
+        alert('Please configure Switch transfer method in Settings > Advanced');
       }
       return;
     }
-    
+
     const switchIp = window.settingsManager.getSwitchIp();
     const switchPort = parseInt(window.settingsManager.getSwitchPort());
     const switchFtpPath =
-      window.settingsManager.getSwitchFtpPath() || "/switch";
+      window.settingsManager.getSwitchFtpPath() || '/switch';
     const switchDriveLetter = window.settingsManager.getSwitchDriveLetter();
 
     // Get mods path
     if (!window.settingsManager || !window.settingsManager.hasModsPath()) {
       if (window.toastManager) {
-        window.toastManager.error("toasts.modsFolderPathNotSet");
+        window.toastManager.error('toasts.modsFolderPathNotSet');
       } else {
-        alert("Please set the mods folder path in Settings");
+        alert('Please set the mods folder path in Settings');
       }
       return;
     }
@@ -515,18 +515,18 @@ class DownloadManager {
 
     if (recentMods.length === 0) {
       if (window.toastManager) {
-        window.toastManager.info("toasts.noRecentDownloads");
+        window.toastManager.info('toasts.noRecentDownloads');
       }
     }
 
     // Call the Electron API to send mods to Switch
     if (!window.electronAPI || !window.electronAPI.sendModsToSwitch) {
       if (window.toastManager) {
-        window.toastManager.error("toasts.ftpNotAvailable");
+        window.toastManager.error('toasts.ftpNotAvailable');
       } else {
-        alert("FTP functionality not available");
+        alert('FTP functionality not available');
       }
-      console.error("Electron API sendModsToSwitch not available");
+      console.error('Electron API sendModsToSwitch not available');
       return;
     }
 
@@ -536,13 +536,13 @@ class DownloadManager {
         const t = (key) =>
           window.i18n && window.i18n.t ? window.i18n.t(key) : key;
         this.sendToSwitchBtn.innerHTML = `<i class="bi bi-arrow-clockwise"></i> ${t(
-          "downloads.sending"
+          'downloads.sending',
         )}`;
       }
 
       // Update FTP transfer status
       this.ftpTransfer = {
-        status: "uploading",
+        status: 'uploading',
         currentMod: 0,
         totalMods: recentMods.length || 0,
         transferredCount: 0,
@@ -553,7 +553,7 @@ class DownloadManager {
       }
 
       if (window.toastManager) {
-        window.toastManager.info("toasts.startingFtpTransfer");
+        window.toastManager.info('toasts.startingFtpTransfer');
       }
 
       const result = await window.electronAPI.sendModsToSwitch({
@@ -575,7 +575,7 @@ class DownloadManager {
         const t = (key) =>
           window.i18n && window.i18n.t ? window.i18n.t(key) : key;
         this.sendToSwitchBtn.innerHTML = `<i class="bi bi-device-hdd"></i> ${t(
-          "downloads.sendToSwitch"
+          'downloads.sendToSwitch',
         )}`;
       }
 
@@ -584,32 +584,32 @@ class DownloadManager {
 
       if (result.success) {
         if (window.toastManager) {
-          window.toastManager.success("toasts.modsSentToSwitch", 3000, {
+          window.toastManager.success('toasts.modsSentToSwitch', 3000, {
             count: result.transferredCount || 0,
           });
         }
       } else {
         if (window.toastManager) {
-          window.toastManager.error("toasts.failedToSendMods", 3000, {
-            error: result.error || "Unknown error",
+          window.toastManager.error('toasts.failedToSendMods', 3000, {
+            error: result.error || 'Unknown error',
           });
         } else {
-          alert(`Failed to send mods: ${result.error || "Unknown error"}`);
+          alert(`Failed to send mods: ${result.error || 'Unknown error'}`);
         }
       }
     } catch (error) {
-      console.error("Error sending mods to Switch:", error);
+      console.error('Error sending mods to Switch:', error);
       if (this.sendToSwitchBtn) {
         this.sendToSwitchBtn.disabled = false;
         const t = (key) =>
           window.i18n && window.i18n.t ? window.i18n.t(key) : key;
         this.sendToSwitchBtn.innerHTML = `<i class="bi bi-device-hdd"></i> ${t(
-          "downloads.sendToSwitch"
+          'downloads.sendToSwitch',
         )}`;
       }
       this.ftpTransfer = null;
       if (window.toastManager) {
-        window.toastManager.error("toasts.failedToSendMods", 3000, {
+        window.toastManager.error('toasts.failedToSendMods', 3000, {
           error: error.message,
         });
       } else {
@@ -637,14 +637,14 @@ class DownloadManager {
     this.activeDownloads.delete(downloadId);
 
     const element = document.querySelector(
-      `[data-download-id="${downloadId}"]`
+      `[data-download-id="${downloadId}"]`,
     );
     if (element) {
-      element.classList.add("download-failed");
-      const statusText = element.querySelector(".download-status-text");
+      element.classList.add('download-failed');
+      const statusText = element.querySelector('.download-status-text');
       if (statusText) {
         statusText.innerHTML = '<i class="bi bi-x-circle"></i> Cancelled';
-        statusText.style.color = "#ef4444";
+        statusText.style.color = '#ef4444';
       }
     }
 
@@ -657,12 +657,12 @@ class DownloadManager {
     }, 2000);
 
     if (window.toastManager) {
-      window.toastManager.warning("toasts.downloadCancelled");
+      window.toastManager.warning('toasts.downloadCancelled');
     }
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.downloadManager = new DownloadManager();
-  console.log("Download Manager created");
+  console.log('Download Manager created');
 }

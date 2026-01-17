@@ -13,23 +13,20 @@ const CONFLICT_WHITELIST_PATTERNS = [
   'victory.toml',
   'README.txt',
   'READ ME.txt',
-  'Preview.webp'
+  'Preview.webp',
 ];
 
-const TEMP_FOLDERS = [
-  'fightplanner-downloads',
-  'fightplanner-extract'
-];
+const TEMP_FOLDERS = ['fightplanner-downloads', 'fightplanner-extract'];
 
 const PATHS = {
   logsDir: () => path.join(app.getPath('userData'), 'logs'),
   tempDir: () => app.getPath('temp'),
-  localesDir: () => path.join(__dirname, '..', '..', 'locales')
+  localesDir: () => path.join(__dirname, '..', '..', 'locales'),
 };
 
 const ENV = {
   isDevelopment: process.env.NODE_ENV === 'development',
-  isProduction: process.env.NODE_ENV === 'production' || !process.env.NODE_ENV
+  isProduction: process.env.NODE_ENV === 'production' || !process.env.NODE_ENV,
 };
 
 function validateConfig() {
@@ -49,6 +46,5 @@ module.exports = {
   TEMP_FOLDERS,
   PATHS,
   ENV,
-  validateConfig
+  validateConfig,
 };
-

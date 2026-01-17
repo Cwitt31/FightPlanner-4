@@ -30,7 +30,10 @@ class UpdateManager {
     });
 
     window.electronAPI.onUpdateDownloadProgress((data) => {
-      console.log('[UpdateManager] Download progress:', data.percent.toFixed(2) + '%');
+      console.log(
+        '[UpdateManager] Download progress:',
+        data.percent.toFixed(2) + '%',
+      );
       this.updateDownloadProgress(data);
     });
 
@@ -42,7 +45,9 @@ class UpdateManager {
     window.electronAPI.onUpdateError((data) => {
       console.error('[UpdateManager] Update error:', data.message);
       if (window.toastManager) {
-        window.toastManager.error('toasts.updateError', 5000, { error: data.message });
+        window.toastManager.error('toasts.updateError', 5000, {
+          error: data.message,
+        });
       }
       this.closeUpdateModal();
     });
@@ -51,25 +56,43 @@ class UpdateManager {
   showUpdateAvailable(data) {
     const modal = document.getElementById('update-modal');
     const versionNumber = document.getElementById('update-version-number');
-    const releaseNotesContent = document.getElementById('update-release-notes-content');
-    
-    const availableContent = document.getElementById('update-available-content');
-    const downloadingContent = document.getElementById('update-downloading-content');
-    const downloadedContent = document.getElementById('update-downloaded-content');
-    
-    const availableActions = document.getElementById('update-available-actions');
-    const downloadingActions = document.getElementById('update-downloading-actions');
-    const downloadedActions = document.getElementById('update-downloaded-actions');
+    const releaseNotesContent = document.getElementById(
+      'update-release-notes-content',
+    );
+
+    const availableContent = document.getElementById(
+      'update-available-content',
+    );
+    const downloadingContent = document.getElementById(
+      'update-downloading-content',
+    );
+    const downloadedContent = document.getElementById(
+      'update-downloaded-content',
+    );
+
+    const availableActions = document.getElementById(
+      'update-available-actions',
+    );
+    const downloadingActions = document.getElementById(
+      'update-downloading-actions',
+    );
+    const downloadedActions = document.getElementById(
+      'update-downloaded-actions',
+    );
 
     if (!modal) return;
 
     versionNumber.textContent = data.version;
-    
+
     if (data.releaseNotes) {
       if (typeof data.releaseNotes === 'string') {
-        releaseNotesContent.innerHTML = this.formatReleaseNotes(data.releaseNotes);
+        releaseNotesContent.innerHTML = this.formatReleaseNotes(
+          data.releaseNotes,
+        );
       } else if (Array.isArray(data.releaseNotes)) {
-        const notes = data.releaseNotes.map(note => note.note || '').join('\n\n');
+        const notes = data.releaseNotes
+          .map((note) => note.note || '')
+          .join('\n\n');
         releaseNotesContent.innerHTML = this.formatReleaseNotes(notes);
       }
     } else {
@@ -79,7 +102,7 @@ class UpdateManager {
     availableContent.style.display = 'block';
     downloadingContent.style.display = 'none';
     downloadedContent.style.display = 'none';
-    
+
     availableActions.style.display = 'flex';
     downloadingActions.style.display = 'none';
     downloadedActions.style.display = 'none';
@@ -87,24 +110,24 @@ class UpdateManager {
     if (window.modalManager) {
       window.modalManager.showOverlay();
     }
-    
+
     modal.classList.remove('closing');
     modal.style.display = 'block';
 
     if (window.toastManager) {
-      window.toastManager.info('toasts.updateAvailable', 5000, { version: data.version });
+      window.toastManager.info('toasts.updateAvailable', 5000, {
+        version: data.version,
+      });
     }
   }
 
   formatReleaseNotes(notes) {
     if (!notes) return '';
-    
-    let formatted = notes
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>');
-    
+
+    let formatted = notes.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+
     formatted = '<p>' + formatted + '</p>';
-    
+
     return formatted;
   }
 
@@ -113,10 +136,18 @@ class UpdateManager {
 
     this.isDownloading = true;
 
-    const availableContent = document.getElementById('update-available-content');
-    const downloadingContent = document.getElementById('update-downloading-content');
-    const availableActions = document.getElementById('update-available-actions');
-    const downloadingActions = document.getElementById('update-downloading-actions');
+    const availableContent = document.getElementById(
+      'update-available-content',
+    );
+    const downloadingContent = document.getElementById(
+      'update-downloading-content',
+    );
+    const availableActions = document.getElementById(
+      'update-available-actions',
+    );
+    const downloadingActions = document.getElementById(
+      'update-downloading-actions',
+    );
 
     availableContent.style.display = 'none';
     downloadingContent.style.display = 'block';
@@ -125,7 +156,7 @@ class UpdateManager {
 
     const progressFill = document.getElementById('update-progress-fill');
     const progressPercent = document.getElementById('update-progress-percent');
-    
+
     progressFill.style.width = '0%';
     progressPercent.textContent = '0%';
 
@@ -162,10 +193,18 @@ class UpdateManager {
   showUpdateDownloaded(data) {
     this.isDownloading = false;
 
-    const downloadingContent = document.getElementById('update-downloading-content');
-    const downloadedContent = document.getElementById('update-downloaded-content');
-    const downloadingActions = document.getElementById('update-downloading-actions');
-    const downloadedActions = document.getElementById('update-downloaded-actions');
+    const downloadingContent = document.getElementById(
+      'update-downloading-content',
+    );
+    const downloadedContent = document.getElementById(
+      'update-downloaded-content',
+    );
+    const downloadingActions = document.getElementById(
+      'update-downloading-actions',
+    );
+    const downloadedActions = document.getElementById(
+      'update-downloaded-actions',
+    );
 
     downloadingContent.style.display = 'none';
     downloadedContent.style.display = 'block';
@@ -173,7 +212,9 @@ class UpdateManager {
     downloadedActions.style.display = 'flex';
 
     if (window.toastManager) {
-      window.toastManager.success('toasts.updateDownloaded', 5000, { version: data.version });
+      window.toastManager.success('toasts.updateDownloaded', 5000, {
+        version: data.version,
+      });
     }
   }
 
@@ -196,11 +237,17 @@ class UpdateManager {
     setTimeout(() => {
       modal.style.display = 'none';
       modal.classList.remove('closing');
-      
-      const availableContent = document.getElementById('update-available-content');
-      const downloadingContent = document.getElementById('update-downloading-content');
-      const downloadedContent = document.getElementById('update-downloaded-content');
-      
+
+      const availableContent = document.getElementById(
+        'update-available-content',
+      );
+      const downloadingContent = document.getElementById(
+        'update-downloading-content',
+      );
+      const downloadedContent = document.getElementById(
+        'update-downloaded-content',
+      );
+
       availableContent.style.display = 'none';
       downloadingContent.style.display = 'none';
       downloadedContent.style.display = 'none';
@@ -215,7 +262,7 @@ class UpdateManager {
 
   async checkForUpdatesManually() {
     console.log('[UpdateManager] Manual update check initiated');
-    
+
     if (window.toastManager) {
       window.toastManager.info('toasts.checkingForUpdates', 3000);
     }
@@ -223,7 +270,7 @@ class UpdateManager {
     try {
       const result = await window.electronAPI.checkForUpdates();
       console.log('[UpdateManager] Manual check result:', result);
-      
+
       if (result.checking) {
         console.log('[UpdateManager] Already checking for updates');
         if (window.toastManager) {
@@ -239,7 +286,10 @@ class UpdateManager {
 
       // If updateInfo is present in the result, it means an update was found
       if (result.updateInfo) {
-        console.log('[UpdateManager] Update found via manual check:', result.updateInfo);
+        console.log(
+          '[UpdateManager] Update found via manual check:',
+          result.updateInfo,
+        );
         this.updateInfo = result.updateInfo;
         this.showUpdateAvailable(result.updateInfo);
       } else {

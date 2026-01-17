@@ -7,7 +7,7 @@ class ModOperations {
     if (!mod.folderPath) {
       if (window.toastManager) {
         window.toastManager.error(
-          "Cannot rename this mod - folder path not found"
+          'Cannot rename this mod - folder path not found',
         );
       }
       return;
@@ -18,19 +18,23 @@ class ModOperations {
         if (window.electronAPI && window.electronAPI.renameMod) {
           const result = await window.electronAPI.renameMod(
             mod.folderPath,
-            newName
+            newName,
           );
 
           if (result.success) {
-            console.log("Mod renamed successfully");
+            console.log('Mod renamed successfully');
             if (window.toastManager) {
-              window.toastManager.success('toasts.modRenamed', 3000, { name: newName });
+              window.toastManager.success('toasts.modRenamed', 3000, {
+                name: newName,
+              });
             }
 
             this.modManager.fetchMods();
           } else {
             if (window.toastManager) {
-              window.toastManager.error('toasts.failedToRenameMod', 3000, { error: result.error });
+              window.toastManager.error('toasts.failedToRenameMod', 3000, {
+                error: result.error,
+              });
             }
           }
         }
@@ -41,7 +45,7 @@ class ModOperations {
   async toggleModStatus(mod) {
     if (!mod.folderPath || !this.modManager.modsPath) {
       if (window.toastManager) {
-        window.toastManager.error("toasts.cannotToggleModStatus");
+        window.toastManager.error('toasts.cannotToggleModStatus');
       }
       return;
     }
@@ -49,21 +53,25 @@ class ModOperations {
     if (window.electronAPI && window.electronAPI.toggleMod) {
       const result = await window.electronAPI.toggleMod(
         mod.folderPath,
-        this.modManager.modsPath
+        this.modManager.modsPath,
       );
 
       if (result.success) {
         console.log(
-          `Mod ${result.isNowActive ? "enabled" : "disabled"} successfully`
+          `Mod ${result.isNowActive ? 'enabled' : 'disabled'} successfully`,
         );
         if (window.toastManager) {
-          window.toastManager.success(result.isNowActive ? 'toasts.modEnabled' : 'toasts.modDisabled');
+          window.toastManager.success(
+            result.isNowActive ? 'toasts.modEnabled' : 'toasts.modDisabled',
+          );
         }
 
         this.modManager.fetchMods();
       } else {
         if (window.toastManager) {
-          window.toastManager.error('toasts.failedToToggleMod', 3000, { error: result.error });
+          window.toastManager.error('toasts.failedToToggleMod', 3000, {
+            error: result.error,
+          });
         }
       }
     }
@@ -72,7 +80,7 @@ class ModOperations {
   async openModFolder(mod) {
     if (!mod.folderPath) {
       if (window.toastManager) {
-        window.toastManager.error("toasts.cannotOpenFolder");
+        window.toastManager.error('toasts.cannotOpenFolder');
       }
       return;
     }
@@ -82,7 +90,9 @@ class ModOperations {
 
       if (!result.success) {
         if (window.toastManager) {
-          window.toastManager.error('toasts.failedToOpenFolder', 3000, { error: result.error });
+          window.toastManager.error('toasts.failedToOpenFolder', 3000, {
+            error: result.error,
+          });
         }
       }
     }
@@ -91,7 +101,7 @@ class ModOperations {
   async uninstallMod(mod) {
     if (!mod.folderPath) {
       if (window.toastManager) {
-        window.toastManager.error("toasts.cannotUninstallMod");
+        window.toastManager.error('toasts.cannotUninstallMod');
       }
       return;
     }
@@ -102,14 +112,14 @@ class ModOperations {
           const result = await window.electronAPI.deleteMod(mod.folderPath);
 
           if (result.success) {
-            console.log("Mod uninstalled successfully");
+            console.log('Mod uninstalled successfully');
 
             if (
               this.modManager.selectedMod &&
               this.modManager.selectedMod.id === mod.id
             ) {
               this.modManager.selectedMod = null;
-              const previewArea = document.querySelector(".preview-area");
+              const previewArea = document.querySelector('.preview-area');
               if (previewArea) {
                 previewArea.innerHTML =
                   '<p style="color: #666; text-align: center;">No preview available</p>';
@@ -126,7 +136,9 @@ class ModOperations {
             this.modManager.fetchMods();
           } else {
             if (window.toastManager) {
-              window.toastManager.error('toasts.failedToUninstallMod', 3000, { error: result.error });
+              window.toastManager.error('toasts.failedToUninstallMod', 3000, {
+                error: result.error,
+              });
             }
           }
         }
@@ -137,7 +149,7 @@ class ModOperations {
   async changeSlot(mod) {
     if (!mod.folderPath) {
       if (window.toastManager) {
-        window.toastManager.error("toasts.cannotChangeSlot");
+        window.toastManager.error('toasts.cannotChangeSlot');
       }
       return;
     }
@@ -154,7 +166,7 @@ class ModOperations {
               if (window.electronAPI && window.electronAPI.applySlotChanges) {
                 const applyResult = await window.electronAPI.applySlotChanges(
                   mod.folderPath,
-                  changes
+                  changes,
                 );
 
                 if (applyResult.success) {
@@ -165,22 +177,28 @@ class ModOperations {
                   this.modManager.fetchMods();
                 } else {
                   if (window.toastManager) {
-                    window.toastManager.error('toasts.failedToChangeSlot', 3000, { error: applyResult.error });
+                    window.toastManager.error(
+                      'toasts.failedToChangeSlot',
+                      3000,
+                      { error: applyResult.error },
+                    );
                   }
                 }
               }
-            }
+            },
           );
         }
       } else {
         if (window.toastManager) {
-          window.toastManager.error('toasts.failedToChangeSlot', 3000, { error: result.error || "Unknown error" });
+          window.toastManager.error('toasts.failedToChangeSlot', 3000, {
+            error: result.error || 'Unknown error',
+          });
         }
       }
     }
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.ModOperations = ModOperations;
 }

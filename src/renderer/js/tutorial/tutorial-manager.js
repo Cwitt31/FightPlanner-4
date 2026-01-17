@@ -6,9 +6,9 @@ class TutorialManager {
 
     this.steps = [
       {
-        title: "Welcome to FightPlanner! 🎮",
+        title: 'Welcome to FightPlanner! 🎮',
         description:
-          "Your all-in-one mod manager for Super Smash Bros Ultimate",
+          'Your all-in-one mod manager for Super Smash Bros Ultimate',
         content: `
 <div class="tutorial-welcome">
 <div class="tutorial-icon">🚀</div>
@@ -22,11 +22,11 @@ class TutorialManager {
 </ul>
 </div>
 `,
-        icon: "bi-rocket-takeoff-fill",
+        icon: 'bi-rocket-takeoff-fill',
       },
       {
-        title: "Configure Your Paths 📂",
-        description: "Point FightPlanner to your mods and plugins folders",
+        title: 'Configure Your Paths 📂',
+        description: 'Point FightPlanner to your mods and plugins folders',
         content: `
 <div class="tutorial-step">
 <div class="tutorial-visual">
@@ -49,11 +49,11 @@ class TutorialManager {
 <p class="tutorial-note">💡 These paths are on your SD card or emulator folder</p>
 </div>
 `,
-        icon: "bi-folder2-open",
+        icon: 'bi-folder2-open',
       },
       {
-        title: "Manage Your Mods 🎨",
-        description: "Enable, disable, and organize your mods",
+        title: 'Manage Your Mods 🎨',
+        description: 'Enable, disable, and organize your mods',
         content: `
 <div class="tutorial-step">
 <div class="tutorial-visual">
@@ -85,11 +85,11 @@ class TutorialManager {
 </div>
 </div>
 `,
-        icon: "bi-grid-3x3-gap",
+        icon: 'bi-grid-3x3-gap',
       },
       {
-        title: "GameBanana Integration 🌐",
-        description: "Install mods directly from your browser!",
+        title: 'GameBanana Integration 🌐',
+        description: 'Install mods directly from your browser!',
         content: `
 <div class="tutorial-step">
 <div class="tutorial-visual">
@@ -109,11 +109,11 @@ class TutorialManager {
 <p class="tutorial-note">💡 Preview and info.toml are downloaded automatically</p>
 </div>
 `,
-        icon: "bi-download",
+        icon: 'bi-download',
       },
       {
         title: "You're All Set! 🎉",
-        description: "Start modding and have fun!",
+        description: 'Start modding and have fun!',
         content: `
 <div class="tutorial-welcome">
 <div class="tutorial-icon">✨</div>
@@ -133,23 +133,23 @@ class TutorialManager {
 </p>
 </div>
 `,
-        icon: "bi-check-circle-fill",
+        icon: 'bi-check-circle-fill',
       },
     ];
   }
 
   async initialize() {
-    console.log("Tutorial manager initialized");
+    console.log('Tutorial manager initialized');
   }
 
   async openTutorialWindow() {
     try {
       if (window.electronAPI && window.electronAPI.openTutorialWindow) {
         await window.electronAPI.openTutorialWindow();
-        console.log("✓ Tutorial window opened");
+        console.log('✓ Tutorial window opened');
       }
     } catch (error) {
-      console.error("Failed to open tutorial window:", error);
+      console.error('Failed to open tutorial window:', error);
     }
   }
 
@@ -162,8 +162,8 @@ class TutorialManager {
       this.overlay.remove();
     }
 
-    this.overlay = document.createElement("div");
-    this.overlay.className = "tutorial-overlay";
+    this.overlay = document.createElement('div');
+    this.overlay.className = 'tutorial-overlay';
     this.overlay.innerHTML = `
 <!-- Blue bubble that expands -->
 <div class="tutorial-bubble"></div>
@@ -189,11 +189,11 @@ ${this.steps
   .map(
     (_, i) => `
 <div class="tutorial-progress-dot ${
-      i === 0 ? "active" : ""
+      i === 0 ? 'active' : ''
     }" data-step="${i}"></div>
-`
+`,
   )
-  .join("")}
+  .join('')}
 </div>
 <div class="tutorial-content" id="tutorial-content">
 <!-- Content will be injected here -->
@@ -219,62 +219,62 @@ Next <i class="bi bi-arrow-right"></i>
   }
 
   playIntroAnimation() {
-    const mainContainer = document.querySelector(".main-container");
-    const bubble = this.overlay.querySelector(".tutorial-bubble");
+    const mainContainer = document.querySelector('.main-container');
+    const bubble = this.overlay.querySelector('.tutorial-bubble');
     const welcomeScreen = this.overlay.querySelector(
-      ".tutorial-welcome-screen"
+      '.tutorial-welcome-screen',
     );
-    const tutorialContainer = this.overlay.querySelector(".tutorial-container");
-    const darkBg = this.overlay.querySelector(".tutorial-dark-bg");
+    const tutorialContainer = this.overlay.querySelector('.tutorial-container');
+    const darkBg = this.overlay.querySelector('.tutorial-dark-bg');
 
-    const noAnimations = document.body.classList.contains("no-animations");
+    const noAnimations = document.body.classList.contains('no-animations');
 
     if (noAnimations) {
-      this.overlay.classList.add("show");
-      welcomeScreen.style.display = "none";
-      bubble.style.display = "none";
-      darkBg.classList.add("show");
-      tutorialContainer.style.display = "flex";
-      tutorialContainer.classList.add("show");
+      this.overlay.classList.add('show');
+      welcomeScreen.style.display = 'none';
+      bubble.style.display = 'none';
+      darkBg.classList.add('show');
+      tutorialContainer.style.display = 'flex';
+      tutorialContainer.classList.add('show');
       this.renderStep();
       return;
     }
 
     setTimeout(() => {
-      this.overlay.classList.add("show");
+      this.overlay.classList.add('show');
     }, 10);
 
     setTimeout(() => {
-      bubble.classList.add("show");
+      bubble.classList.add('show');
     }, 200);
 
     setTimeout(() => {
-      bubble.classList.add("expand");
+      bubble.classList.add('expand');
     }, 3200);
 
     setTimeout(() => {
       if (mainContainer) {
-        mainContainer.classList.add("tutorial-slide-up");
+        mainContainer.classList.add('tutorial-slide-up');
       }
     }, 3500);
 
     setTimeout(() => {
-      welcomeScreen.classList.add("show");
+      welcomeScreen.classList.add('show');
     }, 4500);
 
     setTimeout(() => {
-      welcomeScreen.classList.add("fade-out");
-      bubble.style.opacity = "0";
+      welcomeScreen.classList.add('fade-out');
+      bubble.style.opacity = '0';
 
-      darkBg.classList.add("show");
+      darkBg.classList.add('show');
 
       setTimeout(() => {
-        welcomeScreen.style.display = "none";
-        bubble.style.display = "none";
-        tutorialContainer.style.display = "flex";
+        welcomeScreen.style.display = 'none';
+        bubble.style.display = 'none';
+        tutorialContainer.style.display = 'flex';
 
         setTimeout(() => {
-          tutorialContainer.classList.add("show");
+          tutorialContainer.classList.add('show');
           this.renderStep();
         }, 50);
       }, 800);
@@ -282,18 +282,18 @@ Next <i class="bi bi-arrow-right"></i>
   }
 
   attachEventListeners() {
-    const closeBtn = document.getElementById("tutorial-close");
-    const skipBtn = document.getElementById("tutorial-skip");
-    const prevBtn = document.getElementById("tutorial-prev");
-    const nextBtn = document.getElementById("tutorial-next");
+    const closeBtn = document.getElementById('tutorial-close');
+    const skipBtn = document.getElementById('tutorial-skip');
+    const prevBtn = document.getElementById('tutorial-prev');
+    const nextBtn = document.getElementById('tutorial-next');
 
-    closeBtn.addEventListener("click", () => this.close());
-    skipBtn.addEventListener("click", () => this.skip());
-    prevBtn.addEventListener("click", () => this.previousStep());
-    nextBtn.addEventListener("click", () => this.nextStep());
+    closeBtn.addEventListener('click', () => this.close());
+    skipBtn.addEventListener('click', () => this.skip());
+    prevBtn.addEventListener('click', () => this.previousStep());
+    nextBtn.addEventListener('click', () => this.nextStep());
 
-    document.querySelectorAll(".tutorial-progress-dot").forEach((dot) => {
-      dot.addEventListener("click", (e) => {
+    document.querySelectorAll('.tutorial-progress-dot').forEach((dot) => {
+      dot.addEventListener('click', (e) => {
         const step = parseInt(e.target.dataset.step);
         this.goToStep(step);
       });
@@ -302,14 +302,14 @@ Next <i class="bi bi-arrow-right"></i>
 
   renderStep() {
     const step = this.steps[this.currentStep];
-    const content = document.getElementById("tutorial-content");
-    const prevBtn = document.getElementById("tutorial-prev");
-    const nextBtn = document.getElementById("tutorial-next");
+    const content = document.getElementById('tutorial-content');
+    const prevBtn = document.getElementById('tutorial-prev');
+    const nextBtn = document.getElementById('tutorial-next');
 
     if (!content) return;
 
-    content.style.opacity = "0";
-    content.style.transform = "translateY(10px)";
+    content.style.opacity = '0';
+    content.style.transform = 'translateY(10px)';
 
     setTimeout(() => {
       content.innerHTML = `
@@ -325,22 +325,22 @@ Next <i class="bi bi-arrow-right"></i>
 ${step.content}
 `;
 
-      content.style.opacity = "1";
-      content.style.transform = "translateY(0)";
+      content.style.opacity = '1';
+      content.style.transform = 'translateY(0)';
     }, 200);
 
-    document.querySelectorAll(".tutorial-progress-dot").forEach((dot, i) => {
+    document.querySelectorAll('.tutorial-progress-dot').forEach((dot, i) => {
       if (i === this.currentStep) {
-        dot.classList.add("active");
+        dot.classList.add('active');
       } else if (i < this.currentStep) {
-        dot.classList.add("completed");
-        dot.classList.remove("active");
+        dot.classList.add('completed');
+        dot.classList.remove('active');
       } else {
-        dot.classList.remove("active", "completed");
+        dot.classList.remove('active', 'completed');
       }
     });
 
-    prevBtn.style.display = this.currentStep > 0 ? "flex" : "none";
+    prevBtn.style.display = this.currentStep > 0 ? 'flex' : 'none';
 
     if (this.currentStep === this.steps.length - 1) {
       nextBtn.innerHTML = 'Get Started! <i class="bi bi-check-lg"></i>';
@@ -375,7 +375,7 @@ ${step.content}
   async skip() {
     if (
       confirm(
-        "Are you sure you want to skip the tutorial? You can always restart it from the console."
+        'Are you sure you want to skip the tutorial? You can always restart it from the console.',
       )
     ) {
       this.complete();
@@ -384,7 +384,7 @@ ${step.content}
 
   async complete() {
     if (window.electronAPI && window.electronAPI.store) {
-      await window.electronAPI.store.set("tutorialShown", true);
+      await window.electronAPI.store.set('tutorialShown', true);
     }
     this.tutorialShown = true;
     this.close();
@@ -392,11 +392,11 @@ ${step.content}
 
   close() {
     if (this.overlay) {
-      this.overlay.classList.remove("show");
+      this.overlay.classList.remove('show');
 
-      const mainContainer = document.querySelector(".main-container");
+      const mainContainer = document.querySelector('.main-container');
       if (mainContainer) {
-        mainContainer.classList.remove("tutorial-slide-up");
+        mainContainer.classList.remove('tutorial-slide-up');
       }
 
       setTimeout(() => {
@@ -410,28 +410,28 @@ ${step.content}
 
   async reset() {
     if (window.electronAPI && window.electronAPI.store) {
-      await window.electronAPI.store.set("hasLaunchedBefore", false);
+      await window.electronAPI.store.set('hasLaunchedBefore', false);
     }
-    console.log("✓ Tutorial reset!");
-    console.log("   The tutorial will open BEFORE the app on next launch.");
-    console.log("   Close and reopen the app to see the full animation.");
+    console.log('✓ Tutorial reset!');
+    console.log('   The tutorial will open BEFORE the app on next launch.');
+    console.log('   Close and reopen the app to see the full animation.');
   }
 
   async resetToTestFirstLaunch() {
     if (window.electronAPI && window.electronAPI.store) {
-      await window.electronAPI.store.set("hasLaunchedBefore", false);
-      console.log("✓ First launch flag reset!");
-      console.log("   On next launch: Tutorial window only → then main app");
+      await window.electronAPI.store.set('hasLaunchedBefore', false);
+      console.log('✓ First launch flag reset!');
+      console.log('   On next launch: Tutorial window only → then main app');
     }
   }
 
   forceShow() {
     this.show();
-    console.log("✓ Tutorial window opened.");
+    console.log('✓ Tutorial window opened.');
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.tutorialManager = new TutorialManager();
   window.tutorial = {
     show: () => window.tutorialManager.show(),
@@ -439,19 +439,19 @@ if (typeof window !== "undefined") {
     resetFirstLaunch: () => window.tutorialManager.resetToTestFirstLaunch(),
   };
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
       window.tutorialManager.initialize();
     });
   } else {
     window.tutorialManager.initialize();
   }
 
-  console.log("📚 Tutorial Manager loaded.");
-  console.log("   Commands:");
-  console.log("   → window.tutorial.show() - Open tutorial now");
-  console.log("   → window.tutorial.reset() - Reset for next launch");
+  console.log('📚 Tutorial Manager loaded.');
+  console.log('   Commands:');
+  console.log('   → window.tutorial.show() - Open tutorial now');
+  console.log('   → window.tutorial.reset() - Reset for next launch');
   console.log(
-    "   → window.tutorial.resetFirstLaunch() - Test first launch behavior"
+    '   → window.tutorial.resetFirstLaunch() - Test first launch behavior',
   );
 }

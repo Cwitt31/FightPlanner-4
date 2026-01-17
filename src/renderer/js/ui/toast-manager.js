@@ -10,9 +10,9 @@ class ToastManager {
   }
 
   init() {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () =>
-        this.setupContainer()
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () =>
+        this.setupContainer(),
       );
     } else {
       this.setupContainer();
@@ -20,9 +20,9 @@ class ToastManager {
   }
 
   setupContainer() {
-    this.container = document.getElementById("toast-container");
+    this.container = document.getElementById('toast-container');
     if (!this.container) {
-      console.warn("Toast container not found");
+      console.warn('Toast container not found');
     }
   }
 
@@ -33,10 +33,10 @@ class ToastManager {
    * @returns {string} Translated message
    */
   translateMessage(message, params = {}) {
-    if (!message) return "";
-    
+    if (!message) return '';
+
     // Check if message is a translation key (starts with "toasts.")
-    if (message.startsWith("toasts.")) {
+    if (message.startsWith('toasts.')) {
       if (window.i18n && window.i18n.t) {
         let translated = window.i18n.t(message, params);
         return translated || message;
@@ -44,7 +44,7 @@ class ToastManager {
       // If i18n not available, return message as-is (fallback)
       return message;
     }
-    
+
     // If not a translation key, return message as-is
     // But still replace params if they exist
     if (params && Object.keys(params).length > 0) {
@@ -54,7 +54,7 @@ class ToastManager {
       }
       return result;
     }
-    
+
     return message;
   }
 
@@ -69,14 +69,15 @@ class ToastManager {
     if (!this.container) {
       this.setupContainer();
       if (!this.container) {
-        console.error("Cannot show toast: container not found");
+        console.error('Cannot show toast: container not found');
         return;
       }
     }
 
-    const translatedMessage = this.translateMessage(message, params) || message || "";
+    const translatedMessage =
+      this.translateMessage(message, params) || message || '';
     if (!translatedMessage) {
-      console.warn("Toast message is empty, skipping");
+      console.warn('Toast message is empty, skipping');
       return;
     }
     const toastKey = `${type}:${translatedMessage}`;
@@ -88,10 +89,10 @@ class ToastManager {
 
       if (timeSince < this.toastCooldown) {
         console.log(
-          "[Toast] Skipping duplicate toast (shown",
+          '[Toast] Skipping duplicate toast (shown',
           timeSince,
-          "ms ago):",
-          message
+          'ms ago):',
+          message,
         );
         return;
       }
@@ -105,28 +106,28 @@ class ToastManager {
       }
     }
 
-    const toast = document.createElement("div");
+    const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
 
-    let icon = "";
+    let icon = '';
     switch (type) {
-      case "success":
+      case 'success':
         icon = '<i class="bi bi-check-circle-fill"></i>';
         break;
-      case "error":
+      case 'error':
         icon = '<i class="bi bi-x-circle-fill"></i>';
         break;
-      case "warning":
+      case 'warning':
         icon = '<i class="bi bi-exclamation-triangle-fill"></i>';
         break;
-      case "info":
+      case 'info':
         icon = '<i class="bi bi-info-circle-fill"></i>';
         break;
     }
 
-    let actionButtonHtml = "";
+    let actionButtonHtml = '';
     if (options.actionButton) {
-      const actionText = options.actionButton.text || "Action";
+      const actionText = options.actionButton.text || 'Action';
       actionButtonHtml = `<button class="toast-action-btn">${this.escapeHtml(actionText)}</button>`;
     }
 
@@ -142,13 +143,13 @@ ${actionButtonHtml}
     this.container.appendChild(toast);
     this.toasts.push(toast);
 
-    const closeBtn = toast.querySelector(".toast-close");
-    closeBtn.addEventListener("click", () => this.hide(toast));
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => this.hide(toast));
 
     if (options.actionButton && options.actionButton.onClick) {
-      const actionBtn = toast.querySelector(".toast-action-btn");
+      const actionBtn = toast.querySelector('.toast-action-btn');
       if (actionBtn) {
-        actionBtn.addEventListener("click", () => {
+        actionBtn.addEventListener('click', () => {
           options.actionButton.onClick();
           this.hide(toast);
         });
@@ -156,7 +157,7 @@ ${actionButtonHtml}
     }
 
     setTimeout(() => {
-      toast.classList.add("toast-show");
+      toast.classList.add('toast-show');
     }, 10);
 
     setTimeout(() => {
@@ -166,9 +167,9 @@ ${actionButtonHtml}
 
   hide(toast) {
     if (!toast || !toast.parentElement) return;
-    
-    toast.classList.remove("toast-show");
-    toast.classList.add("toast-hide");
+
+    toast.classList.remove('toast-show');
+    toast.classList.add('toast-hide');
 
     setTimeout(() => {
       if (toast.parentElement) {
@@ -183,19 +184,19 @@ ${actionButtonHtml}
   }
 
   success(message, duration, params, options) {
-    this.show("success", message, duration, params, options);
+    this.show('success', message, duration, params, options);
   }
 
   error(message, duration, params, options) {
-    this.show("error", message, duration, params, options);
+    this.show('error', message, duration, params, options);
   }
 
   warning(message, duration, params, options) {
-    this.show("warning", message, duration, params, options);
+    this.show('warning', message, duration, params, options);
   }
 
   info(message, duration, params, options) {
-    this.show("info", message, duration, params, options);
+    this.show('info', message, duration, params, options);
   }
 
   /**
@@ -204,8 +205,8 @@ ${actionButtonHtml}
   clear() {
     this.toasts.forEach((toast) => {
       if (toast.parentElement) {
-        toast.classList.remove("toast-show");
-        toast.classList.add("toast-hide");
+        toast.classList.remove('toast-show');
+        toast.classList.add('toast-hide');
         setTimeout(() => {
           if (toast.parentElement) {
             toast.parentElement.removeChild(toast);
@@ -217,13 +218,13 @@ ${actionButtonHtml}
   }
 
   escapeHtml(text) {
-    const div = document.createElement("div");
+    const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.toastManager = new ToastManager();
-  console.log("Toast Manager initialized");
+  console.log('Toast Manager initialized');
 }

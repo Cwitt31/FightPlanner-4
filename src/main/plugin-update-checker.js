@@ -3,20 +3,23 @@ const https = require('https');
 class PluginUpdateChecker {
   static normalizeRepoUrl(repoInput) {
     if (!repoInput) return null;
-    
+
     const trimmed = repoInput.trim();
-    
+
     if (trimmed.includes('github.com')) {
       const match = trimmed.match(/github\.com\/([^\/]+\/[^\/\s]+)/);
       if (match) {
-        return match[1].replace(/\.git$/, '').replace(/\/releases.*$/, '').replace(/\/tags.*$/, '');
+        return match[1]
+          .replace(/\.git$/, '')
+          .replace(/\/releases.*$/, '')
+          .replace(/\/tags.*$/, '');
       }
     }
-    
+
     if (trimmed.includes('/')) {
       return trimmed.replace(/\.git$/, '');
     }
-    
+
     return null;
   }
 
@@ -24,32 +27,34 @@ class PluginUpdateChecker {
     return new Promise((resolve, reject) => {
       const options = {
         headers: {
-          'User-Agent': 'FightPlanner-Plugin-Updater'
-        }
+          'User-Agent': 'FightPlanner-Plugin-Updater',
+        },
       };
 
-      https.get(url, options, (res) => {
-        let data = '';
+      https
+        .get(url, options, (res) => {
+          let data = '';
 
-        if (res.statusCode !== 200) {
-          reject(new Error(`HTTP ${res.statusCode}`));
-          return;
-        }
-
-        res.on('data', (chunk) => {
-          data += chunk;
-        });
-
-        res.on('end', () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch (e) {
-            reject(new Error('Invalid JSON response'));
+          if (res.statusCode !== 200) {
+            reject(new Error(`HTTP ${res.statusCode}`));
+            return;
           }
+
+          res.on('data', (chunk) => {
+            data += chunk;
+          });
+
+          res.on('end', () => {
+            try {
+              resolve(JSON.parse(data));
+            } catch (e) {
+              reject(new Error('Invalid JSON response'));
+            }
+          });
+        })
+        .on('error', (err) => {
+          reject(err);
         });
-      }).on('error', (err) => {
-        reject(err);
-      });
     });
   }
 
@@ -57,7 +62,7 @@ class PluginUpdateChecker {
     try {
       const url = `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
       let release;
-      
+
       try {
         release = await this.fetchJson(url);
       } catch (error) {
@@ -73,13 +78,13 @@ class PluginUpdateChecker {
           return null;
         }
       }
-      
+
       if (release && release.tag_name) {
         const downloadUrl = this.findNroAsset(release.assets);
         return {
           version: release.tag_name.replace(/^v/, ''),
           downloadUrl: downloadUrl,
-          releaseData: release
+          releaseData: release,
         };
       }
       return null;
@@ -92,13 +97,13 @@ class PluginUpdateChecker {
     try {
       const url = `https://api.github.com/repos/${owner}/${repo}/tags`;
       const tags = await this.fetchJson(url);
-      
+
       if (tags && tags.length > 0) {
         const latestTag = tags[0];
         return {
           version: latestTag.name.replace(/^v/, ''),
           downloadUrl: null,
-          tagData: latestTag
+          tagData: latestTag,
         };
       }
       return null;
@@ -109,7 +114,7 @@ class PluginUpdateChecker {
 
   static findNroAsset(assets) {
     if (!assets || !Array.isArray(assets)) return null;
-    
+
     for (const asset of assets) {
       const assetName = asset.name ? asset.name.toLowerCase() : '';
       if (assetName.endsWith('.nro')) {
@@ -119,13 +124,16 @@ class PluginUpdateChecker {
         return asset.browser_download_url;
       }
     }
-    
+
     return null;
   }
 
   static compareVersions(v1, v2) {
     const normalize = (v) => {
-      return v.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+      return v
+        .replace(/^v/, '')
+        .split('.')
+        .map((n) => parseInt(n, 10) || 0);
     };
 
     const parts1 = normalize(v1);
@@ -147,51 +155,66 @@ class PluginUpdateChecker {
     try {
       const repo = this.normalizeRepoUrl(repoInput);
       if (!repo) {
-        console.error(`[PluginUpdate] Invalid repo format for ${pluginName}: ${repoInput}`);
+        console.error(
+          `[PluginUpdate] Invalid repo format for ${pluginName}: ${repoInput}`,
+        );
         return {
           success: false,
-          error: 'Invalid repository format'
+          error: 'Invalid repository format',
         };
       }
 
       const [owner, repoName] = repo.split('/');
       if (!owner || !repoName) {
-        console.error(`[PluginUpdate] Invalid repo split for ${pluginName}: ${repo}`);
+        console.error(
+          `[PluginUpdate] Invalid repo split for ${pluginName}: ${repo}`,
+        );
         return {
           success: false,
-          error: 'Invalid repository format'
+          error: 'Invalid repository format',
         };
       }
 
-      console.log(`[PluginUpdate] Checking ${pluginName} from ${owner}/${repoName}`);
-      
+      console.log(
+        `[PluginUpdate] Checking ${pluginName} from ${owner}/${repoName}`,
+      );
+
       let latestInfo = await this.getLatestRelease(owner, repoName);
-      
+
       if (!latestInfo || !latestInfo.downloadUrl) {
-        console.log(`[PluginUpdate] No release with download URL found, trying tags for ${pluginName}`);
+        console.log(
+          `[PluginUpdate] No release with download URL found, trying tags for ${pluginName}`,
+        );
         latestInfo = await this.getLatestTag(owner, repoName);
       }
 
       if (!latestInfo) {
-        console.error(`[PluginUpdate] No releases or tags found for ${pluginName} (${owner}/${repoName})`);
+        console.error(
+          `[PluginUpdate] No releases or tags found for ${pluginName} (${owner}/${repoName})`,
+        );
         return {
           success: false,
-          error: 'No releases or tags found'
+          error: 'No releases or tags found',
         };
       }
 
       if (!latestInfo.downloadUrl) {
-        console.warn(`[PluginUpdate] Release found but no download URL for ${pluginName}`);
+        console.warn(
+          `[PluginUpdate] Release found but no download URL for ${pluginName}`,
+        );
         return {
           success: false,
-          error: 'No download URL available in release'
+          error: 'No download URL available in release',
         };
       }
 
-      const hasUpdate = !currentVersion || 
+      const hasUpdate =
+        !currentVersion ||
         this.compareVersions(latestInfo.version, currentVersion) > 0;
 
-      console.log(`[PluginUpdate] ${pluginName}: ${currentVersion || 'unknown'} → ${latestInfo.version} (hasUpdate: ${hasUpdate})`);
+      console.log(
+        `[PluginUpdate] ${pluginName}: ${currentVersion || 'unknown'} → ${latestInfo.version} (hasUpdate: ${hasUpdate})`,
+      );
 
       return {
         success: true,
@@ -199,27 +222,31 @@ class PluginUpdateChecker {
         currentVersion: currentVersion || 'unknown',
         latestVersion: latestInfo.version,
         downloadUrl: latestInfo.downloadUrl,
-        repo: repo
+        repo: repo,
       };
     } catch (error) {
       console.error(`[PluginUpdate] Error checking ${pluginName}:`, error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
 
   static async checkAllPlugins(pluginMappings, pluginVersions) {
     const results = [];
-    
+
     for (const [pluginName, repoInput] of Object.entries(pluginMappings)) {
       const currentVersion = pluginVersions[pluginName] || null;
-      const result = await this.checkPluginUpdate(pluginName, repoInput, currentVersion);
-      
+      const result = await this.checkPluginUpdate(
+        pluginName,
+        repoInput,
+        currentVersion,
+      );
+
       results.push({
         pluginName,
-        ...result
+        ...result,
       });
     }
 
@@ -228,4 +255,3 @@ class PluginUpdateChecker {
 }
 
 module.exports = PluginUpdateChecker;
-

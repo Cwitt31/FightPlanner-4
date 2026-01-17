@@ -29,7 +29,8 @@
   },
   "devDependencies": {
     "electron": "^39.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "prettier": "^3.8.0"
   },
   "build": {
     "appId": "com.shatteredchaos.fightplanner",

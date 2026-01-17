@@ -5,10 +5,10 @@ class LogsManager {
     this.currentFilter = 'all';
     this.logsContainer = null;
     this.initialized = false;
-    
+
     this.interceptConsole();
     this.setupIPCListener();
-    
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.initialize());
     } else {
@@ -75,23 +75,25 @@ class LogsManager {
 
   addLog(level, args, fromMain = false) {
     const timestamp = new Date();
-    const message = args.map(arg => {
-      if (typeof arg === 'object') {
-        try {
-          return JSON.stringify(arg, null, 2);
-        } catch (e) {
-          return String(arg);
+    const message = args
+      .map((arg) => {
+        if (typeof arg === 'object') {
+          try {
+            return JSON.stringify(arg, null, 2);
+          } catch (e) {
+            return String(arg);
+          }
         }
-      }
-      return String(arg);
-    }).join(' ');
+        return String(arg);
+      })
+      .join(' ');
 
     const logEntry = {
       id: Date.now() + Math.random(),
       timestamp,
       level,
       message,
-      source: fromMain ? 'main' : 'renderer'
+      source: fromMain ? 'main' : 'renderer',
     };
 
     this.logs.push(logEntry);
@@ -107,13 +109,13 @@ class LogsManager {
 
   setupEventListeners() {
     const filterButtons = document.querySelectorAll('.logs-filter-btn');
-    filterButtons.forEach(btn => {
+    filterButtons.forEach((btn) => {
       if (!btn.dataset.listenerAttached) {
         btn.addEventListener('click', () => {
           const level = btn.dataset.logLevel;
           this.setFilter(level);
-          
-          filterButtons.forEach(b => b.classList.remove('active'));
+
+          filterButtons.forEach((b) => b.classList.remove('active'));
           btn.classList.add('active');
         });
         btn.dataset.listenerAttached = 'true';
@@ -153,10 +155,10 @@ class LogsManager {
     try {
       if (window.electronAPI && window.electronAPI.getLogsPath) {
         const logsPath = await window.electronAPI.getLogsPath();
-        
+
         if (window.electronAPI.openFolder) {
           await window.electronAPI.openFolder(logsPath);
-          
+
           if (window.toastManager) {
             window.toastManager.success('toasts.logsFolderOpened');
           }
@@ -176,22 +178,27 @@ class LogsManager {
 
   copyLogsToClipboard() {
     try {
-      const logsText = this.logs.map(log => {
-        const time = log.timestamp.toLocaleTimeString();
-        const date = log.timestamp.toLocaleDateString();
-        return `[${date} ${time}] [${log.level.toUpperCase()}] [${log.source}] ${log.message}`;
-      }).join('\n');
+      const logsText = this.logs
+        .map((log) => {
+          const time = log.timestamp.toLocaleTimeString();
+          const date = log.timestamp.toLocaleDateString();
+          return `[${date} ${time}] [${log.level.toUpperCase()}] [${log.source}] ${log.message}`;
+        })
+        .join('\n');
 
-      navigator.clipboard.writeText(logsText).then(() => {
-        if (window.toastManager) {
-          window.toastManager.success('toasts.logsCopiedToClipboard');
-        }
-      }).catch(err => {
-        console.error('Failed to copy logs:', err);
-        if (window.toastManager) {
-          window.toastManager.error('toasts.failedToCopyLogs');
-        }
-      });
+      navigator.clipboard
+        .writeText(logsText)
+        .then(() => {
+          if (window.toastManager) {
+            window.toastManager.success('toasts.logsCopiedToClipboard');
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to copy logs:', err);
+          if (window.toastManager) {
+            window.toastManager.error('toasts.failedToCopyLogs');
+          }
+        });
     } catch (error) {
       console.error('Error copying logs:', error);
       if (window.toastManager) {
@@ -203,9 +210,10 @@ class LogsManager {
   renderLogs() {
     if (!this.logsContainer) return;
 
-    const filteredLogs = this.currentFilter === 'all' 
-      ? this.logs 
-      : this.logs.filter(log => log.level === this.currentFilter);
+    const filteredLogs =
+      this.currentFilter === 'all'
+        ? this.logs
+        : this.logs.filter((log) => log.level === this.currentFilter);
 
     if (filteredLogs.length === 0) {
       this.logsContainer.innerHTML = `
@@ -218,8 +226,8 @@ class LogsManager {
     }
 
     this.logsContainer.innerHTML = '';
-    filteredLogs.forEach(log => this.appendLogEntry(log, false));
-    
+    filteredLogs.forEach((log) => this.appendLogEntry(log, false));
+
     this.logsContainer.scrollTop = this.logsContainer.scrollHeight;
   }
 
@@ -241,7 +249,8 @@ class LogsManager {
 
     const time = log.timestamp.toLocaleTimeString();
     const icon = this.getLogIcon(log.level);
-    const sourceTag = log.source === 'main' ? '<span class="log-source-tag">MAIN</span>' : '';
+    const sourceTag =
+      log.source === 'main' ? '<span class="log-source-tag">MAIN</span>' : '';
 
     logElement.innerHTML = `
       <div class="log-time">${time}</div>
@@ -267,7 +276,7 @@ class LogsManager {
     const icons = {
       log: '<i class="bi bi-info-circle"></i>',
       warn: '<i class="bi bi-exclamation-triangle"></i>',
-      error: '<i class="bi bi-x-circle"></i>'
+      error: '<i class="bi bi-x-circle"></i>',
     };
     return icons[level] || icons.log;
   }
