@@ -23,6 +23,7 @@ class SettingsManager {
       autoCheckPluginUpdates: false,
       pluginUpdateIntroShown: false,
       autoDisableNewMods: false,
+      disableAllModsOnDownload: false,
       devMode: false,
       theme: 'dark',
     };
@@ -374,6 +375,17 @@ class SettingsManager {
       autoDisableMods.dataset.listenerAttached = 'true';
     }
 
+    const disableAllOnDownload = document.querySelector<HTMLInputElement>(
+      '#disable-all-mods-on-download-enabled',
+    );
+    if (disableAllOnDownload && !disableAllOnDownload.dataset.listenerAttached) {
+      disableAllOnDownload.addEventListener('change', () => {
+        this.settings.disableAllModsOnDownload = disableAllOnDownload.checked;
+        this.saveSettings();
+      });
+      disableAllOnDownload.dataset.listenerAttached = 'true';
+    }
+
     const checkUpdatesBtn =
       document.querySelector<HTMLElement>('#check-updates-btn');
     if (checkUpdatesBtn && !checkUpdatesBtn.dataset.listenerAttached) {
@@ -625,6 +637,7 @@ class SettingsManager {
     this.updateConflictDetectionUI();
     this.updateAutoCheckPluginUpdatesUI();
     this.updateAutoDisableModsUI();
+    this.updateDisableAllModsOnDownloadUI();
     this.updateDeveloperModeUI();
 
     const devModeToggle = document.querySelector<HTMLInputElement>(
@@ -706,6 +719,24 @@ class SettingsManager {
         });
       }
     }
+
+    const logRetentionInput = document.querySelector<HTMLInputElement>(
+      '#log-retention-days',
+    );
+    if (logRetentionInput && !logRetentionInput.dataset.listenerAttached) {
+      window.electronAPI.store.get('logRetentionDays').then((value: number) => {
+        logRetentionInput.value = String(value || 7);
+      });
+
+      logRetentionInput.addEventListener('change', async () => {
+        const value = parseInt(logRetentionInput.value, 10);
+        if (value >= 1 && value <= 365) {
+          await window.electronAPI.store.set('logRetentionDays', value);
+          this.showToast(this.translate('toasts.settingSaved'), 'success');
+        }
+      });
+      logRetentionInput.dataset.listenerAttached = 'true';
+    }
   }
 
   updateDeveloperModeUI() {
@@ -739,6 +770,15 @@ class SettingsManager {
     );
     if (toggle) {
       toggle.checked = this.settings.autoDisableNewMods || false;
+    }
+  }
+
+  updateDisableAllModsOnDownloadUI() {
+    const toggle = document.querySelector<HTMLInputElement>(
+      '#disable-all-mods-on-download-enabled',
+    );
+    if (toggle) {
+      toggle.checked = this.settings.disableAllModsOnDownload || false;
     }
   }
 
@@ -1134,9 +1174,7 @@ ${t('settings.okUnderstand')}
     }
 
     if (transferMethod === 'drive') {
-      this.loadAvailableDrives().then(() => {
-        this.updateSwitchDriveLetterUI();
-      });
+      this.updateSwitchDriveLetterUI();
     }
   }
 
@@ -1460,6 +1498,12 @@ ${t('settings.okUnderstand')}
         'pluginUpdateIntroShown',
       );
       const theme = await window.electronAPI.store.get('theme');
+      const autoDisableNewMods = await window.electronAPI.store.get(
+        'autoDisableNewMods',
+      );
+      const disableAllModsOnDownload = await window.electronAPI.store.get(
+        'disableAllModsOnDownload',
+      );
       return {
         modsPath: modsPath || null,
         pluginsPath: pluginsPath || null,
@@ -1476,6 +1520,8 @@ ${t('settings.okUnderstand')}
         autoCheckPluginUpdates: autoCheckPluginUpdates || false,
         pluginUpdateIntroShown: pluginUpdateIntroShown || false,
         theme: theme || 'dark',
+        autoDisableNewMods: autoDisableNewMods || false,
+        disableAllModsOnDownload: disableAllModsOnDownload || false,
       };
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -1495,6 +1541,8 @@ ${t('settings.okUnderstand')}
         autoCheckPluginUpdates: false,
         pluginUpdateIntroShown: false,
         theme: 'dark',
+        autoDisableNewMods: false,
+        disableAllModsOnDownload: false,
       };
     }
   }
@@ -1549,6 +1597,14 @@ ${t('settings.okUnderstand')}
         this.settings.pluginUpdateIntroShown,
       );
       await window.electronAPI.store.set('theme', this.settings.theme);
+      await window.electronAPI.store.set(
+        'autoDisableNewMods',
+        this.settings.autoDisableNewMods,
+      );
+      await window.electronAPI.store.set(
+        'disableAllModsOnDownload',
+        this.settings.disableAllModsOnDownload,
+      );
     } catch (error) {
       console.error('Failed to save settings:', error);
     }

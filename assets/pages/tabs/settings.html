@@ -2,48 +2,23 @@
 <div class="settings-container">
   <!-- Settings Tabs -->
   <div class="settings-sidebar">
-    <button
-      class="settings-tab-btn active"
-      data-settings-tab="general"
-      data-i18n="settings.general"
-    >
+    <button class="settings-tab-btn active" data-settings-tab="general" data-i18n="settings.general">
       General
     </button>
-    <button
-      class="settings-tab-btn"
-      data-settings-tab="mods"
-      data-i18n="settings.paths"
-    >
+    <button class="settings-tab-btn" data-settings-tab="mods" data-i18n="settings.paths">
       Paths
     </button>
-    <button
-      class="settings-tab-btn"
-      data-settings-tab="customization"
-      data-i18n="settings.customization"
-    >
+    <button class="settings-tab-btn" data-settings-tab="customization" data-i18n="settings.customization">
       Customization
     </button>
-    <button
-      class="settings-tab-btn"
-      data-settings-tab="advanced"
-      data-i18n="settings.advanced"
-    >
+    <button class="settings-tab-btn" data-settings-tab="advanced" data-i18n="settings.advanced">
       Advanced
     </button>
-    <button
-      class="settings-tab-btn"
-      data-settings-tab="logs"
-      data-i18n="settings.logs"
-    >
+    <button class="settings-tab-btn" data-settings-tab="logs" data-i18n="settings.logs">
       Logs
     </button>
-    <button
-      class="settings-tab-btn"
-      data-settings-tab="developer"
-      id="settings-tab-developer"
-      style="display: none"
-      data-i18n="settings.developer"
-    >
+    <button class="settings-tab-btn" data-settings-tab="developer" id="settings-tab-developer" style="display: none"
+      data-i18n="settings.developer">
       Developer
     </button>
   </div>
@@ -57,9 +32,7 @@
       </h2>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.language"
-          >Language</label
-        >
+        <label class="settings-label" data-i18n="settings.language">Language</label>
         <div class="custom-select" id="language-type-select">
           <div class="custom-select-trigger">
             <span class="selected-value">English</span>
@@ -83,9 +56,7 @@
         <label class="settings-label" data-i18n="settings.theme">Theme</label>
         <div class="custom-select" id="theme-select">
           <div class="custom-select-trigger">
-            <span class="selected-value" data-i18n="settings.themeDark"
-              >Dark</span
-            >
+            <span class="selected-value" data-i18n="settings.themeDark">Dark</span>
             <i class="bi bi-chevron-down"></i>
           </div>
           <div class="custom-select-dropdown">
@@ -103,25 +74,15 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.animations"
-          >Animations</label
-        >
+        <label class="settings-label" data-i18n="settings.animations">Animations</label>
         <div class="animation-selector" id="animation-preference">
           <div class="animation-option" data-value="full">
             <div class="animation-option-icon">
               <i class="bi bi-stars"></i>
             </div>
             <div class="animation-option-content">
-              <span
-                class="animation-option-title"
-                data-i18n="settings.fullAnimations"
-                >Full Animations</span
-              >
-              <span
-                class="animation-option-desc"
-                data-i18n="settings.fullAnimationsDesc"
-                >All effects enabled</span
-              >
+              <span class="animation-option-title" data-i18n="settings.fullAnimations">Full Animations</span>
+              <span class="animation-option-desc" data-i18n="settings.fullAnimationsDesc">All effects enabled</span>
             </div>
             <div class="animation-option-check">
               <i class="bi bi-check-circle-fill"></i>
@@ -132,16 +93,8 @@
               <i class="bi bi-dash-circle"></i>
             </div>
             <div class="animation-option-content">
-              <span
-                class="animation-option-title"
-                data-i18n="settings.reducedAnimations"
-                >Reduced Animations</span
-              >
-              <span
-                class="animation-option-desc"
-                data-i18n="settings.reducedAnimationsDesc"
-                >Minimal effects</span
-              >
+              <span class="animation-option-title" data-i18n="settings.reducedAnimations">Reduced Animations</span>
+              <span class="animation-option-desc" data-i18n="settings.reducedAnimationsDesc">Minimal effects</span>
             </div>
             <div class="animation-option-check">
               <i class="bi bi-check-circle-fill"></i>
@@ -152,16 +105,8 @@
               <i class="bi bi-x-circle"></i>
             </div>
             <div class="animation-option-content">
-              <span
-                class="animation-option-title"
-                data-i18n="settings.noAnimations"
-                >No Animations</span
-              >
-              <span
-                class="animation-option-desc"
-                data-i18n="settings.noAnimationsDesc"
-                >Instant transitions</span
-              >
+              <span class="animation-option-title" data-i18n="settings.noAnimations">No Animations</span>
+              <span class="animation-option-desc" data-i18n="settings.noAnimationsDesc">Instant transitions</span>
             </div>
             <div class="animation-option-check">
               <i class="bi bi-check-circle-fill"></i>
@@ -174,22 +119,13 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.tutorial"
-          >Tutorial</label
-        >
+        <label class="settings-label" data-i18n="settings.tutorial">Tutorial</label>
         <button class="settings-btn-action" id="restart-tutorial-btn">
           <i class="bi bi-book"></i>
           <div class="settings-btn-action-content">
-            <span
-              class="settings-btn-action-title"
-              data-i18n="settings.openTutorial"
-              >Open Tutorial</span
-            >
-            <span
-              class="settings-btn-action-desc"
-              data-i18n="settings.openTutorialDesc"
-              >Watch the welcome animation again</span
-            >
+            <span class="settings-btn-action-title" data-i18n="settings.openTutorial">Open Tutorial</span>
+            <span class="settings-btn-action-desc" data-i18n="settings.openTutorialDesc">Watch the welcome animation
+              again</span>
           </div>
           <i class="bi bi-arrow-right"></i>
         </button>
@@ -199,19 +135,14 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.installConfirm"
-          >1-Click Install Confirmation</label
-        >
+        <label class="settings-label" data-i18n="settings.installConfirm">1-Click Install Confirmation</label>
         <div class="settings-input-group">
           <label class="settings-switch">
             <input type="checkbox" id="install-confirm-enabled" checked />
             <span class="settings-switch-slider"></span>
           </label>
-          <span
-            style="margin-left: 12px; color: var(--text-secondary)"
-            data-i18n="settings.showConfirmation"
-            >Show confirmation before downloading</span
-          >
+          <span style="margin-left: 12px; color: var(--text-secondary)" data-i18n="settings.showConfirmation">Show
+            confirmation before downloading</span>
         </div>
         <p class="settings-hint" data-i18n="settings.installConfirmHint">
           Display a modal to confirm mod downloads from browser links
@@ -219,37 +150,21 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.appUpdates"
-          >Application Updates</label
-        >
+        <label class="settings-label" data-i18n="settings.appUpdates">Application Updates</label>
         <div class="settings-input-group" style="margin-bottom: 12px">
-          <span
-            style="color: var(--text-secondary)"
-            data-i18n="settings.currentVersion"
-            >Current Version:</span
-          >
-          <span
-            id="app-version"
-            style="
+          <span style="color: var(--text-secondary)" data-i18n="settings.currentVersion">Current Version:</span>
+          <span id="app-version" style="
               margin-left: 8px;
               color: var(--primary-color);
               font-weight: 600;
-            "
-            >4.0.0</span
-          >
+            ">4.0.0</span>
         </div>
         <div class="settings-input-group" style="margin-bottom: 12px">
-          <label
-            class="settings-label"
-            style="margin-right: 12px; min-width: 150px"
-            data-i18n="settings.updateChannel"
-            >Update Channel:</label
-          >
+          <label class="settings-label" style="margin-right: 12px; min-width: 150px"
+            data-i18n="settings.updateChannel">Update Channel:</label>
           <div class="custom-select" id="update-channel-select" style="flex: 1">
             <div class="custom-select-trigger">
-              <span class="selected-value" data-i18n="settings.channelStable"
-                >Stable</span
-              >
+              <span class="selected-value" data-i18n="settings.channelStable">Stable</span>
               <i class="bi bi-chevron-down"></i>
             </div>
             <div class="custom-select-dropdown">
@@ -265,16 +180,9 @@
         <button class="settings-btn-action" id="check-updates-btn">
           <i class="bi bi-arrow-repeat"></i>
           <div class="settings-btn-action-content">
-            <span
-              class="settings-btn-action-title"
-              data-i18n="settings.checkForUpdates"
-              >Check for Updates</span
-            >
-            <span
-              class="settings-btn-action-desc"
-              data-i18n="settings.checkForUpdatesDesc"
-              >Manually check if a new version is available</span
-            >
+            <span class="settings-btn-action-title" data-i18n="settings.checkForUpdates">Check for Updates</span>
+            <span class="settings-btn-action-desc" data-i18n="settings.checkForUpdatesDesc">Manually check if a new
+              version is available</span>
           </div>
           <i class="bi bi-arrow-right"></i>
         </button>
@@ -292,24 +200,11 @@
       </h2>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.modsFolder"
-          >Mods Folder Path</label
-        >
+        <label class="settings-label" data-i18n="settings.modsFolder">Mods Folder Path</label>
         <div class="settings-input-group">
-          <input
-            type="text"
-            id="mods-folder-path"
-            class="settings-input"
-            data-i18n="settings.modsFolderPlaceholder"
-            data-i18n-placeholder
-            placeholder="Select mods folder..."
-            readonly
-          />
-          <button
-            class="settings-btn"
-            id="browse-mods-folder"
-            data-i18n="settings.browse"
-          >
+          <input type="text" id="mods-folder-path" class="settings-input" data-i18n="settings.modsFolderPlaceholder"
+            data-i18n-placeholder placeholder="Select mods folder..." readonly />
+          <button class="settings-btn" id="browse-mods-folder" data-i18n="settings.browse">
             Browse
           </button>
         </div>
@@ -319,24 +214,12 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.pluginsFolder"
-          >Plugins Folder Path</label
-        >
+        <label class="settings-label" data-i18n="settings.pluginsFolder">Plugins Folder Path</label>
         <div class="settings-input-group">
-          <input
-            type="text"
-            id="plugins-folder-path"
-            class="settings-input"
-            data-i18n="settings.pluginsFolderPlaceholder"
-            data-i18n-placeholder
-            placeholder="Select plugins folder..."
-            readonly
-          />
-          <button
-            class="settings-btn"
-            id="browse-plugins-folder"
-            data-i18n="settings.browse"
-          >
+          <input type="text" id="plugins-folder-path" class="settings-input"
+            data-i18n="settings.pluginsFolderPlaceholder" data-i18n-placeholder placeholder="Select plugins folder..."
+            readonly />
+          <button class="settings-btn" id="browse-plugins-folder" data-i18n="settings.browse">
             Browse
           </button>
         </div>
@@ -347,44 +230,42 @@
 
       <!-- New Mod Installation Section -->
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.modInstallation"
-          >Mod Installation</label
-        >
+        <label class="settings-label" data-i18n="settings.modInstallation">Mod Installation</label>
         <div class="settings-input-group">
           <label class="settings-switch">
             <input type="checkbox" id="auto-disable-mods-enabled" />
             <span class="settings-switch-slider"></span>
           </label>
-          <span
-            style="margin-left: 12px; color: var(--text-secondary)"
-            data-i18n="settings.autoDisableMods"
-            >Auto-disable new mods after install</span
-          >
+          <span style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.autoDisableMods">Auto-disable new mods after install</span>
         </div>
         <p class="settings-hint" data-i18n="settings.autoDisableModsHint">
           When enabled, newly installed mods will be automatically disabled to
           prevent conflicts
         </p>
+        <div class="settings-input-group" style="margin-top: 12px">
+          <label class="settings-switch">
+            <input type="checkbox" id="disable-all-mods-on-download-enabled" />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.disableAllModsOnDownload">Disable all mods when downloading</span>
+        </div>
+        <p class="settings-hint" data-i18n="settings.disableAllModsOnDownloadHint">
+          When enabled, all active mods will be automatically disabled when a
+          mod download starts
+        </p>
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.exportModList"
-          >Export Mod List</label
-        >
+        <label class="settings-label" data-i18n="settings.exportModList">Export Mod List</label>
         <button class="settings-btn-action" id="export-mods-list-btn">
           <i class="bi bi-file-earmark-text"></i>
           <div class="settings-btn-action-content">
-            <span
-              class="settings-btn-action-title"
-              data-i18n="settings.exportModListTitle"
-              >Export Enabled Mods</span
-            >
-            <span
-              class="settings-btn-action-desc"
-              data-i18n="settings.exportModListDesc"
-              >Export all enabled mods to a text file, grouped by
-              character</span
-            >
+            <span class="settings-btn-action-title" data-i18n="settings.exportModListTitle">Export Enabled Mods</span>
+            <span class="settings-btn-action-desc" data-i18n="settings.exportModListDesc">Export all enabled mods to a
+              text file, grouped by
+              character</span>
           </div>
           <i class="bi bi-arrow-right"></i>
         </button>
@@ -395,14 +276,10 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.emulatorType"
-          >Emulator Type</label
-        >
+        <label class="settings-label" data-i18n="settings.emulatorType">Emulator Type</label>
         <div class="custom-select" id="emulator-type-select">
           <div class="custom-select-trigger">
-            <span class="selected-value" data-i18n="settings.emulatorTypeYuzu"
-              >Yuzu</span
-            >
+            <span class="selected-value" data-i18n="settings.emulatorTypeYuzu">Yuzu</span>
             <i class="bi bi-chevron-down"></i>
           </div>
           <div class="custom-select-dropdown">
@@ -420,24 +297,11 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.emulatorPath"
-          >Emulator Path</label
-        >
+        <label class="settings-label" data-i18n="settings.emulatorPath">Emulator Path</label>
         <div class="settings-input-group">
-          <input
-            type="text"
-            id="emulator-path"
-            class="settings-input"
-            data-i18n="settings.emulatorPathPlaceholder"
-            data-i18n-placeholder
-            placeholder="Select emulator executable..."
-            readonly
-          />
-          <button
-            class="settings-btn"
-            id="browse-emulator-path"
-            data-i18n="settings.browse"
-          >
+          <input type="text" id="emulator-path" class="settings-input" data-i18n="settings.emulatorPathPlaceholder"
+            data-i18n-placeholder placeholder="Select emulator executable..." readonly />
+          <button class="settings-btn" id="browse-emulator-path" data-i18n="settings.browse">
             Browse
           </button>
         </div>
@@ -447,24 +311,11 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.gamePath"
-          >Game Path</label
-        >
+        <label class="settings-label" data-i18n="settings.gamePath">Game Path</label>
         <div class="settings-input-group">
-          <input
-            type="text"
-            id="game-path"
-            class="settings-input"
-            data-i18n="settings.gamePathPlaceholder"
-            data-i18n-placeholder
-            placeholder="Select game file..."
-            readonly
-          />
-          <button
-            class="settings-btn"
-            id="browse-game-path"
-            data-i18n="settings.browse"
-          >
+          <input type="text" id="game-path" class="settings-input" data-i18n="settings.gamePathPlaceholder"
+            data-i18n-placeholder placeholder="Select game file..." readonly />
+          <button class="settings-btn" id="browse-game-path" data-i18n="settings.browse">
             Browse
           </button>
         </div>
@@ -474,19 +325,14 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.emulatorOptions"
-          >Emulator Options</label
-        >
+        <label class="settings-label" data-i18n="settings.emulatorOptions">Emulator Options</label>
         <div class="settings-input-group">
           <label class="settings-switch">
             <input type="checkbox" id="emulator-fullscreen-enabled" />
             <span class="settings-switch-slider"></span>
           </label>
-          <span
-            style="margin-left: 12px; color: var(--text-secondary)"
-            data-i18n="settings.launchFullscreen"
-            >Launch emulator in fullscreen</span
-          >
+          <span style="margin-left: 12px; color: var(--text-secondary)" data-i18n="settings.launchFullscreen">Launch
+            emulator in fullscreen</span>
         </div>
         <p class="settings-hint" data-i18n="settings.launchFullscreenHint">
           When enabled, adds the -f flag to launch the emulator in fullscreen
@@ -502,39 +348,24 @@
       </h2>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.developerMode"
-          >Developer Mode</label
-        >
+        <label class="settings-label" data-i18n="settings.developerMode">Developer Mode</label>
         <div class="settings-input-group">
           <label class="settings-switch">
             <input type="checkbox" id="developer-mode-enabled" />
             <span class="settings-switch-slider"></span>
           </label>
-          <span
-            style="margin-left: 12px; color: var(--text-secondary)"
-            data-i18n="settings.developerModeHint"
-            >Enable advanced developer features</span
-          >
+          <span style="margin-left: 12px; color: var(--text-secondary)" data-i18n="settings.developerModeHint">Enable
+            advanced developer features</span>
         </div>
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.switchConnection"
-          >Switch Connection</label
-        >
+        <label class="settings-label" data-i18n="settings.switchConnection">Switch Connection</label>
 
         <div class="settings-input-group" style="margin-bottom: 12px">
-          <label
-            class="settings-label"
-            style="margin-right: 12px; min-width: 150px"
-            data-i18n="settings.transferMethod"
-            >Transfer Method:</label
-          >
-          <div
-            class="custom-select"
-            id="switch-transfer-method-select"
-            style="flex: 1"
-          >
+          <label class="settings-label" style="margin-right: 12px; min-width: 150px"
+            data-i18n="settings.transferMethod">Transfer Method:</label>
+          <div class="custom-select" id="switch-transfer-method-select" style="flex: 1">
             <div class="custom-select-trigger">
               <span class="selected-value">Select method...</span>
               <i class="bi bi-chevron-down"></i>
@@ -544,9 +375,7 @@
                 <span data-i18n="settings.transferMethodFtp">FTP</span>
               </div>
               <div class="custom-select-option" data-value="drive">
-                <span data-i18n="settings.transferMethodDrive"
-                  >Local Drive</span
-                >
+                <span data-i18n="settings.transferMethodDrive">Local Drive</span>
               </div>
             </div>
           </div>
@@ -558,38 +387,19 @@
         <!-- FTP Settings -->
         <div id="switch-ftp-settings" style="margin-top: 12px">
           <div class="settings-input-group">
-            <input
-              type="text"
-              id="switch-ip"
-              class="settings-input"
-              data-i18n="settings.switchIpPlaceholder"
-              data-i18n-placeholder
-              placeholder="192.168.1.100"
-            />
+            <input type="text" id="switch-ip" class="settings-input" data-i18n="settings.switchIpPlaceholder"
+              data-i18n-placeholder placeholder="192.168.1.100" />
             <label class="settings-label" style="margin: 0 10px">:</label>
-            <input
-              type="text"
-              id="switch-port"
-              class="settings-input"
-              data-i18n="settings.switchPortPlaceholder"
-              data-i18n-placeholder
-              placeholder="5000"
-              style="width: 100px"
-            />
+            <input type="text" id="switch-port" class="settings-input" data-i18n="settings.switchPortPlaceholder"
+              data-i18n-placeholder placeholder="5000" style="width: 100px" />
           </div>
           <p class="settings-hint" data-i18n="settings.switchIpPort">
             Switch IP address and FTP port (default: 5000)
           </p>
 
           <div class="settings-input-group" style="margin-top: 12px">
-            <input
-              type="text"
-              id="switch-ftp-path"
-              class="settings-input"
-              data-i18n="settings.switchFtpPathPlaceholder"
-              data-i18n-placeholder
-              placeholder="/switch/atmosphere/contents"
-            />
+            <input type="text" id="switch-ftp-path" class="settings-input" data-i18n="settings.switchFtpPathPlaceholder"
+              data-i18n-placeholder placeholder="/switch/atmosphere/contents" />
           </div>
           <p class="settings-hint" data-i18n="settings.switchFtpPath">
             Remote path on Switch SD card for mods
@@ -599,27 +409,14 @@
         <!-- Drive Settings -->
         <div id="switch-drive-settings" style="margin-top: 12px; display: none">
           <div class="settings-input-group">
-            <label
-              class="settings-label"
-              style="margin-right: 12px; min-width: 150px"
-              data-i18n="settings.driveLetter"
-              >Drive Letter:</label
-            >
-            <div
-              class="custom-select"
-              id="switch-drive-letter-select"
-              style="flex: 1"
-            >
+            <label class="settings-label" style="margin-right: 12px; min-width: 150px"
+              data-i18n="settings.driveLetter">Drive Letter:</label>
+            <div class="custom-select" id="switch-drive-letter-select" style="flex: 1">
               <div class="custom-select-trigger">
-                <span class="selected-value" data-i18n="settings.selectDrive"
-                  >Select Drive</span
-                >
+                <span class="selected-value" data-i18n="settings.selectDrive">Select Drive</span>
                 <i class="bi bi-chevron-down"></i>
               </div>
-              <div
-                class="custom-select-dropdown"
-                id="switch-drive-letter-options"
-              >
+              <div class="custom-select-dropdown" id="switch-drive-letter-options">
                 <!-- Drive letters will be populated dynamically -->
               </div>
             </div>
@@ -631,19 +428,14 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.conflictDetection"
-          >Conflict Detection</label
-        >
+        <label class="settings-label" data-i18n="settings.conflictDetection">Conflict Detection</label>
         <div class="settings-input-group">
           <label class="settings-switch">
             <input type="checkbox" id="conflict-detection-enabled" checked />
             <span class="settings-switch-slider"></span>
           </label>
-          <span
-            style="margin-left: 12px; color: var(--text-secondary)"
-            data-i18n="settings.enableConflictDetection"
-            >Enable automatic conflict detection</span
-          >
+          <span style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.enableConflictDetection">Enable automatic conflict detection</span>
         </div>
         <p class="settings-hint" data-i18n="settings.conflictDetectionHint">
           Automatically check for file conflicts between mods
@@ -651,19 +443,14 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.pluginAutoUpdate"
-          >Plugin Auto-Update Check</label
-        >
+        <label class="settings-label" data-i18n="settings.pluginAutoUpdate">Plugin Auto-Update Check</label>
         <div class="settings-input-group">
           <label class="settings-switch">
             <input type="checkbox" id="auto-check-plugin-updates-enabled" />
             <span class="settings-switch-slider"></span>
           </label>
-          <span
-            style="margin-left: 12px; color: var(--text-secondary)"
-            data-i18n="settings.enablePluginAutoUpdate"
-            >Check for plugin updates on startup</span
-          >
+          <span style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.enablePluginAutoUpdate">Check for plugin updates on startup</span>
         </div>
         <p class="settings-hint" data-i18n="settings.pluginAutoUpdateHint">
           Automatically check for plugin updates when the application starts
@@ -671,22 +458,13 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.tempFiles"
-          >Temporary Files</label
-        >
+        <label class="settings-label" data-i18n="settings.tempFiles">Temporary Files</label>
         <button class="settings-btn-action" id="clear-temp-files-btn">
           <i class="bi bi-trash3"></i>
           <div class="settings-btn-action-content">
-            <span
-              class="settings-btn-action-title"
-              data-i18n="settings.clearTempFiles"
-              >Clear Temporary Files</span
-            >
-            <span
-              class="settings-btn-action-desc"
-              data-i18n="settings.clearTempFilesDesc"
-              >Remove temporary download and extraction files</span
-            >
+            <span class="settings-btn-action-title" data-i18n="settings.clearTempFiles">Clear Temporary Files</span>
+            <span class="settings-btn-action-desc" data-i18n="settings.clearTempFilesDesc">Remove temporary download and
+              extraction files</span>
           </div>
           <i class="bi bi-arrow-right"></i>
         </button>
@@ -704,9 +482,7 @@
       </h2>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.customCss"
-          >Custom CSS Files</label
-        >
+        <label class="settings-label" data-i18n="settings.customCss">Custom CSS Files</label>
         <p class="settings-hint" data-i18n="settings.customCssHint">
           Load custom CSS files to modify the appearance of FightPlanner
         </p>
@@ -725,17 +501,13 @@
         </div>
         <p class="settings-hint" style="margin-top: 12px">
           <i class="bi bi-info-circle"></i>
-          <span data-i18n="settings.customCssInfo"
-            >Custom CSS files will be applied in order, on top of the default
-            styles</span
-          >
+          <span data-i18n="settings.customCssInfo">Custom CSS files will be applied in order, on top of the default
+            styles</span>
         </p>
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.customJs"
-          >Custom JavaScript Files</label
-        >
+        <label class="settings-label" data-i18n="settings.customJs">Custom JavaScript Files</label>
         <p class="settings-hint" data-i18n="settings.customJsHint">
           Load custom JavaScript files to extend FightPlanner functionality
         </p>
@@ -748,58 +520,42 @@
         <div id="custom-js-list" class="custom-files-list">
           <!-- JS files will be listed here -->
         </div>
-        <p
-          class="settings-hint"
-          style="margin-top: 12px; color: var(--warning-color)"
-        >
+        <p class="settings-hint" style="margin-top: 12px; color: var(--warning-color)">
           <i class="bi bi-exclamation-triangle-fill"></i>
-          <strong data-i18n="settings.customJsWarning"
-            >Warning: Only load JavaScript from trusted sources. Malicious code
-            can harm your system.</strong
-          >
+          <strong data-i18n="settings.customJsWarning">Warning: Only load JavaScript from trusted sources. Malicious
+            code
+            can harm your system.</strong>
         </p>
       </div>
 
-      <div
-        class="settings-section"
-        style="
+      <div class="settings-section" style="
           background: linear-gradient(
             135deg,
             rgba(255, 152, 0, 0.1) 0%,
             rgba(255, 152, 0, 0.05) 100%
           );
           border-color: rgba(255, 152, 0, 0.2);
-        "
-      >
+        ">
         <label class="settings-label" style="color: var(--warning-color)">
           <i class="bi bi-shield-exclamation"></i>
           <span data-i18n="settings.securityNotice">Security Notice</span>
         </label>
-        <p
-          style="
+        <p style="
             color: var(--text-secondary);
             line-height: 1.6;
             margin-bottom: 12px;
-          "
-          data-i18n="settings.securityNoticeText"
-        >
+          " data-i18n="settings.securityNoticeText">
           Custom CSS and JavaScript files have full access to the application.
           Only use files from developers you trust.
         </p>
-        <ul
-          style="color: var(--text-muted); margin-left: 20px; line-height: 1.8"
-        >
+        <ul style="color: var(--text-muted); margin-left: 20px; line-height: 1.8">
           <li>
             <strong>CSS</strong>
-            <span data-i18n="settings.securityNoticeList1"
-              >can modify the visual appearance and layout</span
-            >
+            <span data-i18n="settings.securityNoticeList1">can modify the visual appearance and layout</span>
           </li>
           <li>
             <strong>JavaScript</strong>
-            <span data-i18n="settings.securityNoticeList2"
-              >can access all application features and data</span
-            >
+            <span data-i18n="settings.securityNoticeList2">can access all application features and data</span>
           </li>
           <li data-i18n="settings.securityNoticeList3">
             Changes take effect after reloading or restarting the app
@@ -815,22 +571,13 @@
       </h2>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.logsLocation"
-          >Log Files Location</label
-        >
+        <label class="settings-label" data-i18n="settings.logsLocation">Log Files Location</label>
         <button class="settings-btn-action" id="open-logs-folder-btn">
           <i class="bi bi-folder2-open"></i>
           <div class="settings-btn-action-content">
-            <span
-              class="settings-btn-action-title"
-              data-i18n="settings.openLogsFolder"
-              >Open Logs Folder</span
-            >
-            <span
-              class="settings-btn-action-desc"
-              data-i18n="settings.openLogsFolderDesc"
-              >View all saved log files on disk</span
-            >
+            <span class="settings-btn-action-title" data-i18n="settings.openLogsFolder">Open Logs Folder</span>
+            <span class="settings-btn-action-desc" data-i18n="settings.openLogsFolderDesc">View all saved log files on
+              disk</span>
           </div>
           <i class="bi bi-arrow-right"></i>
         </button>
@@ -838,12 +585,20 @@
           Logs are automatically saved daily. Both main process and renderer
           logs are captured.
         </p>
+        <div class="settings-input-group" style="margin-top: 12px">
+          <label class="settings-label" style="margin-right: 12px; min-width: 150px"
+            data-i18n="settings.logRetention">Log Retention:</label>
+          <input type="number" id="log-retention-days" class="settings-input" style="width: 80px" min="1" max="365"
+            value="7" />
+          <span style="margin-left: 8px; color: var(--text-secondary)" data-i18n="settings.days">days</span>
+        </div>
+        <p class="settings-hint" data-i18n="settings.logRetentionHint">
+          Logs older than this number of days will be automatically deleted on startup
+        </p>
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.liveConsole"
-          >Live Console Output</label
-        >
+        <label class="settings-label" data-i18n="settings.liveConsole">Live Console Output</label>
         <div class="logs-toolbar">
           <div class="logs-filter-buttons">
             <button class="logs-filter-btn active" data-log-level="all">
@@ -864,22 +619,12 @@
             </button>
           </div>
           <div class="logs-action-buttons">
-            <button
-              class="logs-action-btn"
-              id="clear-logs-btn"
-              data-i18n="settings.clearLogs"
-              data-i18n-title
-              title="Clear current session"
-            >
+            <button class="logs-action-btn" id="clear-logs-btn" data-i18n="settings.clearLogs" data-i18n-title
+              title="Clear current session">
               <i class="bi bi-trash"></i>
             </button>
-            <button
-              class="logs-action-btn"
-              id="copy-logs-btn"
-              data-i18n="settings.copyLogs"
-              data-i18n-title
-              title="Copy to clipboard"
-            >
+            <button class="logs-action-btn" id="copy-logs-btn" data-i18n="settings.copyLogs" data-i18n-title
+              title="Copy to clipboard">
               <i class="bi bi-clipboard"></i>
             </button>
           </div>
@@ -895,10 +640,8 @@
         </div>
         <p class="settings-hint" style="margin-top: 12px">
           <i class="bi bi-info-circle"></i>
-          <span data-i18n="settings.logsInfo"
-            >Showing logs from current session. Use \"Open Logs Folder\" above
-            to view historical logs.</span
-          >
+          <span data-i18n="settings.logsInfo">Showing logs from current session. Use \"Open Logs Folder\" above
+            to view historical logs.</span>
         </p>
       </div>
     </div>
@@ -909,18 +652,10 @@
       </h2>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.fakeVersion"
-          >Fake App Version</label
-        >
+        <label class="settings-label" data-i18n="settings.fakeVersion">Fake App Version</label>
         <div class="settings-input-group">
-          <input
-            type="text"
-            id="fake-version-input"
-            class="settings-input"
-            data-i18n="settings.fakeVersionPlaceholder"
-            data-i18n-placeholder
-            placeholder="e.g. 3.0.0"
-          />
+          <input type="text" id="fake-version-input" class="settings-input" data-i18n="settings.fakeVersionPlaceholder"
+            data-i18n-placeholder placeholder="e.g. 3.0.0" />
         </div>
         <p class="settings-hint" data-i18n="settings.fakeVersionHint">
           Override the current app version to test the update system. LEAVE
@@ -929,19 +664,14 @@
       </div>
 
       <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.forceUpdateAvailable"
-          >Force Update Available</label
-        >
+        <label class="settings-label" data-i18n="settings.forceUpdateAvailable">Force Update Available</label>
         <div class="settings-input-group">
           <label class="settings-switch">
             <input type="checkbox" id="force-update-enabled" />
             <span class="settings-switch-slider"></span>
           </label>
-          <span
-            style="margin-left: 12px; color: var(--text-secondary)"
-            data-i18n="settings.forceUpdateAvailableHint"
-            >Force updater to report update available</span
-          >
+          <span style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.forceUpdateAvailableHint">Force updater to report update available</span>
         </div>
       </div>
 
@@ -950,26 +680,15 @@
           <button class="settings-btn-action" id="save-dev-settings-btn">
             <i class="bi bi-save"></i>
             <div class="settings-btn-action-content">
-              <span
-                class="settings-btn-action-title"
-                data-i18n="settings.saveDevSettings"
-                >Save Developer Settings</span
-              >
+              <span class="settings-btn-action-title" data-i18n="settings.saveDevSettings">Save Developer
+                Settings</span>
             </div>
           </button>
-          <button
-            class="settings-btn"
-            id="reset-dev-settings-btn"
-            style="margin-left: 10px"
-          >
+          <button class="settings-btn" id="reset-dev-settings-btn" style="margin-left: 10px">
             <i class="bi bi-arrow-counterclockwise"></i>
             <span data-i18n="settings.reset">Reset</span>
           </button>
-          <button
-            class="settings-btn"
-            id="simulate-update-btn"
-            style="margin-left: 10px"
-          >
+          <button class="settings-btn" id="simulate-update-btn" style="margin-left: 10px">
             <i class="bi bi-play-circle"></i>
             <span data-i18n="settings.simulateUpdate">Simulate Update</span>
           </button>

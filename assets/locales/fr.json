@@ -114,6 +114,8 @@
     "modInstallation": "Installation de Mods",
     "autoDisableMods": "Désactiver automatiquement les nouveaux mods après installation",
     "autoDisableModsHint": "Une fois activé, les nouveaux mods installés seront automatiquement désactivés pour éviter les conflits",
+    "disableAllModsOnDownload": "Désactiver tous les mods lors du téléchargement",
+    "disableAllModsOnDownloadHint": "Une fois activé, tous les mods actifs seront automatiquement désactivés lorsqu'un téléchargement de mod commence",
     "exportModList": "Exporter la Liste de Mods",
     "exportModListTitle": "Exporter les Mods Activés",
     "exportModListDesc": "Exporter tous les mods activés dans un fichier texte, groupés par personnage",
@@ -172,6 +174,9 @@
     "openLogsFolder": "Ouvrir le Dossier des Logs",
     "openLogsFolderDesc": "Voir tous les fichiers de log sauvegardés sur le disque",
     "logsHint": "Les logs sont automatiquement sauvegardés quotidiennement. Les logs du processus principal et du rendu sont capturés.",
+    "logRetention": "Rétention des logs :",
+    "logRetentionHint": "Les logs plus anciens que ce nombre de jours seront automatiquement supprimés au démarrage",
+    "days": "jours",
     "liveConsole": "Sortie Console en Direct",
     "logLevels": {
       "all": "Tous",

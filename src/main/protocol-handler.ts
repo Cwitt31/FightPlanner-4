@@ -426,6 +426,44 @@ export default class ProtocolHandler {
         modName: modName || null,
       });
 
+      if (sharedStore.get('disableAllModsOnDownload')) {
+        try {
+          const modsPath = sharedStore.get('modsPath') as string | null;
+          if (modsPath) {
+            const allMods = ModUtils.readAllMods(modsPath);
+            const disabledModsPath = ModUtils.getDisabledModsFolder(modsPath);
+
+            if (!fs.existsSync(disabledModsPath)) {
+              fs.mkdirSync(disabledModsPath, { recursive: true });
+            }
+
+            let disabledCount = 0;
+            for (const mod of allMods.activeMods) {
+              try {
+                const targetPath = path.join(disabledModsPath, mod.name);
+                if (!fs.existsSync(targetPath)) {
+                  fs.renameSync(mod.path, targetPath);
+                  disabledCount++;
+                }
+              } catch (moveError) {
+                console.warn(
+                  `[Protocol][DisableAllOnDownload] Failed to disable ${mod.name}:`,
+                  moveError,
+                );
+              }
+            }
+            console.log(
+              `[Protocol][DisableAllOnDownload] Disabled ${disabledCount} mods before download`,
+            );
+          }
+        } catch (disableError) {
+          console.error(
+            '[Protocol][DisableAllOnDownload] Failed to disable mods:',
+            disableError,
+          );
+        }
+      }
+
       const filePath = await this.downloadMod(downloadUrl, downloadId);
 
       if (!filePath) {

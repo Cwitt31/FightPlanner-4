@@ -115,6 +115,8 @@
     "modInstallation": "Mod Installation",
     "autoDisableMods": "Auto-disable new mods after install",
     "autoDisableModsHint": "When enabled, newly installed mods will be automatically disabled to prevent conflicts",
+    "disableAllModsOnDownload": "Disable all mods when downloading",
+    "disableAllModsOnDownloadHint": "When enabled, all active mods will be automatically disabled when a mod download starts",
     "exportModList": "Export Mod List",
     "exportModListTitle": "Export Enabled Mods",
     "exportModListDesc": "Export all enabled mods to a text file, grouped by character",
@@ -173,6 +175,9 @@
     "openLogsFolder": "Open Logs Folder",
     "openLogsFolderDesc": "View all saved log files on disk",
     "logsHint": "Logs are automatically saved daily. Both main process and renderer logs are captured.",
+    "logRetention": "Log Retention:",
+    "logRetentionHint": "Logs older than this number of days will be automatically deleted on startup",
+    "days": "days",
     "liveConsole": "Live Console Output",
     "logLevels": {
       "all": "All",
