@@ -17,6 +17,13 @@ class ModKeybindsHandler {
         return;
       }
 
+      const visibleModal = document.querySelector<HTMLElement>(
+        '.modal[style*="display: block"]',
+      );
+      if (visibleModal) {
+        return;
+      }
+
       const activeElement = document.activeElement as HTMLElement;
 
       if (

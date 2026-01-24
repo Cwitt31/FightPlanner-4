@@ -332,12 +332,7 @@ export default class ProtocolHandler {
     console.log('[protocol] Handling deep link:', url);
 
     try {
-      let cleanUrl = url.replace('fightplanner:', '');
-
-      if (cleanUrl.includes(',Mod,')) {
-        cleanUrl = cleanUrl.replace(',Mod,', ',Sound,');
-        console.log("[protocol] Replaced 'Mod' with 'Sound' in URL");
-      }
+      const cleanUrl = url.replace('fightplanner:', '');
 
       if (this.processingUrls.has(cleanUrl)) {
         console.log(
