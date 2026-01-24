@@ -76,7 +76,7 @@
       "package.json"
     ],
     "directories": {
-      "buildResources": "build",
+      "buildResources": "assets/app-icons",
       "output": "dist"
     },
     "win": {
@@ -94,7 +94,7 @@
           ]
         }
       ],
-      "icon": "build/icon.ico",
+      "icon": "assets/app-icons/icon.ico",
       "publisherName": "FightPlanner",
       "verifyUpdateCodeSignature": false,
       "certificateFile": "fightplanner.pfx",
@@ -117,7 +117,7 @@
         "dmg",
         "zip"
       ],
-      "icon": "build/icon.icns",
+      "icon": "assets/app-icons/icon.icns",
       "category": "public.app-category.utilities"
     },
     "linux": {
@@ -125,7 +125,7 @@
         "AppImage",
         "deb"
       ],
-      "icon": "build/icon.png",
+      "icon": "assets/app-icons/icon.png",
       "category": "Utility",
       "maintainer": "Shattered Chaos <noreply@fightplanner.app>"
     }

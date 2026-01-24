@@ -121,6 +121,7 @@ function createWindow(options: CreateWindowOptions = {}) {
   mainWindow = new BrowserWindow({
     width: 1300,
     height: 800,
+    icon: path.join(app.getAppPath(), 'assets', 'app-icons', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
