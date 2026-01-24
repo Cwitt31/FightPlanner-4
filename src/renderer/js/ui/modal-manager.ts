@@ -182,6 +182,18 @@ class ModalManager {
       if (window.i18n && window.i18n.updateDOM) {
         window.i18n.updateDOM();
       }
+
+      const keyHandler = (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.removeEventListener('keydown', keyHandler);
+          this.confirmUninstall();
+        } else if (e.key === 'Escape') {
+          document.removeEventListener('keydown', keyHandler);
+          this.closeUninstallModal();
+        }
+      };
+      document.addEventListener('keydown', keyHandler);
     }
   }
 
@@ -238,16 +250,16 @@ class ModalManager {
 
     const translatedTitle =
       title &&
-      (title.startsWith('modals.') ||
-        title.startsWith('common.') ||
-        title.startsWith('toasts.'))
+        (title.startsWith('modals.') ||
+          title.startsWith('common.') ||
+          title.startsWith('toasts.'))
         ? t(title, params)
         : title || '';
     const translatedMessage =
       message &&
-      (message.startsWith('modals.') ||
-        message.startsWith('common.') ||
-        message.startsWith('toasts.'))
+        (message.startsWith('modals.') ||
+          message.startsWith('common.') ||
+          message.startsWith('toasts.'))
         ? t(message, params)
         : message || '';
 
@@ -292,6 +304,18 @@ class ModalManager {
       if (window.i18n && window.i18n.updateDOM) {
         window.i18n.updateDOM();
       }
+
+      const keyHandler = (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.removeEventListener('keydown', keyHandler);
+          this.confirmDeletePlugin();
+        } else if (e.key === 'Escape') {
+          document.removeEventListener('keydown', keyHandler);
+          this.closeDeletePluginModal();
+        }
+      };
+      document.addEventListener('keydown', keyHandler);
     }
   }
 
@@ -388,8 +412,8 @@ class ModalManager {
       label.textContent = slot.isNew
         ? t('modals.changeSlot.newSlot')
         : t('modals.changeSlot.currentSlot', {
-            slot: slot.originalSlot,
-          });
+          slot: slot.originalSlot,
+        });
 
       const arrow = document.createElement('i');
       arrow.className = 'bi bi-arrow-right slot-arrow';

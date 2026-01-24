@@ -17,6 +17,32 @@ if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
+function cleanOldLogs(retentionDays: number) {
+  try {
+    const files = fs.readdirSync(logsDir);
+    const now = Date.now();
+    const maxAge = retentionDays * 24 * 60 * 60 * 1000;
+
+    for (const file of files) {
+      if (!file.startsWith('app-') || !file.endsWith('.log')) continue;
+
+      const filePath = path.join(logsDir, file);
+      const stats = fs.statSync(filePath);
+      const age = now - stats.mtime.getTime();
+
+      if (age > maxAge) {
+        fs.unlinkSync(filePath);
+        console.log(`Deleted old log file: ${file}`);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to clean old logs:', error);
+  }
+}
+
+const logRetentionDays = (store.get('logRetentionDays') as number) || 7;
+cleanOldLogs(logRetentionDays);
+
 const logFilePath = path.join(
   logsDir,
   `app-${new Date().toISOString().split('T')[0]}.log`,
@@ -95,6 +121,7 @@ function createWindow(options: CreateWindowOptions = {}) {
   mainWindow = new BrowserWindow({
     width: 1300,
     height: 800,
+    icon: path.join(app.getAppPath(), 'assets', 'app-icons', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,

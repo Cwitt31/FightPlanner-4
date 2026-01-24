@@ -28,68 +28,50 @@ export async function detectWindowsDrives() {
     );
     console.log('WMIC output:', stdout);
 
-    // Split by lines and filter out headers and empty lines
-    const lines = stdout
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => {
-        if (!line) return false;
-        const upperLine = line.toUpperCase();
-        return (
-          !upperLine.includes('NAME') &&
-          !upperLine.includes('VOLUMENAME') &&
-          !upperLine.includes('DRIVETYPE') &&
-          /^[A-Z]:/.test(line)
-        );
-      });
-
-    console.log('Filtered lines:', lines);
-
     const drives: Drive[] = [];
+
+    // Parse the WMIC output - format is columns: DriveType  Name  VolumeName
+    // Split by lines and process each
+    const lines = stdout.split('\n').map((line) => line.trim());
 
     for (const line of lines) {
       if (!line) continue;
 
-      // Parse the line - format can vary: "C:    Windows    3" or "C:  Windows  3" or "C:              3"
-      // Extract drive letter (should be at the start, format "X:")
-      const driveMatch = line.match(/^([A-Z]):/i);
-      if (!driveMatch) {
-        console.log('No drive match for line:', line);
+      // Skip header line
+      const upperLine = line.toUpperCase();
+      if (
+        upperLine.includes('DRIVETYPE') ||
+        upperLine.includes('NAME') ||
+        upperLine.includes('VOLUMENAME')
+      ) {
         continue;
       }
 
-      const letter = driveMatch[1].toUpperCase();
-
-      // Extract drive type (should be at the end, a single digit)
-      const typeMatch = line.match(/\s+(\d+)\s*$/);
-      if (!typeMatch) {
-        console.log('No type match for line:', line);
+      // Parse line using regex - format: "DriveType  Name  VolumeName"
+      // Example: "3          C:    OS" or "2          I:" (no volume name)
+      const match = line.match(/^(\d+)\s+([A-Z]:)\s*(.*)$/i);
+      if (!match) {
+        console.log('No match for line:', line);
         continue;
       }
 
-      const type = typeMatch[1];
+      const driveType = match[1];
+      const driveName = match[2].toUpperCase();
+      const letter = driveName.charAt(0);
+      const volumeName = match[3] ? match[3].trim() : 'Local Disk';
 
-      // Extract volume name (everything between drive letter and type)
-      let label = 'Local Disk';
-      // Try to extract label - remove drive letter and type, get what's in between
-      const labelPart = line
-        .replace(/^[A-Z]:\s*/, '')
-        .replace(/\s+\d+\s*$/, '')
-        .trim();
-      if (labelPart && labelPart.length > 0) {
-        label = labelPart;
-      }
-
-      console.log(`Drive found: ${letter}:, label: ${label}, type: ${type}`);
+      console.log(
+        `Drive found: ${letter}:, label: ${volumeName}, type: ${driveType}`,
+      );
 
       // Filter for removable drives (type 2) and fixed drives (type 3)
-      // We include both because SD cards can sometimes show as fixed
+      // Type 2 = Removable, Type 3 = Fixed, Type 4 = Network, Type 5 = CD-ROM
       // Exclude C: drive (system drive)
-      if ((type === '2' || type === '3') && letter !== 'C') {
+      if ((driveType === '2' || driveType === '3') && letter !== 'C') {
         drives.push({
           letter: letter,
-          label: label,
-          type: type === '2' ? 'removable' : 'fixed',
+          label: volumeName || 'Local Disk',
+          type: driveType === '2' ? 'removable' : 'fixed',
           path: `${letter}:\\`,
         });
       }
