@@ -737,6 +737,17 @@ class SettingsManager {
       });
       logRetentionInput.dataset.listenerAttached = 'true';
     }
+
+    // Reset Electron Store button
+    const resetStoreBtn = document.querySelector<HTMLElement>(
+      '#reset-electron-store-btn',
+    );
+    if (resetStoreBtn && !resetStoreBtn.dataset.listenerAttached) {
+      resetStoreBtn.addEventListener('click', () => {
+        this.showResetStoreConfirmModal();
+      });
+      resetStoreBtn.dataset.listenerAttached = 'true';
+    }
   }
 
   updateDeveloperModeUI() {
@@ -1812,6 +1823,28 @@ ${t('settings.okUnderstand')}
       }
     } else {
       console.log(`[Toast] ${type}: ${message}`);
+    }
+  }
+
+  showResetStoreConfirmModal() {
+    const t = (key: string) => {
+      return window.i18n && window.i18n.t ? window.i18n.t(key) : key;
+    };
+
+    const confirmed = confirm(t('settings.resetStoreConfirmMessage'));
+
+    if (confirmed) {
+      window.electronAPI.store.clear()
+        .then(() => {
+          this.showToast(this.translate('toasts.electronStoreReset'), 'success');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        })
+        .catch((error: Error) => {
+          console.error('Failed to reset electron store:', error);
+          this.showToast(this.translate('toasts.failedToResetStore'), 'error');
+        });
     }
   }
 }

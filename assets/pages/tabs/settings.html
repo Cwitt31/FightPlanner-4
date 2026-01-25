@@ -694,6 +694,29 @@
           </button>
         </div>
       </div>
+
+      <div class="settings-section" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
+        <label class="settings-label" style="color: #ef4444">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span data-i18n="settings.resetStoreTitle">Reset Application Data</span>
+        </label>
+        <p class="settings-hint" data-i18n="settings.resetStoreHint">
+          This will reset all application settings and data stored in Electron Store. The application will restart after
+          reset.
+        </p>
+        <button class="settings-btn-action" id="reset-electron-store-btn"
+          onclick="if(window.settingsManager) window.settingsManager.showResetStoreConfirmModal();"
+          style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">
+          <i class="bi bi-trash3" style="color: #ef4444"></i>
+          <div class="settings-btn-action-content">
+            <span class="settings-btn-action-title" style="color: #ef4444" data-i18n="settings.resetStore">Reset
+              Electron Store</span>
+            <span class="settings-btn-action-desc" data-i18n="settings.resetStoreDesc">Clear all stored settings and
+              data</span>
+          </div>
+          <i class="bi bi-arrow-right" style="color: #ef4444"></i>
+        </button>
+      </div>
     </div>
   </div>
 </div>
