@@ -8,11 +8,9 @@
 
 .settings-sidebar {
   width: 200px;
-  background: linear-gradient(
-    135deg,
-    var(--bg-primary) 0%,
-    var(--bg-tertiary) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--bg-primary) 0%,
+      var(--bg-tertiary) 100%);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -52,11 +50,9 @@
   transform: translateY(-50%);
   width: 3px;
   height: 60%;
-  background: linear-gradient(
-    180deg,
-    var(--accent-color) 0%,
-    var(--accent-hover) 100%
-  );
+  background: linear-gradient(180deg,
+      var(--accent-color) 0%,
+      var(--accent-hover) 100%);
   border-radius: 0 3px 3px 0;
 }
 
@@ -132,11 +128,9 @@
 .settings-section {
   margin-bottom: 32px;
   padding: 24px;
-  background: linear-gradient(
-    135deg,
-    var(--border-color) 0%,
-    var(--bg-tertiary) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--border-color) 0%,
+      var(--bg-tertiary) 100%);
   border: 1px solid var(--bg-transparent-08);
   border-radius: 16px;
 }
@@ -365,11 +359,9 @@ body.no-animations .settings-tab-btn.active::before {
 
 .context-menu {
   position: fixed;
-  background: linear-gradient(
-    135deg,
-    var(--border-color) 0%,
-    var(--bg-tertiary) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--border-color) 0%,
+      var(--bg-tertiary) 100%);
   border: 1px solid var(--bg-transparent-08);
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -438,11 +430,9 @@ body.no-animations .settings-tab-btn.active::before {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: linear-gradient(
-    135deg,
-    var(--border-color) 0%,
-    var(--bg-tertiary) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--border-color) 0%,
+      var(--bg-tertiary) 100%);
   border: 1px solid var(--border-hover);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -486,11 +476,9 @@ body.no-animations .settings-tab-btn.active::before {
 }
 
 .conflict-modal-header {
-  background: linear-gradient(
-    135deg,
-    var(--accent-color) 0%,
-    var(--accent-hover) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--accent-color) 0%,
+      var(--accent-hover) 100%);
   border-bottom: none;
   padding: 20px 24px;
   border-radius: 16px 16px 0 0;
@@ -667,11 +655,9 @@ body.no-animations .settings-tab-btn.active::before {
   position: sticky;
   top: 0;
   z-index: 5;
-  background: linear-gradient(
-    135deg,
-    var(--border-color) 0%,
-    var(--bg-tertiary) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--border-color) 0%,
+      var(--bg-tertiary) 100%);
   padding: 12px 12px 12px 12px;
   margin: 0;
   color: var(--text-secondary);
@@ -927,4 +913,85 @@ body.no-animations .character-modal-mod-item {
 
 body.no-animations .mod-status-indicator.mod-active {
   animation: none !important;
+}
+
+.settings-group.highlight-setting,
+.settings-section.highlight-setting {
+  animation: highlightPulse 1.5s ease-in-out 2;
+  border-radius: 12px;
+  position: relative;
+}
+
+.settings-group.highlight-setting::before,
+.settings-section.highlight-setting::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 16px;
+  border: 2px solid var(--accent-color);
+  animation: highlightBorder 1.5s ease-in-out 2;
+  pointer-events: none;
+}
+
+/* Fade out animation for smooth transition */
+.settings-group.highlight-fade-out,
+.settings-section.highlight-fade-out {
+  animation: highlightFadeOut 0.5s ease-out forwards;
+  border-radius: 12px;
+  position: relative;
+}
+
+.settings-group.highlight-fade-out::before,
+.settings-section.highlight-fade-out::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 16px;
+  border: 2px solid var(--accent-color);
+  animation: highlightBorderFadeOut 0.5s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes highlightPulse {
+
+  0%,
+  100% {
+    background: transparent;
+  }
+
+  50% {
+    background: rgba(var(--accent-rgb), 0.1);
+  }
+}
+
+@keyframes highlightBorder {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes highlightFadeOut {
+  0% {
+    background: rgba(var(--accent-rgb), 0.1);
+  }
+
+  100% {
+    background: transparent;
+  }
+}
+
+@keyframes highlightBorderFadeOut {
+  0% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }

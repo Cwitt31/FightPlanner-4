@@ -486,14 +486,14 @@ let steps = [
                                 <p style="color: #fff; margin-bottom: 12px; font-weight: 600;">Multiple drives detected. Please select your SD card:</p>
                                 <div style="display: flex; flex-direction: column; gap: 8px;">
                                     ${drives
-                                      .map(
-                                        (drive, idx) => `
+                  .map(
+                    (drive, idx) => `
                                         <button class="drive-select-btn" data-path="${drive.path}" style="padding: 12px; background: rgba(122, 155, 255, 0.1); border: 2px solid rgba(122, 155, 255, 0.3); border-radius: 8px; color: #fff; cursor: pointer; text-align: left; transition: all 0.2s;">
                                             <strong>${drive.letter}:</strong> ${drive.label} (${drive.type})
                                         </button>
                                     `,
-                                      )
-                                      .join('')}
+                  )
+                  .join('')}
                                 </div>
                                 <button id="manual-select-btn" style="margin-top: 12px; padding: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #fff; cursor: pointer; width: 100%;">
                                     Browse Manually...
@@ -1318,21 +1318,23 @@ let steps = [
           throw new Error('Failed to construct mods path');
         await window.tutorialAPI.createDirectory(ultimateModsPathResult.path);
 
-        // Extract Skyline (exefs) to load directory
+        // Extract Skyline (exefs) to sdmc/atmosphere/contents directory
         statusDiv!.innerHTML =
           '<div style="color: #fff;">Installing Skyline (exefs)...</div>';
-        const loadPathResult = await window.tutorialAPI.joinPath(
+        const atmospherePathResult = await window.tutorialAPI.joinPath(
           yuzuPath,
-          'load',
+          'sdmc',
+          'atmosphere',
+          'contents',
           '01006A800016E000',
         );
-        if (!loadPathResult.success)
-          throw new Error('Failed to construct load path');
-        const loadPath = loadPathResult.path;
-        await window.tutorialAPI.createDirectory(loadPath);
+        if (!atmospherePathResult.success)
+          throw new Error('Failed to construct atmosphere path');
+        const atmospherePath = atmospherePathResult.path;
+        await window.tutorialAPI.createDirectory(atmospherePath);
         const skylineExtractResult = await window.tutorialAPI.extractSkyline(
           skylineDownloadResult.path,
-          loadPath,
+          atmospherePath,
         );
         if (!skylineExtractResult.success)
           throw new Error('Skyline extraction failed');
@@ -1343,7 +1345,7 @@ let steps = [
         const arcropolisExtractResult =
           await window.tutorialAPI.extractArcropolis(
             arcropolisDownloadResult.path,
-            loadPath,
+            atmospherePath,
           );
         if (!arcropolisExtractResult.success)
           throw new Error('ARCropolis extraction failed');
@@ -1515,7 +1517,9 @@ let steps = [
           throw new Error('Failed to construct mods path');
         const pluginsPathResult = await window.tutorialAPI.joinPath(
           yuzuPath,
-          'load',
+          'sdmc',
+          'atmosphere',
+          'contents',
           '01006A800016E000',
           'romfs',
           'skyline',

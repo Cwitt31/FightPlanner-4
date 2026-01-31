@@ -26,6 +26,7 @@ class SettingsManager {
       disableAllModsOnDownload: false,
       devMode: false,
       theme: 'dark',
+      enhancedStatusBar: true,
     };
     this.initialized = false;
     this.tabSwitchingAttached = false;
@@ -97,6 +98,24 @@ class SettingsManager {
         });
       animationSelector.dataset.listenerAttached = 'true';
       this.loadAnimationPreference();
+      this.loadAnimationPreference();
+    }
+
+    const enhancedStatusBarToggle = document.querySelector<HTMLInputElement>(
+      '#enhanced-status-bar-enabled',
+    );
+    if (
+      enhancedStatusBarToggle &&
+      !enhancedStatusBarToggle.dataset.listenerAttached
+    ) {
+      enhancedStatusBarToggle.addEventListener('change', () => {
+        this.settings.enhancedStatusBar = enhancedStatusBarToggle.checked;
+        this.saveSettings();
+        if (window.statusBarManager) {
+          // Refresh logic if needed
+        }
+      });
+      enhancedStatusBarToggle.dataset.listenerAttached = 'true';
     }
 
     const browseMods = document.querySelector<HTMLElement>(
@@ -638,6 +657,7 @@ class SettingsManager {
     this.updateAutoCheckPluginUpdatesUI();
     this.updateAutoDisableModsUI();
     this.updateDisableAllModsOnDownloadUI();
+    this.updateEnhancedStatusBarUI();
     this.updateDeveloperModeUI();
 
     const devModeToggle = document.querySelector<HTMLInputElement>(
@@ -790,6 +810,15 @@ class SettingsManager {
     );
     if (toggle) {
       toggle.checked = this.settings.disableAllModsOnDownload || false;
+    }
+  }
+
+  updateEnhancedStatusBarUI() {
+    const toggle = document.querySelector<HTMLInputElement>(
+      '#enhanced-status-bar-enabled',
+    );
+    if (toggle) {
+      toggle.checked = this.settings.enhancedStatusBar !== false;
     }
   }
 

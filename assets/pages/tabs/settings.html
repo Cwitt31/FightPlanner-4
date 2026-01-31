@@ -119,6 +119,21 @@
       </div>
 
       <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.enhancedStatusBar">Enhanced Status Bar</label>
+        <div class="settings-input-group">
+          <label class="settings-switch">
+            <input type="checkbox" id="enhanced-status-bar-enabled" checked />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span style="margin-left: 12px; color: var(--text-secondary)"
+            data-i18n="settings.enableEnhancedStatusBar">Enable extended status info</span>
+        </div>
+        <p class="settings-hint" data-i18n="settings.enhancedStatusBarHint">
+          Shows a detailed progress bar and information panel for downloads and conflicts.
+        </p>
+      </div>
+
+      <div class="settings-section">
         <label class="settings-label" data-i18n="settings.tutorial">Tutorial</label>
         <button class="settings-btn-action" id="restart-tutorial-btn">
           <i class="bi bi-book"></i>

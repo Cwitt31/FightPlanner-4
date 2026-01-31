@@ -18,7 +18,7 @@ export class FileExtractor {
         execSync(`${command} ${binaryName}`, { stdio: 'pipe' });
         console.log(`Found ${binaryName} in system PATH`);
         return binaryName;
-      } catch {}
+      } catch { }
     }
 
     // Fallback to bundled version
@@ -108,25 +108,17 @@ export class FileExtractor {
   }
 
   static async extractArchive(filePath: string, extractTo: string) {
-    let fallbackToTar = false;
+    // Always ensure the extraction directory exists
+    if (!fs.existsSync(extractTo)) {
+      fs.mkdirSync(extractTo, { recursive: true });
+    }
 
+    // Always try 7-Zip first since it's bundled with the app and handles all formats
     try {
-      const ext = path.extname(filePath).toLowerCase();
-      fallbackToTar = ['.rar', '.7z', '.zip'].includes(ext);
-
-      if (fallbackToTar) {
-        await this.extractWith7Zip(filePath, extractTo);
-      } else {
-        await this.extractWithTar(filePath, extractTo);
-      }
+      await this.extractWith7Zip(filePath, extractTo);
     } catch (error) {
-      console.error(`Primary extraction failed, trying fallback:`, error);
-
-      if (fallbackToTar) {
-        await this.extractWithTar(filePath, extractTo);
-      } else {
-        await this.extractWith7Zip(filePath, extractTo);
-      }
+      console.error(`7-Zip extraction failed, trying tar fallback:`, error);
+      await this.extractWithTar(filePath, extractTo);
     }
   }
 }
