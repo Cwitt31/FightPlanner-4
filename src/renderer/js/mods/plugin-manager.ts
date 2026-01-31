@@ -156,6 +156,70 @@ class PluginManager {
 
     console.log('Rendering plugins, count:', this.plugins.length);
 
+    // Check if plugins path is configured
+    if (!this.pluginsPath) {
+      const t = (key: string) => {
+        return window.i18n && window.i18n.t ? window.i18n.t(key) : key;
+      };
+
+      this.pluginListContainer.innerHTML = `
+        <div class="plugins-path-warning" style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 40px 20px;
+          text-align: center;
+          gap: 20px;
+        ">
+          <div style="
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 193, 7, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <i class="bi bi-exclamation-triangle-fill" style="font-size: 36px; color: #ffc107;"></i>
+          </div>
+          <div>
+            <h3 style="color: #fff; margin-bottom: 8px; font-size: 18px;">${t('plugins.pathNotConfigured')}</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; max-width: 400px; margin: 0 auto;">${t('plugins.pathNotConfiguredDesc')}</p>
+          </div>
+          <button id="go-to-plugins-settings-btn" class="input-btn" style="
+            padding: 12px 24px;
+            background: rgba(122, 155, 255, 0.15);
+            border: 1px solid rgba(122, 155, 255, 0.3);
+            color: #7a9bff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+          ">
+            <i class="bi bi-gear-fill"></i>
+            ${t('plugins.goToSettings')}
+          </button>
+        </div>
+      `;
+
+      // Add event listener to the button
+      const goToSettingsBtn = document.querySelector<HTMLElement>(
+        '#go-to-plugins-settings-btn',
+      );
+      if (goToSettingsBtn) {
+        goToSettingsBtn.addEventListener('click', () => {
+          this.navigateToPluginsSettings();
+        });
+      }
+
+      this.updatePluginCount(0);
+      return;
+    }
+
     if (this.plugins.length === 0) {
       this.pluginListContainer.innerHTML =
         '<p style="color: #666; text-align: center; padding: 20px;">No plugins available</p>';
@@ -178,6 +242,65 @@ class PluginManager {
     this.updatePluginCount(this.plugins.length);
   }
 
+  navigateToPluginsSettings() {
+    // Navigate to settings tab
+    const settingsBtn = document.querySelector<HTMLElement>(
+      '[data-tab="settings"]',
+    );
+    if (settingsBtn) {
+      settingsBtn.click();
+    }
+
+    // Wait for settings to load, then switch to mods/paths tab and highlight plugins path
+    setTimeout(() => {
+      if (window.settingsManager) {
+        // The paths tab is actually called 'mods' in the settings
+        window.settingsManager.switchSettingsTab('mods');
+
+        // Wait for the tab to show and highlight the plugins path field
+        setTimeout(() => {
+          const pluginsPathContainer = document.querySelector<HTMLElement>(
+            '#browse-plugins-folder',
+          );
+          if (pluginsPathContainer) {
+            // Find the parent settings-section
+            const settingsSection = pluginsPathContainer.closest('.settings-section') as HTMLElement;
+            if (settingsSection) {
+              settingsSection.classList.add('highlight-setting');
+              settingsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+              // Function to fade out the highlight smoothly
+              const fadeOutHighlight = () => {
+                settingsSection.classList.remove('highlight-setting');
+                settingsSection.classList.add('highlight-fade-out');
+
+                // Remove fade-out class after animation completes
+                setTimeout(() => {
+                  settingsSection.classList.remove('highlight-fade-out');
+                }, 500);
+              };
+
+              // Add click listener to browse button to fade out on click
+              const browseClickHandler = () => {
+                fadeOutHighlight();
+                pluginsPathContainer.removeEventListener('click', browseClickHandler);
+              };
+              pluginsPathContainer.addEventListener('click', browseClickHandler);
+
+              // Also fade out automatically after 3 seconds if not clicked
+              setTimeout(() => {
+                if (settingsSection.classList.contains('highlight-setting')) {
+                  fadeOutHighlight();
+                  pluginsPathContainer.removeEventListener('click', browseClickHandler);
+                }
+              }, 3000);
+            }
+          }
+        }, 300);
+      }
+    }, 100);
+  }
+
   createPluginElement(plugin) {
     const div = document.createElement('div');
     div.className = 'plugin-item';
@@ -193,18 +316,16 @@ class PluginManager {
 <span class="plugin-size">${plugin.size}</span>
 </div>
 <div class="plugin-actions">
-${
-  plugin.status === 'active'
-    ? `<button class="action-btn-small toggle-plugin-btn" data-plugin-id="${plugin.id}" title="Disable">
+${plugin.status === 'active'
+        ? `<button class="action-btn-small toggle-plugin-btn" data-plugin-id="${plugin.id}" title="Disable">
 <i class="bi bi-toggle-on"></i>
 </button>`
-    : `<button class="action-btn-small toggle-plugin-btn" data-plugin-id="${plugin.id}" title="Enable">
+        : `<button class="action-btn-small toggle-plugin-btn" data-plugin-id="${plugin.id}" title="Enable">
 <i class="bi bi-toggle-off"></i>
 </button>`
-}
-<button class="action-btn-small delete-plugin-btn" data-plugin-id="${
-      plugin.id
-    }" title="Delete">
+      }
+<button class="action-btn-small delete-plugin-btn" data-plugin-id="${plugin.id
+      }" title="Delete">
 <i class="bi bi-trash"></i>
 </button>
 </div>
@@ -235,7 +356,7 @@ ${
     return div.innerHTML;
   }
 
-  updatePluginCount(count) {}
+  updatePluginCount(count) { }
 
   async addPlugin() {
     if (!this.pluginsPath) {
@@ -474,14 +595,20 @@ ${
       window.settingsManager
     ) {
       const pluginsPath = window.settingsManager.getPluginsPath();
+      this.pluginsPath = pluginsPath;
       if (pluginsPath) {
         console.log('Loading plugins from saved path:', pluginsPath);
         this.loadPluginsFromFolder(pluginsPath);
         return;
       }
+    } else {
+      this.pluginsPath = null;
     }
 
     console.log('No plugins path configured');
+    // Render the plugin list to show the "path not configured" message
+    this.plugins = [];
+    this.renderPluginList();
   }
 
   async openPluginFolder() {

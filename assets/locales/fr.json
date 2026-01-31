@@ -67,9 +67,13 @@
     "marketplace": "Boutique",
     "marketplaceNoResults": "Aucun plugin disponible",
     "install": "Installer",
+    "reinstall": "Réinstaller",
     "installing": "Installation en cours...",
     "installed": "Installé",
-    "viewOnGitHub": "Voir sur GitHub"
+    "viewOnGitHub": "Voir sur GitHub",
+    "pathNotConfigured": "Chemin des Plugins Non Configuré",
+    "pathNotConfiguredDesc": "Veuillez configurer le chemin du dossier plugins dans les Paramètres pour gérer vos plugins. Ceci est requis pour installer et mettre à jour les plugins.",
+    "goToSettings": "Aller aux Paramètres"
   },
   "settings": {
     "title": "Paramètres Généraux",

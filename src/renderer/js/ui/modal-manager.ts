@@ -1179,7 +1179,7 @@ class ModalManager {
     this.hideOverlay();
   }
 
-  openPluginMarketplaceModal() {
+  async openPluginMarketplaceModal() {
     const modal = document.createElement('div');
     modal.className = 'modal modal-large modal-marketplace';
     modal.id = 'plugin-marketplace-modal';
@@ -1218,9 +1218,22 @@ class ModalManager {
       '#marketplace-results',
     );
 
+    // Get installed plugins mappings to detect which plugins are already installed
+    let installedRepos: string[] = [];
+    if (window.electronAPI && window.electronAPI.getPluginRepoMapping) {
+      try {
+        const result = await window.electronAPI.getPluginRepoMapping();
+        if (result.success && result.mappings) {
+          installedRepos = Object.values(result.mappings) as string[];
+        }
+      } catch (error) {
+        console.warn('Failed to get plugin repo mappings:', error);
+      }
+    }
+
     if (window.pluginMarketplace) {
       const plugins = window.pluginMarketplace.getPlugins();
-      this.renderMarketplaceResults(plugins, resultsContainer!);
+      this.renderMarketplaceResults(plugins, resultsContainer!, installedRepos);
     }
 
     const closeBtn = modal.querySelector<HTMLElement>(
@@ -1243,6 +1256,7 @@ class ModalManager {
   renderMarketplaceResults(
     plugins: MarketplacePlugin[],
     container: HTMLElement,
+    installedRepos: string[] = [],
   ) {
     if (!plugins || plugins.length === 0) {
       container.innerHTML = `
@@ -1259,8 +1273,19 @@ class ModalManager {
 
     const pluginsGrid = plugins
       .map(
-        (plugin) => `
-      <div class="marketplace-plugin-card">
+        (plugin) => {
+          // Check if plugin is already installed by comparing repo
+          const isInstalled = installedRepos.some(
+            installedRepo => installedRepo.toLowerCase() === plugin.repo.toLowerCase()
+          );
+          const buttonClass = isInstalled ? 'marketplace-card-install-btn installed' : 'marketplace-card-install-btn';
+          const buttonIcon = isInstalled ? 'bi-arrow-clockwise' : 'bi-download';
+          const buttonTextKey = isInstalled ? 'plugins.reinstall' : 'plugins.install';
+          const buttonDefaultText = isInstalled ? 'Reinstall' : 'Install';
+          const cardClass = isInstalled ? 'marketplace-plugin-card installed' : 'marketplace-plugin-card';
+
+          return `
+      <div class="${cardClass}" data-installed="${isInstalled}">
         <div class="marketplace-card-header">
           <div class="marketplace-card-title-section">
             <h3 class="marketplace-card-name">${this.escapeHtml(plugin.name)}</h3>
@@ -1275,15 +1300,17 @@ class ModalManager {
             <i class="bi bi-github"></i>
             <span data-i18n="plugins.viewOnGitHub">View on GitHub</span>
           </a>
-          <button class="marketplace-card-install-btn" 
+          <button class="${buttonClass}" 
                   data-plugin-name="${this.escapeHtml(plugin.name)}"
-                  data-plugin-repo="${this.escapeHtml(plugin.repo)}">
-            <i class="bi bi-download"></i>
-            <span data-i18n="plugins.install">Install</span>
+                  data-plugin-repo="${this.escapeHtml(plugin.repo)}"
+                  data-is-installed="${isInstalled}">
+            <i class="bi ${buttonIcon}"></i>
+            <span data-i18n="${buttonTextKey}">${buttonDefaultText}</span>
           </button>
         </div>
       </div>
-    `,
+    `;
+        }
       )
       .join('');
 

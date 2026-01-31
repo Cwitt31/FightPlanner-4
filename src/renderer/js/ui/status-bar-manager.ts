@@ -2,11 +2,24 @@ export class StatusBarManager {
   updateInterval: ReturnType<typeof setTimeout> | null;
   currentTab: string | null;
   preservedStatus: string | null;
+  animationTimeout: ReturnType<typeof setTimeout> | null;
+  hasActiveDownloads: boolean = false;
+  userDismissedExtendedBar: boolean = false;
+  lastExtendedBarData: string | null = null;
 
   constructor() {
     this.updateInterval = null;
     this.currentTab = null;
     this.preservedStatus = null;
+    this.animationTimeout = null;
+    this.userDismissedExtendedBar = false;
+    this.lastExtendedBarData = null;
+
+    // Start global monitoring for downloads
+    setInterval(() => {
+      // Always check
+      this.checkActiveDownloads();
+    }, 500);
   }
 
   t(key, params = {}) {
@@ -17,9 +30,11 @@ export class StatusBarManager {
   }
 
   updateStatus(tabName) {
-    const statusText =
-      document.querySelector<HTMLElement>('.bottom-text-left') ||
-      document.querySelector<HTMLElement>('.bottom-text');
+    // Target the new structure directly
+    const statusText = document.querySelector<HTMLElement>(
+      '#main-status-bar .bottom-text-left',
+    );
+
     if (!statusText) return;
 
     const modalOpen = this.hasModalOpen();
@@ -45,10 +60,13 @@ export class StatusBarManager {
       'fightplanner',
     ];
 
+    // Force update the current tab tracker
+    if (validTabs.includes(tabName)) {
+      this.currentTab = tabName;
+    }
+
     if (typeof tabName === 'string') {
-      if (validTabs.includes(tabName)) {
-        this.currentTab = tabName;
-      } else if (
+      if (
         tabName.startsWith('statusBar.') ||
         tabName.includes('...') ||
         tabName.includes('…')
@@ -75,6 +93,12 @@ export class StatusBarManager {
       this.preservedStatus = null;
       this.updateDownloadsStatus(statusText);
     } else {
+      // Ensure we're not stuck in 'downloading' state visual
+      const bottomBar = document.getElementById('main-status-bar');
+      if (bottomBar && bottomBar.classList.contains('expanded')) {
+        this.updateExtendedBar('none');
+      }
+
       this.animateStatusChange(statusText, () => {
         const tab = this.currentTab;
         switch (tab) {
@@ -98,6 +122,9 @@ export class StatusBarManager {
             break;
           case 'stages':
             this.updateStagesStatus(statusText);
+            break;
+          case 'fightplanner':
+            // FightPlanner status if needed
             break;
           default:
             if (!this.currentTab) {
@@ -125,26 +152,36 @@ export class StatusBarManager {
       return;
     }
 
+    // Cancel any pending animation callback to prevent racing conditions
+    if (this.animationTimeout) {
+      clearTimeout(this.animationTimeout);
+      this.animationTimeout = null;
+    }
+
     statusText.classList.add('status-changing');
 
     if (isReducedAnimations) {
       statusText.style.transition = 'opacity 0.1s ease';
       statusText.style.opacity = '0';
-      setTimeout(() => {
+
+      this.animationTimeout = setTimeout(() => {
         callback();
+        this.animationTimeout = null;
+
         setTimeout(() => {
           statusText.style.opacity = '1';
           statusText.style.transform = 'translateY(0)';
           statusText.classList.remove('status-changing');
-        }, 10);
-      }, 100);
+        }, 50);
+      }, 150); // slightly longer wait
     } else {
       statusText.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
       statusText.style.opacity = '0';
       statusText.style.transform = 'translateY(5px)';
 
-      setTimeout(() => {
+      this.animationTimeout = setTimeout(() => {
         callback();
+        this.animationTimeout = null;
 
         setTimeout(() => {
           statusText.style.opacity = '1';
@@ -156,8 +193,8 @@ export class StatusBarManager {
             statusText.style.transform = '';
             statusText.classList.remove('status-changing');
           }, 200);
-        }, 10);
-      }, 200);
+        }, 50); // slight delay to ensure DOM update
+      }, 250); // Wait longer than transition (0.2s) to ensure text is fully hidden
     }
   }
 
@@ -239,19 +276,332 @@ export class StatusBarManager {
     return false;
   }
 
-  checkActiveDownloads() {
-    // Check for FTP transfer first
-    if (window.downloadManager && window.downloadManager.ftpTransfer) {
-      return true;
+  updateExtendedBar(type: 'download' | 'conflict' | 'success' | 'none', data: any = null) {
+    const bottomBar = document.getElementById('main-status-bar');
+    if (!bottomBar) return;
+
+    const content = bottomBar.querySelector('.extended-content');
+    const enabled =
+      window.settingsManager?.settings.enhancedStatusBar !== false;
+
+    if (type === 'none' || !enabled || !content) {
+      if (type === 'none') {
+        this.userDismissedExtendedBar = true;
+      }
+      if (content) (content as HTMLElement).style.display = 'none';
+
+      if (bottomBar.classList.contains('expanded')) {
+        bottomBar.classList.remove('expanded');
+        setTimeout(() => {
+          if (!bottomBar.classList.contains('expanded')) {
+            bottomBar.classList.remove('download-mode', 'conflict-mode');
+          }
+        }, 300);
+      }
+      return;
     }
 
-    if (window.downloadManager && window.downloadManager.activeDownloads) {
-      const activeDownloads = Array.from(
-        window.downloadManager.activeDownloads.values(),
-      );
-      return activeDownloads.length > 0;
+    if (type === 'download' && data) {
+      if (!bottomBar.classList.contains('download-mode')) {
+        bottomBar.classList.remove('conflict-mode');
+        bottomBar.classList.add('download-mode');
+      }
+
+      if (!bottomBar.classList.contains('expanded')) {
+        bottomBar.classList.add('expanded');
+      }
+
+      // Ensure content is visible
+      (content as HTMLElement).style.display = 'flex';
+
+      const progress = Math.round(data.progress || 0);
+      const speed = data.speedText || '';
+
+      content.innerHTML = `
+        <div class="ext-download-card">
+            <button class="ext-close-btn" onclick="window.statusBarManager.updateExtendedBar('none')" title="Close">
+                <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="ext-card-icon-container">
+                <div class="ext-card-icon">
+                    <i class="bi bi-cloud-arrow-down-fill"></i>
+                </div>
+            </div>
+            <div class="ext-card-details">
+                <div class="ext-card-header">
+                    <span class="ext-status-badge">Downloading</span>
+                    <span class="ext-filename" title="${data.fileName}">${data.fileName || 'Unknown file'}</span>
+                </div>
+                
+                <div class="ext-progress-container">
+                    <div class="ext-progress-track">
+                        <div class="ext-progress-fill" style="width: ${progress}%">
+                            <div class="ext-progress-glare"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ext-card-meta">
+                    <span class="ext-percentage">${progress}%</span>
+                    <span class="ext-separator">•</span>
+                    <span class="ext-speed">${speed}</span>
+                </div>
+            </div>
+        </div>
+      `;
+    } else if (type === 'success' && data) {
+      if (!bottomBar.classList.contains('success-mode')) {
+        bottomBar.classList.remove('download-mode', 'conflict-mode');
+        bottomBar.classList.add('success-mode');
+      }
+
+      if (!bottomBar.classList.contains('expanded')) {
+        bottomBar.classList.add('expanded');
+      }
+
+      // Ensure content is visible
+      (content as HTMLElement).style.display = 'flex';
+
+      content.innerHTML = `
+            <div class="ext-download-card">
+                <button class="ext-close-btn" onclick="window.statusBarManager.updateExtendedBar('none')" title="Close">
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="ext-card-icon-container" style="background: rgba(40, 167, 69, 0.1); border-color: #28a745;">
+                    <div class="ext-card-icon">
+                        <i class="bi bi-check-circle-fill" style="color: #28a745;"></i>
+                    </div>
+                </div>
+                <div class="ext-card-details">
+                    <div class="ext-card-header">
+                        <span class="ext-status-badge" style="background: #28a745; border-color: #28a745;">Completed</span>
+                        <span class="ext-filename" title="${data.fileName}">${data.fileName || 'Unknown file'}</span>
+                    </div>
+                    
+                    <div class="ext-card-meta">
+                        <span style="color: #28a745;">Download finished successfully</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (type === 'conflict' && data) {
+      if (!bottomBar.classList.contains('conflict-mode')) {
+        bottomBar.classList.remove('download-mode', 'success-mode');
+        bottomBar.classList.add('conflict-mode');
+      }
+
+      if (!bottomBar.classList.contains('expanded')) {
+        bottomBar.classList.add('expanded');
+      }
+
+      // Ensure content is visible
+      (content as HTMLElement).style.display = 'flex';
+
+      content.innerHTML = `  
+        <div class="ext-conflict-card">
+            <button class="ext-close-btn" onclick="window.statusBarManager.updateExtendedBar('none')" title="Close">
+                <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="ext-card-icon-container icon-warning">
+                <div class="ext-card-icon">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+            </div>
+            <div class="ext-card-details">
+                <div class="ext-card-header">
+                     <span class="ext-status-badge badge-warning">Conflicts Detected</span>
+                </div>
+                <div class="ext-conflict-message">
+                    ${data.count} mod${data.count !== 1 ? 's' : ''} have conflicting files.
+                </div>
+                <button class="ext-action-btn" onclick="window.conflictModalManager.showConflictModal()">
+                    Resolve Now
+                </button>
+            </div>
+        </div>
+      `;
     }
-    return false;
+  }
+
+  checkActiveDownloads() {
+    try {
+      if (!window.downloadManager) return false;
+
+      // Check for FTP transfer first
+      if (window.downloadManager.ftpTransfer) {
+        // FTP transfer is active, but we don't want it to block other status updates
+        // The FTP status is handled by updateDownloadsStatus
+        return true;
+      }
+
+      const activeDownloadsMap = (window.downloadManager as any).activeDownloads;
+      if (!activeDownloadsMap) {
+        // If activeDownloads is missing, assume no downloads
+        return false;
+      }
+
+      const downloads = Array.from(activeDownloadsMap.values());
+      const activeDownloads = downloads.filter(
+        (d: any) => d.status === 'downloading' || d.status === 'extracting',
+      );
+
+      if (activeDownloads.length > 0) {
+        const active: any = activeDownloads[0];
+        this.hasActiveDownloads = true;
+
+        // Detection of data change for downloads
+        const downloadIds = activeDownloads
+          .map((d: any) => d.id || d.fileName)
+          .sort()
+          .join(',');
+        const dataKey = `download:${downloadIds}`;
+
+        if (this.lastExtendedBarData !== dataKey) {
+          this.userDismissedExtendedBar = false;
+          this.lastExtendedBarData = dataKey;
+        }
+
+        if (!this.userDismissedExtendedBar) {
+          // Update extended bar
+          this.updateExtendedBar('download', active);
+        }
+
+        // Also update standard status bar as fallback or complement
+        const statusRight =
+          document.querySelector<HTMLElement>('.bottom-text-right');
+        if (statusRight) {
+          statusRight.textContent = '';
+        }
+
+        if (this.currentTab !== 'downloads') {
+          let statusText = document.querySelector<HTMLElement>(
+            '.bottom-text-left',
+          );
+          if (!statusText) {
+            statusText = document.querySelector<HTMLElement>('.bottom-text');
+          }
+
+          if (statusText) {
+            statusText.classList.add('status-downloading');
+            statusText.textContent = this.t('statusBar.downloading', {
+              count: activeDownloads.length,
+              percent: Math.round(active.progress),
+            });
+          }
+        }
+        return true;
+      } else {
+        const wasActive = this.hasActiveDownloads;
+        this.hasActiveDownloads = false;
+
+        const statusText = document.querySelector<HTMLElement>(
+          '.bottom-text-left, .bottom-text',
+        );
+        if (statusText) {
+          statusText.classList.remove('status-downloading');
+        }
+
+        // Check if a download JUST finished to show success state
+        if (wasActive) {
+          const completed =
+            (window.downloadManager as any).completedDownloads || [];
+          if (completed.length > 0) {
+            const last = completed[0];
+            // If finished within last 5 seconds
+            if (Date.now() - (last.endTime || 0) < 5000) {
+              this.userDismissedExtendedBar = false; // Always show success
+              this.updateExtendedBar('success', {
+                fileName: last.modName || last.fileName,
+              });
+
+              // Wait 3 seconds then retract
+              setTimeout(() => {
+                this.updateExtendedBar('none');
+                this.refreshStandardStatus();
+              }, 3000);
+
+              return false;
+            }
+          }
+        }
+
+        if (!wasActive) {
+          // Only verify conflicts if we weren't just downloading (avoid flashing)
+          if (window.modManager && window.modManager.conflicts) {
+            const conflicts = window.modManager.conflicts;
+            const conflictCount = conflicts.length;
+
+            if (conflictCount > 0) {
+              const dataKey = `conflict:${conflictCount}`;
+              if (this.lastExtendedBarData !== dataKey) {
+                this.userDismissedExtendedBar = false;
+                this.lastExtendedBarData = dataKey;
+              }
+
+              if (!this.userDismissedExtendedBar) {
+                this.updateExtendedBar('conflict', { count: conflictCount });
+              }
+              return false;
+            } else {
+              // No conflicts, reset dismissal for next time
+              if (this.lastExtendedBarData?.startsWith('conflict:')) {
+                this.lastExtendedBarData = null;
+                this.userDismissedExtendedBar = false;
+              }
+            }
+          }
+        }
+
+        if (wasActive) {
+          // Immediate cleanup if no success state needed
+          this.updateExtendedBar('none');
+          this.refreshStandardStatus();
+        } else {
+          // Routine cleanup
+          const bottomBar = document.getElementById('main-status-bar');
+          if (
+            bottomBar &&
+            bottomBar.classList.contains('expanded') &&
+            !bottomBar.classList.contains('conflict-mode')
+          ) {
+            this.updateExtendedBar('none');
+          }
+        }
+
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
+  refreshStandardStatus() {
+    // Attempt to detect current tab if null
+    if (!this.currentTab) {
+      const activeBtn = document.querySelector('.nav-btn.active');
+      if (activeBtn) {
+        const tabId = activeBtn.getAttribute('data-tab');
+        if (tabId) this.currentTab = tabId;
+      }
+    }
+
+    if (this.currentTab) {
+      this.updateStatus(this.currentTab);
+    } else {
+      const statusLeft = document.querySelector<HTMLElement>('#main-status-bar .bottom-text-left');
+      if (statusLeft) {
+        statusLeft.classList.remove('status-downloading');
+
+        const hash = window.location.hash;
+        if (hash.includes('settings')) {
+          this.updateStatus('settings');
+        } else if (hash.includes('social')) {
+          this.updateStatus('social');
+        } else {
+          this.updateStatus('tools');
+        }
+      }
+    }
   }
 
   checkAndUpdateForDownloads() {
@@ -661,6 +1011,9 @@ export class StatusBarManager {
   /**
    * Update status for Tools tab
    */
+  /**
+   * Update status for Tools tab
+   */
   updateToolsStatus(statusText) {
     const updateStatus = () => {
       if (
@@ -682,9 +1035,7 @@ export class StatusBarManager {
       try {
         if (window.modManager && window.modManager.mods) {
           const mods = window.modManager.mods;
-          if (mods.length === 0) {
-            return;
-          }
+
           const enabledMods = mods.filter(
             (mod) => mod.status === 'active',
           ).length;
@@ -757,9 +1108,6 @@ export class StatusBarManager {
     this.updateInterval = setInterval(updateStatus, 10000);
   }
 
-  /**
-   * Update status for Settings tab
-   */
   updateSettingsStatus(statusText) {
     this.setStatusText(this.t('statusBar.settings'));
   }
@@ -790,16 +1138,12 @@ export class StatusBarManager {
           const characters = window.charactersManager.characters;
           const count = characters.size;
 
-          if (count > 0) {
-            this.setStatusText(
-              this.t('statusBar.charactersAvailable', {
-                count: count,
-                plural: count !== 1 ? 's' : '',
-              }),
-            );
-          } else {
-            this.setStatusText(this.t('statusBar.charactersReady'));
-          }
+          this.setStatusText(
+            this.t('statusBar.charactersAvailable', {
+              count: count,
+              plural: count !== 1 ? 's' : '',
+            }),
+          );
         } else {
           this.setStatusText(this.t('statusBar.charactersReady'));
         }
@@ -823,7 +1167,48 @@ export class StatusBarManager {
     statusRight.innerHTML = '';
     const checkingText = document.createElement('span');
     checkingText.textContent = this.t('statusBar.checkingConflicts');
+    checkingText.style.display = 'flex';
+    checkingText.style.alignItems = 'center';
+    checkingText.style.gap = '6px';
+
+    // Spinner
+    const spinner = document.createElement('i');
+    spinner.className = 'fas fa-circle-notch fa-spin';
+    spinner.style.fontSize = '12px';
+    checkingText.appendChild(spinner);
+
     statusRight.appendChild(checkingText);
+
+    // Small delay to allow check to perform
+    setTimeout(() => {
+      if (window.modManager && window.modManager.conflicts) {
+        const conflicts = window.modManager.conflicts;
+        const conflictCount = conflicts.length;
+
+        if (conflictCount > 0) {
+          // Update extended bar
+          this.updateExtendedBar('conflict', { count: conflictCount });
+
+          statusRight.innerHTML = '';
+          const warning = document.createElement('span');
+          warning.style.color = 'var(--warning-color)';
+          warning.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ${conflictCount} conflicts`;
+          warning.style.cursor = 'pointer';
+          warning.onclick = () => {
+            if (window.conflictModalManager) {
+              window.conflictModalManager.showConflictModal();
+            }
+          };
+          statusRight.appendChild(warning);
+        } else {
+          // Clear extended bar if no downloads
+          if (!this.hasActiveDownloads) {
+            this.updateExtendedBar('none');
+          }
+          statusRight.textContent = '';
+        }
+      }
+    }, 500);
   }
 
   updateConflictStatus(conflictCount) {
@@ -834,6 +1219,7 @@ export class StatusBarManager {
     statusRight.innerHTML = '';
 
     if (conflictCount > 0) {
+      this.updateExtendedBar('conflict', { count: conflictCount }); // Update extended bar
       const conflictText = document.createElement('span');
       conflictText.className = 'conflict-link';
       conflictText.addEventListener('click', (e) => {

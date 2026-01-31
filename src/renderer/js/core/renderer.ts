@@ -112,10 +112,14 @@ window.addEventListener('DOMContentLoaded', () => {
       const tabId = activeTab.id.replace('tab-', '');
       if (window.statusBarManager && tabId) {
         window.statusBarManager.updateStatus(tabId);
+      } else {
+        console.warn('[Renderer] StatusBarManager missing or tabId invalid for active tab');
       }
     } else {
       if (window.statusBarManager) {
         window.statusBarManager.updateStatus('tools');
+      } else {
+        console.warn('[Renderer] StatusBarManager missing, cannot default to tools');
       }
     }
   }, 100);
