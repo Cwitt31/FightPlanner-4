@@ -22,6 +22,11 @@ if (type === 'custom' && custom) {
         let maxNum = 0;
         tags.forEach(tag => {
             const match = tag.match(new RegExp(`${type}(\\d+)`));
+            .filter(t => t.includes(`-${type}`));
+        
+        let maxNum = 0;
+        tags.forEach(tag => {
+            const match = tag.match(new RegExp(`-${type}(\\d+)$`));
             if (match) {
                 const num = parseInt(match[1], 10);
                 if (num > maxNum) maxNum = num;
@@ -40,4 +45,5 @@ if (nextVersion) {
     pkg.version = nextVersion;
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
     console.log(nextVersion);
+}
 }
