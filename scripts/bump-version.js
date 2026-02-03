@@ -25,8 +25,9 @@ if (type === 'custom' && custom) {
             .filter(t => t.includes(`-${type}`));
         
         let maxNum = 0;
-        tags.forEach(tag => {
-            const match = tag.match(new RegExp(`-${type}(\\d+)$`));
+        relevantTags.forEach(tag => {
+            const regex = new RegExp(`${type}(\\d+)`);
+            const match = tag.match(regex);
             if (match) {
                 const num = parseInt(match[1], 10);
                 if (num > maxNum) maxNum = num;
