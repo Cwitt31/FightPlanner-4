@@ -17,17 +17,11 @@ if (type === 'custom' && custom) {
     try {
         const tags = execSync('git tag -l', { encoding: 'utf8' })
             .split('\n')
-            .filter(t => t.startsWith(`v${baseVersion}-${type}`));
-        
-        let maxNum = 0;
-        tags.forEach(tag => {
-            const match = tag.match(new RegExp(`${type}(\\d+)`));
             .filter(t => t.includes(`-${type}`));
         
         let maxNum = 0;
-        relevantTags.forEach(tag => {
-            const regex = new RegExp(`${type}(\\d+)`);
-            const match = tag.match(regex);
+        tags.forEach(tag => {
+            const match = tag.match(new RegExp(`-${type}(\\d+)$`));
             if (match) {
                 const num = parseInt(match[1], 10);
                 if (num > maxNum) maxNum = num;
@@ -46,5 +40,4 @@ if (nextVersion) {
     pkg.version = nextVersion;
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
     console.log(nextVersion);
-}
 }
