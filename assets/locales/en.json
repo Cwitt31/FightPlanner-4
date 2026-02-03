@@ -228,7 +228,24 @@
     "enhancedStatusBar": "Enhanced Status Bar",
     "enableEnhancedStatusBar": "Enable Enhanced Status Bar",
     "enhancedStatusBarHint": "Display detailed information cards in status bar (downloads, conflicts, etc.)",
-    "channelPrerelease": "Prerelease"
+    "channelPrerelease": "Prerelease",
+    "social": "FightPlanner Social",
+    "socialTitle": "FightPlanner Social Settings",
+    "socialAutoDownload": "Auto-Download Settings",
+    "enableAutoDownload": "Enable automatic download check",
+    "socialAutoDownloadHint": "Automatically check for mods you need to download from your synced list",
+    "socialCheckInterval": "Check Interval",
+    "minutes": "minutes",
+    "socialCheckIntervalHint": "How often to automatically check for mods to download (1-60 minutes)",
+    "socialAccountInfo": "Account Information",
+    "socialStatus": "Status:",
+    "socialUsername": "Username:",
+    "socialConnected": "Connected",
+    "socialNotConnected": "Not connected",
+    "socialAccountHint": "Connect via the Social tab to sync your mods and connect with friends",
+    "socialQuickActions": "Quick Actions",
+    "goToSocialTab": "Open Social Tab",
+    "goToSocialTabDesc": "Manage your account, friends and mods"
   },
   "modals": {
     "rename": {
@@ -411,6 +428,8 @@
     "enableAutoDownload": "Enable automatic download check",
     "checkInterval": "Check interval (minutes)",
     "saveAutoDownload": "Save Auto-Download Settings",
+    "lookingForSettings": "Looking for privacy and auto-download settings?",
+    "goToSettings": "Go to Settings",
     "logout": "Logout"
   },
   "common": {

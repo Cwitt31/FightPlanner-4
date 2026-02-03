@@ -94,7 +94,47 @@ class SocialManager {
     console.log('[Social] Cache invalidated:', key || 'all');
   }
 
-  // Faire une requête avec cache et évitement de doublons
+  async refreshAuthToken(): Promise<boolean> {
+    if (!this.userData?.refreshToken) {
+      console.log('[Social] No refresh token available');
+      return false;
+    }
+
+    try {
+      console.log('[Social] Attempting to refresh auth token...');
+      const response = await fetch(`${this.API_URL}/refresh-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          refreshToken: this.userData.refreshToken,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        console.error('[Social] Token refresh failed:', data.error);
+        return false;
+      }
+
+      this.authToken = data.id_token;
+      if (data.refresh_token) {
+        this.userData.refreshToken = data.refresh_token;
+      }
+
+      if (window.electronAPI && window.electronAPI.store) {
+        await window.electronAPI.store.set('social.authToken', this.authToken);
+        await window.electronAPI.store.set('social.userData', this.userData);
+      }
+
+      console.log('[Social] ✅ Token refreshed successfully');
+      return true;
+    } catch (error) {
+      console.error('[Social] Token refresh error:', error);
+      return false;
+    }
+  }
+
   async fetchWithCache(
     url: string,
     options = {},
@@ -325,7 +365,7 @@ class SocialManager {
     if (this.onboardingAnim) {
       try {
         this.onboardingAnim.destroy();
-      } catch (e) {}
+      } catch (e) { }
       this.onboardingAnim = null;
     }
 
@@ -522,7 +562,7 @@ class SocialManager {
           .then((val: string | null) => {
             if (val && !emailInput.value) emailInput.value = val;
           })
-          .catch(() => {});
+          .catch(() => { });
       }
 
       form.addEventListener('submit', async (e) => {
@@ -556,7 +596,7 @@ class SocialManager {
           if (remember && remember.checked && window.electronAPI) {
             try {
               await window.electronAPI.store.set('social.rememberEmail', email);
-            } catch (e) {}
+            } catch (e) { }
           }
 
           await this.showProfileScreen();
@@ -1299,41 +1339,40 @@ class SocialManager {
   }
 
   renderModCard(mod, isOwn = false) {
-    const installedClass = mod.modInstalled ? 'installed' : '';
-    const installedBadge = mod.modInstalled
+    // Only show "installed" status for user's own mods, not for other users' mods
+    const installedClass = isOwn && mod.modInstalled ? 'installed' : '';
+    const installedBadge = isOwn && mod.modInstalled
       ? '<span class="social-mod-badge installed"><i class="bi bi-check-circle"></i> Installed</span>'
       : '';
     const creator = mod.pseudo || mod.creator || 'Unknown';
     const creatorClass = isOwn ? '' : 'social-creator-link';
 
+    // Download button logic:
+    // - For own mods: show Re-download if installed, Download if not
+    // - For other users' mods: show Download button if they have a fightplanner link
+    let downloadButton = '';
+    if (mod.link && mod.link.startsWith('fightplanner:')) {
+      if (isOwn) {
+        downloadButton = `<button class="social-mod-download-btn" data-link="${mod.link}"><i class="bi bi-download"></i> ${mod.modInstalled ? 'Re-download' : 'Download'}</button>`;
+      } else {
+        // For other users' mods, just show "Download"
+        downloadButton = `<button class="social-mod-download-btn" data-link="${mod.link}"><i class="bi bi-download"></i> Download</button>`;
+      }
+    }
+
     return `
             <div class="social-mod-card ${installedClass}">
-                ${
-                  mod.image_url
-                    ? `<img src="${mod.image_url}" alt="${
-                        mod.mod_name || 'Mod'
-                      }" class="social-mod-image">`
-                    : '<div class="social-mod-image-placeholder"><i class="bi bi-image"></i></div>'
-                }
+                ${mod.image_url
+        ? `<img src="${mod.image_url}" alt="${mod.mod_name || 'Mod'}" class="social-mod-image">`
+        : '<div class="social-mod-image-placeholder"><i class="bi bi-image"></i></div>'
+      }
                 <div class="social-mod-info">
-                    <h3 class="social-mod-name">${
-                      mod.mod_name || 'Unknown Mod'
-                    }</h3>
+                    <h3 class="social-mod-name">${mod.mod_name || 'Unknown Mod'}</h3>
                     <p class="social-mod-creator">
-                        by <span class="${creatorClass}" data-username="${creator}" data-userid="${
-                          mod.userId || ''
-                        }">${creator}</span>
+                        by <span class="${creatorClass}" data-username="${creator}" data-userid="${mod.userId || ''}">${creator}</span>
                     </p>
                     ${installedBadge}
-                    ${
-                      isOwn && mod.link && mod.link.startsWith('fightplanner:')
-                        ? `<button class="social-mod-download-btn" data-link="${
-                            mod.link
-                          }"><i class="bi bi-download"></i> ${
-                            mod.modInstalled ? 'Re-download' : 'Download'
-                          }</button>`
-                        : ''
-                    }
+                    ${downloadButton}
                 </div>
             </div>
         `;
@@ -1367,11 +1406,10 @@ class SocialManager {
     return `
             <div class="social-friend-card social-creator-link" data-username="${friendUsername}" data-userid="${friendId}">
                 <div class="social-friend-avatar">
-                    ${
-                      photoURL
-                        ? `<img src="${photoURL}" alt="${friendUsername}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">`
-                        : '<i class="bi bi-person-circle"></i>'
-                    }
+                    ${photoURL
+        ? `<img src="${photoURL}" alt="${friendUsername}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">`
+        : '<i class="bi bi-person-circle"></i>'
+      }
                 </div>
                 <div class="social-friend-info">
                     <h3 class="social-friend-name">${friendUsername}</h3>
@@ -1572,6 +1610,25 @@ class SocialManager {
       });
     }
 
+    // Go to Settings button
+    const goToSettingsBtn = document.querySelector<HTMLElement>('#social-go-to-settings-btn');
+    if (goToSettingsBtn) {
+      goToSettingsBtn.addEventListener('click', () => {
+        // Switch to Settings tab
+        const settingsTab = document.querySelector<HTMLElement>('[data-tab="settings"]');
+        if (settingsTab) {
+          settingsTab.click();
+          // After a small delay, switch to the Social settings sub-tab
+          setTimeout(() => {
+            const socialSettingsBtn = document.querySelector<HTMLElement>('[data-settings-tab="social"]');
+            if (socialSettingsBtn) {
+              socialSettingsBtn.click();
+            }
+          }, 100);
+        }
+      });
+    }
+
     document.addEventListener('click', async (e) => {
       const clickedElement = e.target as HTMLElement;
       const removeBtn = clickedElement.closest('.social-remove-friend-btn');
@@ -1690,8 +1747,8 @@ class SocialManager {
                 pseudo?: string;
                 creator?: string;
               }[] = Array.isArray(modsData)
-                ? modsData
-                : modsData.documents || [];
+                  ? modsData
+                  : modsData.documents || [];
 
               if (Array.isArray(mods)) {
                 const userMod = mods.find(
@@ -2587,7 +2644,7 @@ class SocialManager {
         try {
           await window.electronAPI.store.delete('social.authToken');
           await window.electronAPI.store.delete('social.userData');
-        } catch (e) {}
+        } catch (e) { }
       }
 
       const profileContainer = document.querySelector<HTMLElement>(
@@ -2631,8 +2688,7 @@ class SocialManager {
       }
 
       console.log(
-        `[Social] Starting auto-download check (interval: ${
-          this.autoDownloadIntervalMs / 1000
+        `[Social] Starting auto-download check (interval: ${this.autoDownloadIntervalMs / 1000
         }s)`,
       );
 
@@ -2806,9 +2862,24 @@ class SocialManager {
     }
 
     try {
-      const response = await fetch(
+      let response = await fetch(
         `${this.API_URL}/list/links?idToken=${this.authToken}`,
       );
+
+      // Handle 401 - try to refresh token
+      if (response.status === 401) {
+        console.log('[Social] Token expired, attempting refresh...');
+        const refreshed = await this.refreshAuthToken();
+        if (refreshed) {
+          // Retry with new token
+          response = await fetch(
+            `${this.API_URL}/list/links?idToken=${this.authToken}`,
+          );
+        } else {
+          console.error('[Social] Token refresh failed, cannot update mod status');
+          return;
+        }
+      }
 
       if (!response.ok) {
         const text = await response.text();
@@ -2828,7 +2899,12 @@ class SocialManager {
 
       const modsData = await response.json();
 
-      if (!Array.isArray(modsData)) {
+      // Handle both array and paginated response
+      const mods = Array.isArray(modsData)
+        ? modsData
+        : modsData.documents || [];
+
+      if (!Array.isArray(mods)) {
         console.error('[Social] Invalid mods data received');
         return;
       }
@@ -2839,7 +2915,7 @@ class SocialManager {
       );
       const username = usernameEl ? usernameEl.textContent : null;
 
-      for (const mod of modsData) {
+      for (const mod of mods) {
         const modUserId = mod.userId;
         const modPseudo = mod.pseudo;
         const isOwner =
@@ -2862,7 +2938,7 @@ class SocialManager {
           );
 
           if (mod.id) {
-            await fetch(`${this.API_URL}/write/links/${mod.id}`, {
+            const writeResponse = await fetch(`${this.API_URL}/write/links/${mod.id}`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -2872,6 +2948,25 @@ class SocialManager {
                 _idToken: this.authToken,
               }),
             });
+
+            // Handle 401 on write - try to refresh token and retry
+            if (writeResponse.status === 401) {
+              console.log('[Social] Token expired on write, attempting refresh...');
+              const refreshed = await this.refreshAuthToken();
+              if (refreshed) {
+                // Retry write with new token
+                await fetch(`${this.API_URL}/write/links/${mod.id}`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    modInstalled: true,
+                    _idToken: this.authToken,
+                  }),
+                });
+              }
+            }
 
             this.installingMods.delete(link);
 

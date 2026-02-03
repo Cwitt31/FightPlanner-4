@@ -14,6 +14,9 @@
     <button class="settings-tab-btn" data-settings-tab="advanced" data-i18n="settings.advanced">
       Advanced
     </button>
+    <button class="settings-tab-btn" data-settings-tab="social" data-i18n="settings.social">
+      FightPlanner Social
+    </button>
     <button class="settings-tab-btn" data-settings-tab="logs" data-i18n="settings.logs">
       Logs
     </button>
@@ -487,6 +490,72 @@
           Clears temporary files left from mod downloads and installations. Safe
           to use at any time.
         </p>
+      </div>
+    </div>
+
+    <!-- FightPlanner Social Settings -->
+    <div class="settings-tab-content" id="settings-social">
+      <h2 class="settings-title" data-i18n="settings.socialTitle">
+        FightPlanner Social Settings
+      </h2>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.socialAutoDownload">Auto-Download Settings</label>
+        <div class="settings-input-group">
+          <label class="settings-switch">
+            <input type="checkbox" id="settings-social-auto-download-enabled" />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span style="margin-left: 12px; color: var(--text-secondary)" data-i18n="settings.enableAutoDownload">Enable
+            automatic download check</span>
+        </div>
+        <p class="settings-hint" data-i18n="settings.socialAutoDownloadHint">
+          Automatically check for mods you need to download from your synced list
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.socialCheckInterval">Check Interval</label>
+        <div class="settings-input-group">
+          <input type="number" id="settings-social-auto-download-interval" class="settings-input" style="width: 100px"
+            min="1" max="60" value="5" />
+          <span style="margin-left: 8px; color: var(--text-secondary)" data-i18n="settings.minutes">minutes</span>
+        </div>
+        <p class="settings-hint" data-i18n="settings.socialCheckIntervalHint">
+          How often to automatically check for mods to download (1-60 minutes)
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.socialAccountInfo">Account Information</label>
+        <div class="settings-input-group" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+          <div style="display: flex; align-items: center;">
+            <span style="color: var(--text-secondary); min-width: 80px;"
+              data-i18n="settings.socialStatus">Status:</span>
+            <span id="settings-social-status" style="color: var(--text-muted);">Not connected</span>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <span style="color: var(--text-secondary); min-width: 80px;"
+              data-i18n="settings.socialUsername">Username:</span>
+            <span id="settings-social-username" style="color: var(--primary-color); font-weight: 600;">-</span>
+          </div>
+        </div>
+        <p class="settings-hint" data-i18n="settings.socialAccountHint">
+          Connect via the Social tab to sync your mods and connect with friends
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.socialQuickActions">Quick Actions</label>
+        <button class="settings-btn-action" id="settings-go-to-social-btn">
+          <i class="bi bi-people"></i>
+          <div class="settings-btn-action-content">
+            <span class="settings-btn-action-title" data-i18n="settings.goToSocialTab">Open Social Tab</span>
+            <span class="settings-btn-action-desc" data-i18n="settings.goToSocialTabDesc">Manage your account, friends
+              and mods</span>
+          </div>
+          <i class="bi bi-arrow-right"></i>
+        </button>
       </div>
     </div>
 
