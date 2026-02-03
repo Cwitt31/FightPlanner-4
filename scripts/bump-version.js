@@ -15,17 +15,14 @@ if (type === 'custom' && custom) {
     nextVersion = custom;
 } else if (type === 'alpha' || type === 'beta') {
     try {
-        let tagOutput = '';
-        try {
-            // Get tags, handle potential absence of git or tags
-            tagOutput = execSync('git tag -l', { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }) || '';
-        } catch (err) {
-            // Silently ignore git errors, fallback to default (type)1
-        }
+        const tags = execSync('git tag -l', { encoding: 'utf8' })
+            .split('\n')
+            .filter(t => t.startsWith(`v${baseVersion}-${type}`));
         
-        const tags = tagOutput.split('\n').map(t => t.trim()).filter(t => t.length > 0);
-        // Look for tags that match the current base version and type (e.g., v4.0.0-beta)
-        const relevantTags = tags.filter(t => t.startsWith(`v${baseVersion}-${type}`));
+        let maxNum = 0;
+        tags.forEach(tag => {
+            const match = tag.match(new RegExp(`${type}(\\d+)`));
+            .filter(t => t.includes(`-${type}`));
         
         let maxNum = 0;
         relevantTags.forEach(tag => {
@@ -49,4 +46,5 @@ if (nextVersion) {
     pkg.version = nextVersion;
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
     console.log(nextVersion);
+}
 }

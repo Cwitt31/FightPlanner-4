@@ -223,7 +223,28 @@
     "updateChannel": "Canal de Mise à Jour",
     "channelStable": "Stable",
     "channelBeta": "Bêta",
-    "channelAlpha": "Alpha"
+    "channelAlpha": "Alpha",
+    "enhancedStatusBar": "Barre de Statut Améliorée",
+    "enableEnhancedStatusBar": "Activer la Barre de Statut Améliorée",
+    "enhancedStatusBarHint": "Afficher des cartes d'information détaillées dans la barre de statut (téléchargements, conflits, etc.)",
+    "channelPrerelease": "Pré-version",
+    "social": "FightPlanner Social",
+    "socialTitle": "Paramètres FightPlanner Social",
+    "socialAutoDownload": "Paramètres de Téléchargement Automatique",
+    "enableAutoDownload": "Activer la vérification automatique des téléchargements",
+    "socialAutoDownloadHint": "Vérifier automatiquement les mods à télécharger depuis votre liste synchronisée",
+    "socialCheckInterval": "Intervalle de Vérification",
+    "minutes": "minutes",
+    "socialCheckIntervalHint": "Fréquence de vérification automatique des mods à télécharger (1-60 minutes)",
+    "socialAccountInfo": "Informations du Compte",
+    "socialStatus": "Statut :",
+    "socialUsername": "Nom d'utilisateur :",
+    "socialConnected": "Connecté",
+    "socialNotConnected": "Non connecté",
+    "socialAccountHint": "Connectez-vous via l'onglet Social pour synchroniser vos mods et vous connecter avec vos amis",
+    "socialQuickActions": "Actions Rapides",
+    "goToSocialTab": "Ouvrir l'Onglet Social",
+    "goToSocialTabDesc": "Gérer votre compte, amis et mods"
   },
   "modals": {
     "rename": {
@@ -406,6 +427,8 @@
     "enableAutoDownload": "Activer la vérification automatique des téléchargements",
     "checkInterval": "Intervalle de vérification (minutes)",
     "saveAutoDownload": "Enregistrer les Paramètres de Téléchargement Auto",
+    "lookingForSettings": "Vous cherchez les paramètres de confidentialité et téléchargement automatique ?",
+    "goToSettings": "Aller aux Paramètres",
     "logout": "Déconnexion"
   },
   "common": {

@@ -768,6 +768,106 @@ class SettingsManager {
       });
       resetStoreBtn.dataset.listenerAttached = 'true';
     }
+
+    // FightPlanner Social Settings
+    this.setupSocialSettings();
+  }
+
+  async setupSocialSettings() {
+    const autoDownloadToggle = document.querySelector<HTMLInputElement>(
+      '#settings-social-auto-download-enabled',
+    );
+    const intervalInput = document.querySelector<HTMLInputElement>(
+      '#settings-social-auto-download-interval',
+    );
+    const statusSpan = document.querySelector<HTMLElement>('#settings-social-status');
+    const usernameSpan = document.querySelector<HTMLElement>('#settings-social-username');
+    const goToSocialBtn = document.querySelector<HTMLElement>('#settings-go-to-social-btn');
+
+    // Load current values from store
+    if (autoDownloadToggle && !autoDownloadToggle.dataset.listenerAttached) {
+      const enabled = await window.electronAPI.store.get('social.autoDownloadEnabled');
+      autoDownloadToggle.checked = enabled !== false; // Default to true
+
+      autoDownloadToggle.addEventListener('change', async () => {
+        await window.electronAPI.store.set('social.autoDownloadEnabled', autoDownloadToggle.checked);
+
+        // Sync with social manager if available
+        if (window.socialManager) {
+          window.socialManager.autoDownloadEnabled = autoDownloadToggle.checked;
+          if (autoDownloadToggle.checked) {
+            window.socialManager.startAutoDownloadCheck();
+          } else {
+            window.socialManager.stopAutoDownloadCheck();
+          }
+        }
+
+        // Also sync the checkbox in social tab
+        const socialTabToggle = document.querySelector<HTMLInputElement>('#social-auto-download-enabled');
+        if (socialTabToggle) {
+          socialTabToggle.checked = autoDownloadToggle.checked;
+        }
+
+        this.showToast(this.translate('toasts.settingSaved'), 'success');
+      });
+      autoDownloadToggle.dataset.listenerAttached = 'true';
+    }
+
+    if (intervalInput && !intervalInput.dataset.listenerAttached) {
+      const interval = await window.electronAPI.store.get('social.autoDownloadInterval');
+      intervalInput.value = String(interval || 5);
+
+      intervalInput.addEventListener('change', async () => {
+        const value = parseInt(intervalInput.value, 10);
+        if (value >= 1 && value <= 60) {
+          await window.electronAPI.store.set('social.autoDownloadInterval', value);
+
+          // Sync with social manager if available
+          if (window.socialManager) {
+            window.socialManager.autoDownloadIntervalMs = value * 60 * 1000;
+            if (window.socialManager.autoDownloadEnabled) {
+              window.socialManager.stopAutoDownloadCheck();
+              window.socialManager.startAutoDownloadCheck();
+            }
+          }
+
+          // Also sync the input in social tab
+          const socialTabInput = document.querySelector<HTMLInputElement>('#social-auto-download-interval');
+          if (socialTabInput) {
+            socialTabInput.value = String(value);
+          }
+
+          this.showToast(this.translate('toasts.settingSaved'), 'success');
+        }
+      });
+      intervalInput.dataset.listenerAttached = 'true';
+    }
+
+    // Update account status display
+    if (statusSpan && usernameSpan) {
+      const userData = await window.electronAPI.store.get('social.userData') as { displayName?: string } | null;
+      if (userData && userData.displayName) {
+        statusSpan.textContent = this.translate('settings.socialConnected') || 'Connected';
+        statusSpan.style.color = 'var(--success-color)';
+        usernameSpan.textContent = userData.displayName;
+      } else {
+        statusSpan.textContent = this.translate('settings.socialNotConnected') || 'Not connected';
+        statusSpan.style.color = 'var(--text-muted)';
+        usernameSpan.textContent = '-';
+      }
+    }
+
+    // Go to Social tab button
+    if (goToSocialBtn && !goToSocialBtn.dataset.listenerAttached) {
+      goToSocialBtn.addEventListener('click', () => {
+        // Switch to Social tab
+        const socialTab = document.querySelector<HTMLElement>('[data-tab="social"]');
+        if (socialTab) {
+          socialTab.click();
+        }
+      });
+      goToSocialBtn.dataset.listenerAttached = 'true';
+    }
   }
 
   updateDeveloperModeUI() {
