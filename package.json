@@ -129,7 +129,7 @@
           ]
         }
       ],
-      "icon": "assets/app-icons/icon.icon",
+      "icon": "assets/app-icons/icon.png",
       "category": "public.app-category.utilities"
     },
     "linux": {
