@@ -35,7 +35,6 @@ jobs:
 
     env:
       CI: true
-      # electron-builder lit GH_TOKEN. On préfère ton PAT (secret GH_TOKEN).
       GH_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
 
     steps:
@@ -56,16 +55,22 @@ jobs:
       - name: Calculate and set version
         if: github.event_name == 'workflow_dispatch'
         run: node scripts/bump-version.js ${{ github.event.inputs.version_type }} ${{ github.event.inputs.custom_version }}
-
-      # =========================
-      # Windows certificate decode
-      # =========================
-      - name: Decode Windows certificate (PFX)
+        
+      - name: Configure Windows code signing
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          $pfxPath = Join-Path $env:RUNNER_TEMP "fightplanner.pfx"
-          [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String("${{ secrets.WIN_CSC_LINK_BASE64 }}"))
+          $pfxPath = Join-Path $env:GITHUB_WORKSPACE "fightplanner.pfx"
+
+          if (!(Test-Path $pfxPath)) {
+            Write-Error "fightplanner.pfx not found at: $pfxPath"
+            exit 1
+          }
+
+          if ("${{ secrets.WIN_CSC_KEY_PASSWORD }}" -eq "") {
+            Write-Error "Secret WIN_CSC_KEY_PASSWORD is missing."
+            exit 1
+          }
 
           "WIN_CSC_LINK=$pfxPath" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "WIN_CSC_KEY_PASSWORD=${{ secrets.WIN_CSC_KEY_PASSWORD }}" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
