@@ -76,10 +76,7 @@
         { "target": "portable", "arch": ["x64"] }
       ],
       "icon": "assets/app-icons/icon.ico",
-      "publisherName": "FightPlanner",
-      "verifyUpdateCodeSignature": false,
-      "certificateFile": "fightplanner.pfx",
-      "certificatePassword": "F0w2Ke7?$rW#"
+      "verifyUpdateCodeSignature": false
     },
     "nsis": {
       "oneClick": false,
