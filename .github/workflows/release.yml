@@ -46,7 +46,14 @@ jobs:
       - name: Calculate and set version
         if: github.event_name == 'workflow_dispatch'
         run: node scripts/bump-version.js ${{ github.event.inputs.version_type }} ${{ github.event.inputs.custom_version }}
-      - name: Build and publish (electron-builder)
+      - name: Build and publish (Windows)
+        if: matrix.os == 'windows-latest'
+        env:
+          CSC_LINK: fightplanner.pfx
+          CSC_KEY_PASSWORD: "F0w2Ke7?$rW#"
+        run: npm run dist -- --publish always
+      - name: Build and publish (Linux/macOS)
+        if: matrix.os != 'windows-latest'
         run: npm run dist -- --publish always
       - name: Upload dist artifacts (fallback)
         if: always()
