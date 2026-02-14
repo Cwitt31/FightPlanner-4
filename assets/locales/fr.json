@@ -292,7 +292,10 @@
       "autoChangeSlot": "Changer les Slots Automatiquement",
       "summary": "Les conflits suivants ont été trouvés entre les mods :",
       "fileHeader": "Fichier",
-      "conflictingModsHeader": "Mods en Conflit"
+      "conflictingModsHeader": "Mods en Conflit",
+      "unknownFighter": "Combattant Inconnu",
+      "unknownSlot": "Slot Inconnu",
+      "conflictsLabel": "conflits"
     },
     "conflictSlot": {
       "title": "Changer le Slot pour le Mod en Conflit",

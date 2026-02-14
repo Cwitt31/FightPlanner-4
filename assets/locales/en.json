@@ -309,7 +309,10 @@
       "autoChangeSlot": "Change Slots Automatically",
       "summary": "The following conflicts were found between mods:",
       "fileHeader": "File",
-      "conflictingModsHeader": "Conflicting Mods"
+      "conflictingModsHeader": "Conflicting Mods",
+      "unknownFighter": "Unknown Fighter",
+      "unknownSlot": "Unknown Slot",
+      "conflictsLabel": "conflicts"
     },
     "conflictSlot": {
       "title": "Change Slot for Conflicting Mod",

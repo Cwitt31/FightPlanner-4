@@ -14,8 +14,8 @@ export class ConflictModalManager {
   async showConflictModal() {
     if (
       !window.modManager ||
-      !window.modManager.conflicts ||
-      window.modManager.conflicts.length === 0
+      !window.modManager.conflictGroups ||
+      window.modManager.conflictGroups.length === 0
     ) {
       if (window.toastManager) {
         window.toastManager.error('toasts.noConflictsDetected');
@@ -38,15 +38,21 @@ export class ConflictModalManager {
       window.statusBarManager.preserveCurrentStatus();
     }
 
-    const conflicts = window.modManager.conflicts;
+    const conflictGroups = window.modManager.conflictGroups;
 
     const t = (key, params = {}) => {
       return window.i18n && window.i18n.t ? window.i18n.t(key, params) : key;
     };
 
+    // Calculate total conflicts
+    const totalConflicts = conflictGroups.reduce(
+      (sum, group) => sum + group.conflicts.length,
+      0,
+    );
+
     if (headerBadge) {
       headerBadge.textContent = t('modals.conflict.badge', {
-        count: conflicts.length,
+        count: totalConflicts,
       });
     }
 
@@ -54,76 +60,117 @@ export class ConflictModalManager {
 
     container.innerHTML = '';
 
-    const table = document.createElement('table');
-    table.className = 'conflict-table';
+    // Create grouped display
+    conflictGroups.forEach((group) => {
+      // Create group header
+      const groupHeader = document.createElement('div');
+      groupHeader.className = 'conflict-group-header';
 
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
+      const groupTitle = document.createElement('h4');
+      groupTitle.className = 'conflict-group-title';
 
-    const thFile = document.createElement('th');
-    thFile.className = 'conflict-th-file';
-    const fileHeaderIcon = document.createElement('i');
-    fileHeaderIcon.className = 'bi bi-file-earmark';
-    thFile.appendChild(fileHeaderIcon);
-    thFile.appendChild(
-      document.createTextNode(` ${t('modals.conflict.fileHeader')}`),
-    );
+      const fighterIcon = document.createElement('i');
+      fighterIcon.className = 'bi bi-person-fill';
 
-    const thMods = document.createElement('th');
-    thMods.className = 'conflict-th-mods';
-    const modsHeaderIcon = document.createElement('i');
-    modsHeaderIcon.className = 'bi bi-people-fill';
-    thMods.appendChild(modsHeaderIcon);
-    thMods.appendChild(
-      document.createTextNode(` ${t('modals.conflict.conflictingModsHeader')}`),
-    );
+      const prettyFighterName = window.SSBU_CHARACTERS[group.fighter]?.name;
 
-    headerRow.appendChild(thFile);
-    headerRow.appendChild(thMods);
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
+      const fighterName =
+        group.fighter === 'unknown'
+          ? t('modals.conflict.unknownFighter') || 'Unknown'
+          : prettyFighterName || group.fighter;
 
-    const tbody = document.createElement('tbody');
+      const slotName =
+        group.slot === 'unknown'
+          ? t('modals.conflict.unknownSlot') || 'Unknown'
+          : group.slot;
 
-    conflicts.forEach((conflict) => {
-      const row = document.createElement('tr');
-      row.className = 'conflict-table-row';
+      groupTitle.appendChild(fighterIcon);
+      groupTitle.appendChild(
+        document.createTextNode(` ${fighterName} - ${slotName}`),
+      );
 
-      const tdFile = document.createElement('td');
-      tdFile.className = 'conflict-td-file';
-      const filePath = document.createElement('span');
-      filePath.className = 'conflict-file-path-text';
-      filePath.textContent = conflict.filePath;
-      tdFile.appendChild(filePath);
+      const groupBadge = document.createElement('span');
+      groupBadge.className = 'conflict-group-badge';
+      groupBadge.textContent = `${group.conflicts.length} ${t('modals.conflict.conflictsLabel') || 'conflicts'}`;
 
-      const tdMods = document.createElement('td');
-      tdMods.className = 'conflict-td-mods';
-      const modsList = document.createElement('div');
-      modsList.className = 'conflict-mods-list';
-      conflict.mods.forEach((mod) => {
-        const modItem = document.createElement('div');
-        modItem.className = 'conflict-mod-item';
-        const modWarningIcon = document.createElement('i');
-        modWarningIcon.className = 'bi bi-exclamation-circle-fill';
-        const modName = document.createElement('span');
-        modName.textContent = mod.name;
-        modItem.appendChild(modWarningIcon);
-        modItem.appendChild(modName);
-        modsList.appendChild(modItem);
+      groupHeader.appendChild(groupTitle);
+      groupHeader.appendChild(groupBadge);
+      container.appendChild(groupHeader);
+
+      // Create table for this group
+      const table = document.createElement('table');
+      table.className = 'conflict-table';
+
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+
+      const thFile = document.createElement('th');
+      thFile.className = 'conflict-th-file';
+      const fileHeaderIcon = document.createElement('i');
+      fileHeaderIcon.className = 'bi bi-file-earmark';
+      thFile.appendChild(fileHeaderIcon);
+      thFile.appendChild(
+        document.createTextNode(` ${t('modals.conflict.fileHeader')}`),
+      );
+
+      const thMods = document.createElement('th');
+      thMods.className = 'conflict-th-mods';
+      const modsHeaderIcon = document.createElement('i');
+      modsHeaderIcon.className = 'bi bi-people-fill';
+      thMods.appendChild(modsHeaderIcon);
+      thMods.appendChild(
+        document.createTextNode(
+          ` ${t('modals.conflict.conflictingModsHeader')}`,
+        ),
+      );
+
+      headerRow.appendChild(thFile);
+      headerRow.appendChild(thMods);
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+
+      group.conflicts.forEach((conflict) => {
+        const row = document.createElement('tr');
+        row.className = 'conflict-table-row';
+
+        const tdFile = document.createElement('td');
+        tdFile.className = 'conflict-td-file';
+        const filePath = document.createElement('span');
+        filePath.className = 'conflict-file-path-text';
+        filePath.textContent = conflict.filePath;
+        tdFile.appendChild(filePath);
+
+        const tdMods = document.createElement('td');
+        tdMods.className = 'conflict-td-mods';
+        const modsList = document.createElement('div');
+        modsList.className = 'conflict-mods-list';
+        conflict.mods.forEach((mod) => {
+          const modItem = document.createElement('div');
+          modItem.className = 'conflict-mod-item';
+          const modWarningIcon = document.createElement('i');
+          modWarningIcon.className = 'bi bi-exclamation-circle-fill';
+          const modName = document.createElement('span');
+          modName.textContent = mod.name;
+          modItem.appendChild(modWarningIcon);
+          modItem.appendChild(modName);
+          modsList.appendChild(modItem);
+        });
+        tdMods.appendChild(modsList);
+
+        row.appendChild(tdFile);
+        row.appendChild(tdMods);
+        tbody.appendChild(row);
       });
-      tdMods.appendChild(modsList);
 
-      row.appendChild(tdFile);
-      row.appendChild(tdMods);
-      tbody.appendChild(row);
+      table.appendChild(tbody);
+
+      const listWrapper = document.createElement('div');
+      listWrapper.className = 'conflict-list';
+      listWrapper.appendChild(table);
+      container.appendChild(listWrapper);
     });
-
-    table.appendChild(tbody);
-
-    const listWrapper = document.createElement('div');
-    listWrapper.className = 'conflict-list';
-    listWrapper.appendChild(table);
-    container.appendChild(listWrapper);
 
     modal.classList.remove('closing');
     if (window.modalManager) {
@@ -189,19 +236,21 @@ export class ConflictModalManager {
   _getModsMap() {
     const modsMap: Map<string, SimpleMod> = new Map();
 
-    window.modManager.conflicts.forEach((conflict) => {
-      conflict.mods.forEach((mod) => {
-        if (!modsMap.has(mod.path)) {
-          const fullMod = window.modManager.mods.find(
-            (m) => m.path === mod.path,
-          );
+    window.modManager.conflictGroups.forEach((group) => {
+      group.conflicts.forEach((conflict) => {
+        conflict.mods.forEach((mod) => {
+          if (!modsMap.has(mod.path)) {
+            const fullMod = window.modManager.mods.find(
+              (m) => m.path === mod.path,
+            );
 
-          modsMap.set(mod.path, {
-            name: mod.name,
-            path: mod.path,
-            category: fullMod ? fullMod.category : null,
-          });
-        }
+            modsMap.set(mod.path, {
+              name: mod.name,
+              path: mod.path,
+              category: fullMod ? fullMod.category : null,
+            });
+          }
+        });
       });
     });
 
@@ -211,8 +260,8 @@ export class ConflictModalManager {
   openGlobalSlotChange() {
     if (
       !window.modManager ||
-      !window.modManager.conflicts ||
-      window.modManager.conflicts.length === 0
+      !window.modManager.conflictGroups ||
+      window.modManager.conflictGroups.length === 0
     ) {
       if (window.toastManager) {
         window.toastManager.error('toasts.noConflictsDetected');
@@ -277,8 +326,8 @@ export class ConflictModalManager {
   openAutoSlotChangeModal() {
     if (
       !window.modManager ||
-      !window.modManager.conflicts ||
-      window.modManager.conflicts.length === 0
+      !window.modManager.conflictGroups ||
+      window.modManager.conflictGroups.length === 0
     ) {
       if (window.toastManager) {
         window.toastManager.error('toasts.noConflictsDetected');

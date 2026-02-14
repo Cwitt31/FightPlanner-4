@@ -222,7 +222,7 @@ export const ModScanner = {
         : null;
 
     // Useful for debugging specific files
-    // if (filePath.includes('tex_ganon_sword1.nutexb')) {
+    // if (filePath.includes('effect/fighter/ganon/ef_ganon.eff')) {
     //   console.log(
     //     '{\n' +
     //       '      slot,\n' +
@@ -235,9 +235,13 @@ export const ModScanner = {
     //       slot,
     //       filePath,
     //       pathParts,
-    //       fighterName,
     //       fighterIndex,
     //       normalizedPath,
+    //       detectedFighterName,
+    //       fighterName: await ModScanner.getAccurateFighterName(
+    //         detectedFighterName,
+    //         filePath,
+    //       ),
     //       isFighterSlotFolder,
     //       includesFighterFolder,
     //       includesFighterSlotFolder,
@@ -253,7 +257,7 @@ export const ModScanner = {
       includesFighterSlotFolder,
       fighterName: await ModScanner.getAccurateFighterName(
         detectedFighterName,
-        normalizedPath,
+        filePath,
       ),
     };
   },

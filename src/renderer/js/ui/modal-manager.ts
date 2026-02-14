@@ -496,14 +496,12 @@ class ModalManager {
             slot: slotString,
           });
 
-          // Close and restore
+          // Close dropdown
           selectContainer.classList.remove('open');
-          selectDropdown.style.transition = 'none'; // Disable transition
-          selectContainer.appendChild(selectDropdown);
-          selectDropdown.style.cssText = '';
-
-          void selectDropdown.offsetWidth; // Force reflow
-          delete selectDropdown.dataset.parentId;
+          selectDropdown.style.opacity = '0';
+          selectDropdown.style.pointerEvents = 'none';
+          selectDropdown.style.visibility = 'hidden';
+          selectDropdown.style.transform = 'translateY(-10px)';
 
           // Update active state in dropdown
           const allOptions = selectDropdown.querySelectorAll<HTMLElement>(
@@ -517,7 +515,14 @@ class ModalManager {
       }
 
       selectContainer.appendChild(selectTrigger);
-      selectContainer.appendChild(selectDropdown);
+
+      // Portal dropdown to body immediately to prevent overflow issues
+      selectDropdown.dataset.parentId = `${index}`;
+      selectDropdown.style.position = 'fixed';
+      selectDropdown.style.opacity = '0';
+      selectDropdown.style.pointerEvents = 'none';
+      selectDropdown.style.visibility = 'hidden';
+      document.body.appendChild(selectDropdown);
 
       // Toggle dropdown
       selectTrigger.addEventListener('click', (e) => {
@@ -525,7 +530,7 @@ class ModalManager {
 
         const wasOpen = selectContainer.classList.contains('open');
 
-        // Close other open selects and restore them
+        // Close other open selects
         document
           .querySelectorAll<HTMLElement>('.custom-select.open')
           .forEach((el) => {
@@ -536,17 +541,10 @@ class ModalManager {
               );
 
               if (drop) {
-                drop.style.transition = 'none'; // Disable transition
-                el.appendChild(drop);
-                drop.style.cssText = '';
-                void drop.offsetWidth; // Force reflow
-                delete drop.dataset.parentId;
-              } else {
-                // Fallback for non-portaled ones or if already moved back
-                const internalDrop = el.querySelector<HTMLElement>(
-                  '.custom-select-dropdown',
-                );
-                if (internalDrop) internalDrop.style.cssText = '';
+                drop.style.opacity = '0';
+                drop.style.pointerEvents = 'none';
+                drop.style.visibility = 'hidden';
+                drop.style.transform = 'translateY(-10px)';
               }
             }
           });
@@ -554,25 +552,19 @@ class ModalManager {
         if (!wasOpen) {
           selectContainer.classList.add('open');
 
-          // Portal logic: Move to body and position fixed
-          selectDropdown.dataset.parentId = `${index}`;
-
-          // CRITICAL: Disable transition before appending to body to prevent "flying from bottom"
-          selectDropdown.style.transition = 'none';
-
-          document.body.appendChild(selectDropdown);
-
+          // Position and show dropdown
           const rect = selectContainer.getBoundingClientRect();
-          selectDropdown.style.position = 'fixed';
           selectDropdown.style.top = `${rect.bottom + 5}px`;
           selectDropdown.style.left = `${rect.left}px`;
           selectDropdown.style.width = `${rect.width}px`;
           selectDropdown.style.zIndex = '100005';
 
           // Set start state for animation
+          selectDropdown.style.transition = 'none';
           selectDropdown.style.opacity = '0';
           selectDropdown.style.transform = 'translateY(-10px)';
           selectDropdown.style.pointerEvents = 'all';
+          selectDropdown.style.visibility = 'visible';
 
           // Force reflow
           void selectDropdown.offsetWidth;
@@ -588,14 +580,11 @@ class ModalManager {
           });
         } else {
           selectContainer.classList.remove('open');
-          // Disable transition temporarily to avoid "flying" animation when reparenting
-          selectDropdown.style.transition = 'none';
-          selectContainer.appendChild(selectDropdown);
-          selectDropdown.style.cssText = '';
-          // Restore transition after a frame if needed (though cssText="" restores class styles which include transition)
-          // The browser needs a reflow to apply the new position without animating from the old one
-          void selectDropdown.offsetWidth;
-          delete selectDropdown.dataset.parentId;
+          // Hide dropdown
+          selectDropdown.style.opacity = '0';
+          selectDropdown.style.pointerEvents = 'none';
+          selectDropdown.style.visibility = 'hidden';
+          selectDropdown.style.transform = 'translateY(-10px)';
         }
       });
 
@@ -609,12 +598,11 @@ class ModalManager {
         ) {
           if (selectContainer.classList.contains('open')) {
             selectContainer.classList.remove('open');
-            // Move dropdown back to container
-            selectDropdown.style.transition = 'none'; // Disable transition
-            selectContainer.appendChild(selectDropdown);
-            selectDropdown.style.cssText = ''; // Clear fixed positioning styles
-            void selectDropdown.offsetWidth; // Force reflow
-            delete selectDropdown.dataset.parentId;
+            // Hide dropdown
+            selectDropdown.style.opacity = '0';
+            selectDropdown.style.pointerEvents = 'none';
+            selectDropdown.style.visibility = 'hidden';
+            selectDropdown.style.transform = 'translateY(-10px)';
           }
         }
       });

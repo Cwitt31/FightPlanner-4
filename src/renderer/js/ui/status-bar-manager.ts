@@ -554,14 +554,16 @@ export class StatusBarManager {
 
         if (!wasActive) {
           // Only verify conflicts if we weren't just downloading (avoid flashing)
-          if (window.modManager && window.modManager.conflicts) {
-            const conflicts = window.modManager.conflicts;
+          if (window.modManager && window.modManager.conflictGroups) {
+            const conflicts = window.modManager.conflictGroups;
 
             const modsWithConflicts = conflicts.reduce<Set<string>>(
               (mods, nextConflict) => {
                 return new Set([
                   ...Array.from(mods),
-                  ...nextConflict.mods.map((mod) => mod.name),
+                  ...nextConflict.conflicts.flatMap((conflict) =>
+                    conflict.mods.map((mod) => mod.name),
+                  ),
                 ]);
               },
               new Set(),
@@ -1225,15 +1227,17 @@ export class StatusBarManager {
 
     // Small delay to allow check to perform
     setTimeout(() => {
-      if (window.modManager && window.modManager.conflicts) {
-        const conflicts = window.modManager.conflicts;
+      if (window.modManager && window.modManager.conflictGroups) {
+        const conflicts = window.modManager.conflictGroups;
         const conflictCount = conflicts.length;
 
         const modsWithConflicts = conflicts.reduce<Set<string>>(
           (mods, nextConflict) => {
             return new Set([
               ...Array.from(mods),
-              ...nextConflict.mods.map((mod) => mod.name),
+              ...nextConflict.conflicts.flatMap((conflict) =>
+                conflict.mods.map((mod) => mod.name),
+              ),
             ]);
           },
           new Set(),

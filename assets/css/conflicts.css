@@ -4,6 +4,55 @@
   padding: 0 12px 12px 12px;
 }
 
+/* Group Header Styles */
+.conflict-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin: 16px 0 8px 0;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border-left: 4px solid var(--accent-color);
+}
+
+.conflict-group-header:first-child {
+  margin-top: 0;
+}
+
+.conflict-group-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.conflict-group-title i {
+  color: var(--accent-color);
+  font-size: 16px;
+}
+
+.conflict-group-badge {
+  padding: 4px 12px;
+  background: rgba(var(--accent-rgb), 0.15);
+  color: var(--accent-color);
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+[data-theme='light'] .conflict-group-header {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme='light'] .conflict-group-badge {
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
 .conflict-table {
   display: table;
   width: 100%;

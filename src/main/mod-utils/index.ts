@@ -269,16 +269,36 @@ export default class ModUtils {
     activeMods: Mod[],
     whitelistPatterns: string[] = [],
   ) {
-    const conflicts: {
-      filePath: string;
-      mods: { name: string; path: string }[];
-    }[] = [];
-    const fileToMods = new Map();
+    // Group conflicts by fighter and slot
+    const conflictGroups: Map<
+      string,
+      {
+        fighter: string;
+        slot: string;
+        conflicts: {
+          filePath: string;
+          mods: { name: string; path: string }[];
+        }[];
+      }
+    > = new Map();
+
+    const fileToMods = new Map<
+      string,
+      Array<{
+        modIndex: number;
+        modName: string;
+        modPath: string;
+        filePath: string;
+        fighter?: string;
+        slot?: string;
+      }>
+    >();
 
     const allWhitelistPatterns = [
       ...CONFLICT_WHITELIST_PATTERNS,
       ...whitelistPatterns,
     ];
+
     const scanResults = await Promise.all(
       activeMods.map(async (mod, modIndex) => {
         if (mod.path && fs.existsSync(mod.path)) {
@@ -287,7 +307,12 @@ export default class ModUtils {
       }),
     );
 
-    function _addToFileMap(modIndex: number, filePath: string) {
+    function _addToFileMap(
+      modIndex: number,
+      filePath: string,
+      fighter?: string,
+      slot?: string,
+    ) {
       if (
         allWhitelistPatterns.some((pattern) => {
           const regex = new RegExp(pattern);
@@ -301,12 +326,18 @@ export default class ModUtils {
         fileToMods.set(filePath, []);
       }
 
-      fileToMods.get(filePath).push({
-        modIndex,
-        modName: activeMods[modIndex].name,
-        modPath: activeMods[modIndex].path,
-        filePath: filePath,
-      });
+      const fileList = fileToMods.get(filePath);
+
+      if (fileList) {
+        fileList.push({
+          modIndex,
+          modName: activeMods[modIndex].name,
+          modPath: activeMods[modIndex].path,
+          filePath: filePath,
+          fighter,
+          slot,
+        });
+      }
     }
 
     for (const [index, scanResult] of scanResults.entries()) {
@@ -320,16 +351,29 @@ export default class ModUtils {
             const slotData = scanResult.pathData[fighter][slot];
 
             for (const { original } of slotData.filesToBeModified) {
-              _addToFileMap(index, original);
+              _addToFileMap(index, original, fighter, slot);
             }
           }
         }
       }
     }
 
+    // Group conflicts by fighter and slot
     fileToMods.forEach((modsList, filePath) => {
       if (modsList.length > 1) {
-        conflicts.push({
+        const fighter = modsList[0].fighter || 'unknown';
+        const slot = modsList[0].slot || 'unknown';
+        const groupKey = `${fighter}-${slot}`;
+
+        if (!conflictGroups.has(groupKey)) {
+          conflictGroups.set(groupKey, {
+            fighter,
+            slot,
+            conflicts: [],
+          });
+        }
+
+        conflictGroups.get(groupKey)!.conflicts.push({
           filePath: filePath,
           mods: modsList.map((m) => ({
             name: m.modName,
@@ -339,7 +383,17 @@ export default class ModUtils {
       }
     });
 
-    return conflicts;
+    // Convert to array format for return
+    return Array.from(conflictGroups.values()).sort((groupA, groupB) => {
+      if (groupA.fighter === groupB.fighter) {
+        return groupA.slot.localeCompare(groupB.slot);
+      }
+
+      if (groupA.fighter === 'unknown') return 1;
+      if (groupB.fighter === 'unknown') return -1;
+
+      return groupA.fighter.localeCompare(groupB.fighter);
+    });
   }
 
   static copyRecursiveSync(src, dest) {
