@@ -183,7 +183,7 @@ export class ConflictModalManager {
       return;
     }
 
-    await window.modManager.operations.changeSlot(selectedMod);
+    await window.modManager.operations.startChangeSlotsFlow(selectedMod);
   }
 
   _getModsMap() {
@@ -303,6 +303,7 @@ export class ConflictModalManager {
       if (window.toastManager) {
         window.toastManager.error('toasts.noModsFoundInConflicts');
       }
+
       return;
     }
 
@@ -376,6 +377,7 @@ export class ConflictModalManager {
     const modal = document.querySelector<HTMLElement>(
       '#conflict-auto-slot-modal',
     );
+
     if (modal) {
       modal.classList.add('closing');
       setTimeout(() => {
@@ -383,9 +385,11 @@ export class ConflictModalManager {
         modal.classList.remove('closing');
       }, 300);
     }
+
     if (window.modalManager) {
       window.modalManager.hideOverlay();
     }
+
     this.autoSlotChangeMods = [];
   }
 
@@ -397,14 +401,11 @@ export class ConflictModalManager {
       return;
     }
 
-    const t = (key, params = {}) => {
-      return window.i18n && window.i18n.t ? window.i18n.t(key, params) : key;
-    };
-
     const excludedModPaths = new Set();
     const checkboxes = document.querySelectorAll<HTMLInputElement>(
       '.conflict-auto-slot-checkbox:checked',
     );
+
     checkboxes.forEach((checkbox) => {
       excludedModPaths.add(checkbox.dataset.modPath);
     });
@@ -417,6 +418,7 @@ export class ConflictModalManager {
       if (window.toastManager) {
         window.toastManager.error('toasts.noModsToChange');
       }
+
       return;
     }
 
@@ -428,133 +430,72 @@ export class ConflictModalManager {
 
     let successCount = 0;
     let errorCount = 0;
+
     const errors: string[] = [];
 
     for (const mod of modsToChange) {
       try {
-        if (!window.electronAPI || !window.electronAPI.scanModForFighters) {
+        if (!window.electronAPI || !window.electronAPI.scanMod) {
           errors.push(`${mod.name}: API not available`);
           errorCount++;
           continue;
         }
 
-        const fighters = await window.electronAPI.scanModForFighters(mod.path);
+        const scanModResult = await window.electronAPI.scanMod(mod.path);
 
-        if (!fighters || fighters.length === 0) {
-          continue;
-        }
-
-        if (!window.electronAPI.scanModSlots) {
-          errors.push(`${mod.name}: Slot scanning not available`);
-          errorCount++;
-          continue;
-        }
-
-        const slotResult = await window.electronAPI.scanModSlots(mod.path);
         if (
-          !slotResult.success ||
-          !slotResult.slots ||
-          slotResult.slots.length === 0
+          !scanModResult.success ||
+          !(Object.keys(scanModResult.data.pathData).length > 0)
         ) {
           continue;
         }
 
-        const modSlotsByFighter = new Map();
-        const allModSlots = new Set();
-
-        for (const fighterId of fighters) {
-          if (!window.electronAPI.scanModSlotsByFighter) {
-            errors.push(
-              `${mod.name} (${fighterId}): Cannot scan slots by fighter`,
-            );
-            errorCount++;
-            continue;
-          }
-
-          const modSlotsResult = await window.electronAPI.scanModSlotsByFighter(
-            mod.path,
-            fighterId,
-          );
-
-          if (
-            !modSlotsResult.success ||
-            !modSlotsResult.slots ||
-            modSlotsResult.slots.length === 0
-          ) {
-            continue;
-          }
-
-          const modSlots = modSlotsResult.slots;
-          modSlotsByFighter.set(fighterId, modSlots);
-          modSlots.forEach((slot) => allModSlots.add(slot));
-        }
-
-        if (modSlotsByFighter.size === 0) {
+        if (scanModResult.data.currentSlots.length === 0) {
           continue;
         }
 
-        let availableSlot: number | null = null;
+        let availableSlotName: string | null = null;
+
         for (let i = 0; i <= 7; i++) {
-          let isAvailableForAll = true;
+          const slotName = `c${i.toString().padStart(2, '0')}`;
+          let hasUnusedSlotForAllFighters = true;
 
-          for (const fighterId of modSlotsByFighter.keys()) {
-            if (!window.electronAPI.getUsedSlotsForFighter) {
-              isAvailableForAll = false;
-              break;
-            }
+          for (const fighterId of Object.keys(scanModResult.data.pathData)) {
+            const usedSlots = Object.keys(
+              scanModResult.data.pathData[fighterId],
+            );
 
-            const usedSlotsResult =
-              await window.electronAPI.getUsedSlotsForFighter(
-                window.modManager.modsPath,
-                fighterId,
-                mod.path,
-              );
-
-            if (!usedSlotsResult.success) {
-              isAvailableForAll = false;
-              break;
-            }
-
-            const usedSlots = usedSlotsResult.usedSlots || [];
-
-            if (usedSlots.includes(i)) {
-              isAvailableForAll = false;
+            if (usedSlots.includes(slotName)) {
+              hasUnusedSlotForAllFighters = false;
               break;
             }
           }
 
-          if (isAvailableForAll) {
-            availableSlot = i;
+          if (hasUnusedSlotForAllFighters) {
+            availableSlotName = slotName;
             break;
           }
         }
 
-        if (availableSlot === null) {
+        if (availableSlotName === null) {
           errors.push(`${mod.name}: No available slot for all fighters`);
           errorCount++;
           continue;
         }
 
-        const slotChanges = new Map();
-        Array.from(allModSlots).forEach((originalSlot) => {
-          slotChanges.set(originalSlot, availableSlot);
+        const slotAssignments = new Map<string, string>();
+
+        Array.from(scanModResult.data.currentSlots).forEach((originalSlot) => {
+          slotAssignments.set(originalSlot, availableSlotName);
         });
 
-        if (slotChanges.size > 0) {
-          const modifications = Array.from(slotChanges.entries()).map(
-            ([originalSlot, newSlot]) => ({
-              type: 'change',
-              originalSlot: originalSlot,
-              newSlot: newSlot,
-            }),
-          );
-
-          const changes = { modifications };
-
-          if (window.electronAPI && window.electronAPI.applySlotChanges) {
-            const applyResult = await window.electronAPI.applySlotChanges(
+        if (slotAssignments.size > 0) {
+          if (window.electronAPI && window.electronAPI.changeSlots) {
+            const applyResult = await window.electronAPI.changeSlots(
               mod.path,
-              changes,
+              scanModResult.data.pathData,
+              slotAssignments,
+              new Set(),
             );
 
             if (applyResult.success) {
@@ -579,12 +520,14 @@ export class ConflictModalManager {
 
     if (successCount > 0) {
       await window.modManager.fetchMods();
+
       if (
         window.settingsManager &&
         window.settingsManager.settings.conflictDetectionEnabled
       ) {
         const whitelistPatterns =
           window.settingsManager.settings.conflictWhitelistPatterns || [];
+
         setTimeout(() => {
           window.modManager.checkConflicts(whitelistPatterns);
         }, 500);

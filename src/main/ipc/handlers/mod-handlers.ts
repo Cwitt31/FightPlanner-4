@@ -1,7 +1,8 @@
 import { IpcMain } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import ModUtils, { Mod, Slot } from '../../mod-utils';
+
+import ModUtils, { Mod } from '../../mod-utils';
 import store from '../../store';
 import {
   handleError,
@@ -11,6 +12,12 @@ import {
 import { ModInstallResult } from '../../plugin-update-installer';
 import { HandlerResponse } from '../../types/common';
 import { BaseHandlerArg, GenericHandler } from '../../types/common';
+import {
+  ModScanner,
+  PathData,
+  ScanModResult,
+} from '../../mod-utils/mod-scanner';
+import { SlotChanger } from '../../mod-utils/slot-changer';
 
 export type ModHandlers = typeof ModHandlers;
 
@@ -18,12 +25,10 @@ const ModHandlers = {
   ['read-mods-folder']: async (
     common: BaseHandlerArg,
     modsPath: string,
-  ): Promise<
-    HandlerResponse<{
-      activeMods: Mod[];
-      disabledMods: Mod[];
-    }>
-  > => {
+  ): HandlerResponse<{
+    activeMods: Mod[];
+    disabledMods: Mod[];
+  }> => {
     try {
       return {
         success: true,
@@ -64,7 +69,7 @@ const ModHandlers = {
     common: BaseHandlerArg,
     modPath: string,
     infoData,
-  ): Promise<HandlerResponse> => {
+  ): HandlerResponse => {
     try {
       const infoPath = path.join(modPath, 'info.toml');
       let tomlContent = '';
@@ -103,7 +108,7 @@ const ModHandlers = {
     common: BaseHandlerArg,
     modPath,
     tomlContent,
-  ): Promise<HandlerResponse> => {
+  ): HandlerResponse => {
     try {
       const infoPath = path.join(modPath, 'info.toml');
       fs.writeFileSync(infoPath, tomlContent, 'utf8');
@@ -114,39 +119,13 @@ const ModHandlers = {
     }
   },
 
-  ['scan-mod-for-fighters']: async (
-    common: BaseHandlerArg,
-    modPath: string,
-  ) => {
-    try {
-      const fighters: string[] = [];
-      const fighterPath = path.join(modPath, 'fighter');
-      if (fs.existsSync(fighterPath)) {
-        const fighterDirs = fs.readdirSync(fighterPath, {
-          withFileTypes: true,
-        });
-        for (const dirent of fighterDirs) {
-          if (dirent.isDirectory()) {
-            fighters.push(dirent.name);
-          }
-        }
-      }
-      return fighters;
-    } catch (error) {
-      handleError(error, 'scan-mod-for-fighters');
-      return [];
-    }
-  },
-
   ['rename-mod']: async (
     common: BaseHandlerArg,
     modPath: string,
     newName: string,
-  ): Promise<
-    HandlerResponse<{
-      newPath: string;
-    }>
-  > => {
+  ): HandlerResponse<{
+    newPath: string;
+  }> => {
     try {
       const parentDir = path.dirname(modPath);
       const newPath = path.join(parentDir, newName);
@@ -167,7 +146,7 @@ const ModHandlers = {
   ['delete-mod']: async (
     common: BaseHandlerArg,
     modPath: string,
-  ): Promise<HandlerResponse> => {
+  ): HandlerResponse => {
     try {
       if (!fs.existsSync(modPath)) {
         return createErrorResponse(
@@ -187,12 +166,10 @@ const ModHandlers = {
     common: BaseHandlerArg,
     modPath: string,
     modsBasePath: string,
-  ): Promise<
-    HandlerResponse<{
-      newPath: string;
-      isNowActive: boolean;
-    }>
-  > => {
+  ): HandlerResponse<{
+    newPath: string;
+    isNowActive: boolean;
+  }> => {
     try {
       const modName = path.basename(modPath);
       const parentDir = path.dirname(modsBasePath);
@@ -230,73 +207,39 @@ const ModHandlers = {
     }
   },
 
-  ['scan-mod-slots']: async (
+  ['scan-mod']: async (
     common: BaseHandlerArg,
     modPath: string,
-  ): Promise<
-    HandlerResponse<{
-      slots: {
-        slot: number;
-        files: Slot[];
-      }[];
-    }>
-  > => {
+  ): HandlerResponse<{
+    data: ScanModResult;
+  }> => {
     try {
-      const slots = ModUtils.scanModForSlots(modPath);
-      return { success: true, slots };
+      const data = await ModScanner.scanModFiles(modPath);
+      return { success: true, data };
     } catch (error) {
       handleError(error, 'scan-mod-slots');
       return createErrorResponse(ErrorCodes.MOD_READ_ERROR, error.message);
     }
   },
 
-  ['get-used-slots-for-fighter']: async (
-    common: BaseHandlerArg,
-    modsPath: string,
-    fighterId: string,
-    excludeModPath: string | null = null,
-  ): Promise<
-    HandlerResponse<{
-      usedSlots: number[];
-    }>
-  > => {
-    try {
-      const usedSlots = ModUtils.getUsedSlotsForFighter(
-        modsPath,
-        fighterId,
-        excludeModPath,
-      );
-
-      return { success: true, usedSlots };
-    } catch (error) {
-      handleError(error, 'get-used-slots-for-fighter');
-      return createErrorResponse(ErrorCodes.MOD_READ_ERROR, error.message);
-    }
-  },
-
-  ['scan-mod-slots-by-fighter']: async (
+  ['change-slots']: async (
     common: BaseHandlerArg,
     modPath: string,
-    fighterId: string,
-  ): Promise<
-    HandlerResponse<{
-      slots: number[];
-    }>
-  > => {
+    pathData: PathData,
+    slotAssignments: Map<string, string>,
+    deletedSlots: Set<string>,
+  ): HandlerResponse => {
     try {
-      const slots = ModUtils.scanModForSlotsByFighter(modPath, fighterId);
-      return { success: true, slots };
-    } catch (error) {
-      handleError(error, 'scan-mod-slots-by-fighter');
-      return createErrorResponse(ErrorCodes.MOD_READ_ERROR, error.message);
-    }
-  },
+      for (const slot of deletedSlots) {
+        await SlotChanger.removeSlot(modPath, slot, pathData);
+        slotAssignments.delete(slot);
+      }
 
-  ['apply-slot-changes']: async (common: BaseHandlerArg, modPath, changes) => {
-    try {
-      return ModUtils.applySlotChanges(modPath, changes);
+      await SlotChanger.changeSlots(modPath, slotAssignments, pathData);
+
+      return { success: true };
     } catch (error) {
-      handleError(error, 'apply-slot-changes');
+      handleError(error, 'change-slots');
       return createErrorResponse(ErrorCodes.MOD_SAVE_ERROR, error.message);
     }
   },
@@ -305,19 +248,17 @@ const ModHandlers = {
     common: BaseHandlerArg,
     modsPath: string,
     whitelistPatterns: string[] = [],
-  ): Promise<
-    HandlerResponse<{
-      conflicts: {
-        filePath: string;
-        mods: {
-          name: string;
-          path: string;
-        }[];
+  ): HandlerResponse<{
+    conflicts: {
+      filePath: string;
+      mods: {
+        name: string;
+        path: string;
       }[];
-      totalConflicts: number;
-      activeModsCount: number;
-    }>
-  > => {
+    }[];
+    totalConflicts: number;
+    activeModsCount: number;
+  }> => {
     try {
       const result = ModUtils.readAllMods(modsPath);
       const conflicts = await ModUtils.detectConflicts(
@@ -339,41 +280,11 @@ const ModHandlers = {
 
   ['install-mod-from-path']: async (
     common: BaseHandlerArg,
-    sourcePath,
-    modsPath,
+    sourcePath: string,
+    modsPath: string,
   ) => {
     try {
-      const result = await ModUtils.installModFromPath(sourcePath, modsPath);
-
-      if (result.success && store.get('autoDisableNewMods')) {
-        try {
-          const modName = path.basename(result.modPath);
-          const parentDir = path.dirname(modsPath);
-          const disabledModsPath = path.join(parentDir, '{disabled_mod}');
-
-          if (!fs.existsSync(disabledModsPath)) {
-            fs.mkdirSync(disabledModsPath, { recursive: true });
-          }
-
-          const targetPath = path.join(disabledModsPath, modName);
-          if (!fs.existsSync(targetPath)) {
-            fs.renameSync(result.modPath, targetPath);
-            console.log(
-              `[AutoDisable] Moved ${modName} to disabled mods folder`,
-            );
-            result.modPath = targetPath;
-            result.autoDisabled = true;
-          } else {
-            console.warn(
-              `[AutoDisable] Cannot move ${modName}, target already exists`,
-            );
-          }
-        } catch (disableError) {
-          console.error('[AutoDisable] Failed to disable mod:', disableError);
-        }
-      }
-
-      return result;
+      return await ModUtils.installModFromPath(sourcePath, modsPath);
     } catch (error) {
       handleError(error, 'install-mod-from-path');
       return createErrorResponse(ErrorCodes.MOD_INSTALL_ERROR, error.message);
@@ -401,35 +312,6 @@ const ModHandlers = {
             filePath,
             modsPath,
           );
-
-          if (installResult.success && store.get('autoDisableNewMods')) {
-            try {
-              const modName = path.basename(installResult.modPath);
-              const parentDir = path.dirname(modsPath);
-              const disabledModsPath = path.join(parentDir, '{disabled_mod}');
-
-              if (!fs.existsSync(disabledModsPath)) {
-                fs.mkdirSync(disabledModsPath, {
-                  recursive: true,
-                });
-              }
-
-              const targetPath = path.join(disabledModsPath, modName);
-              if (!fs.existsSync(targetPath)) {
-                fs.renameSync(installResult.modPath, targetPath);
-                console.log(
-                  `[AutoDisable] Moved ${modName} to disabled mods folder (drag-drop)`,
-                );
-                installResult.modPath = targetPath;
-                installResult.autoDisabled = true;
-              }
-            } catch (disableError) {
-              console.error(
-                '[AutoDisable] Failed to disable mod in drag-drop:',
-                disableError,
-              );
-            }
-          }
 
           results.push({ filePath, result: installResult });
         } catch (error) {

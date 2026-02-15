@@ -591,11 +591,25 @@ class ModManager {
       );
 
       this.conflicts = (result.success && result.conflicts) || [];
+
       this.isCheckingConflicts = false;
 
       if (window.statusBarManager) {
         if (result.success && result.totalConflicts > 0) {
-          window.statusBarManager.updateConflictStatus(result.totalConflicts);
+          const modsWithConflicts = this.conflicts.reduce<Set<string>>(
+            (mods, nextConflict) => {
+              return new Set([
+                ...Array.from(mods),
+                ...nextConflict.mods.map((mod) => mod.name),
+              ]);
+            },
+            new Set(),
+          );
+
+          window.statusBarManager.updateConflictStatus(
+            result.totalConflicts,
+            modsWithConflicts.size,
+          );
         } else {
           const statusRight =
             document.querySelector<HTMLElement>('.bottom-text-right');
@@ -752,10 +766,13 @@ class ModManager {
         const modUrl = modInfo?.url || '';
 
         // Scan for characters
-        const fighters = await window.electronAPI.scanModForFighters(mod.path);
+        const scanModResult = await window.electronAPI.scanMod(mod.path);
 
-        if (fighters && fighters.length > 0) {
-          fighters.forEach((rawFighterId) => {
+        if (
+          scanModResult.success &&
+          scanModResult.data.fighterNames.length > 0
+        ) {
+          scanModResult.data.fighterNames.forEach((rawFighterId: string) => {
             const fighterId = window.resolveFolderName
               ? window.resolveFolderName(rawFighterId)
               : rawFighterId.toLowerCase();
@@ -763,6 +780,7 @@ class ModManager {
             const charInfo = window.SSBU_CHARACTERS
               ? window.SSBU_CHARACTERS[fighterId]
               : null;
+
             const charName = charInfo ? charInfo.name : rawFighterId;
 
             if (!modsByCharacter.has(charName)) {

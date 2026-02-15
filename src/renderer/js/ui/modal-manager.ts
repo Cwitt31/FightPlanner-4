@@ -1,15 +1,16 @@
 import type { MarketplacePlugin } from '../mods/plugin-marketplace';
+import { Mod } from '../mods/mod-manager';
+import { PathData, ScanModResult } from '../../../main/mod-utils/mod-scanner';
 
-interface Changes {
-  modifications: Array<{
-    type: string;
-    originalSlot?: number | null;
-    newSlot?: number;
-    files?: Array<any>;
-    targetSlot?: number;
-  }>;
-  deletions: Array<number>;
+function slotStringToNumber(slot: string): number {
+  return parseInt(slot.substring(1));
 }
+
+function slotNumberToString(slotNumber: number): string {
+  return `c${slotNumber.toString().padStart(2, '0')}`;
+}
+
+type SlotAssignments = Map<string, string>;
 
 class ModalManager {
   currentMod: any | null;
@@ -20,6 +21,7 @@ class ModalManager {
   editInfoCallback: ((info: any) => void) | null;
   advancedInfoCallback: (() => void) | null;
   currentModPath: string | null;
+  fighterPathData: PathData[string];
   pendingInstallData: {
     url: string;
     downloadId: string;
@@ -27,14 +29,12 @@ class ModalManager {
     modType: string;
   } | null;
 
-  changeSlotCallback?: ((changes: Changes) => void) | null;
+  slotAssignments: SlotAssignments;
+  deletedSlots: Set<string> = new Set();
 
-  slotData: Array<{
-    originalSlot: number | null;
-    newSlot: number;
-    files: Array<any>;
-    isNew: boolean;
-  }> | null;
+  changeSlotCallback?:
+    | ((slotAssignments: SlotAssignments, deletedSlots: Set<string>) => void)
+    | null;
 
   constructor() {
     this.currentMod = null;
@@ -46,6 +46,8 @@ class ModalManager {
     this.advancedInfoCallback = null;
     this.currentModPath = null;
     this.pendingInstallData = null;
+    this.slotAssignments = new Map();
+    this.fighterPathData = {};
   }
 
   showOverlay() {
@@ -250,16 +252,16 @@ class ModalManager {
 
     const translatedTitle =
       title &&
-        (title.startsWith('modals.') ||
-          title.startsWith('common.') ||
-          title.startsWith('toasts.'))
+      (title.startsWith('modals.') ||
+        title.startsWith('common.') ||
+        title.startsWith('toasts.'))
         ? t(title, params)
         : title || '';
     const translatedMessage =
       message &&
-        (message.startsWith('modals.') ||
-          message.startsWith('common.') ||
-          message.startsWith('toasts.'))
+      (message.startsWith('modals.') ||
+        message.startsWith('common.') ||
+        message.startsWith('toasts.'))
         ? t(message, params)
         : message || '';
 
@@ -340,16 +342,32 @@ class ModalManager {
     this.closeDeletePluginModal();
   }
 
-  openChangeSlotModal(mod, detectedSlots, callback) {
+  openChangeSlotModal(
+    mod: Mod,
+    modData: ScanModResult,
+    callback: (
+      slotAssignments: SlotAssignments,
+      deletedSlots: Set<string>,
+    ) => void,
+  ) {
     this.currentMod = mod;
     this.changeSlotCallback = callback;
 
-    this.slotData = detectedSlots.map((slot) => ({
-      originalSlot: slot.slot,
-      newSlot: slot.slot,
-      files: slot.files,
-      isNew: false,
-    }));
+    if (modData.fighterNames.length !== 1) {
+      throw new Error(
+        'Cannot change slots for mods with multiple or unknown fighters.',
+      );
+    }
+
+    this.slotAssignments = modData.currentSlots.reduce<SlotAssignments>(
+      (acc, slot) => {
+        acc.set(slot, slot);
+        return acc;
+      },
+      new Map(),
+    );
+
+    this.fighterPathData = modData.pathData[modData.fighterNames[0]];
 
     const modal = document.querySelector<HTMLElement>('#change-slot-modal');
     const container = document.querySelector<HTMLElement>(
@@ -370,6 +388,7 @@ class ModalManager {
 
   closeChangeSlotModal() {
     const modal = document.querySelector<HTMLElement>('#change-slot-modal');
+
     if (modal) {
       modal.classList.add('closing');
       setTimeout(() => {
@@ -377,17 +396,20 @@ class ModalManager {
         modal.classList.remove('closing');
       }, 300);
     }
+
     this.hideOverlay();
+
     this.currentMod = null;
     this.changeSlotCallback = null;
-    this.slotData = null;
+    this.slotAssignments = new Map();
   }
 
   renderSlotList() {
     const container = document.querySelector<HTMLElement>(
       '#slot-list-container',
     );
-    if (!container || !this.slotData) return;
+
+    if (!container || !this.slotAssignments) return;
 
     const t = (key, params = {}) => {
       return window.i18n && window.i18n.t ? window.i18n.t(key, params) : key;
@@ -395,10 +417,12 @@ class ModalManager {
 
     container.innerHTML = '';
 
-    for (const [index, slot] of this.slotData.entries()) {
+    for (const [index, [originalSlotString, selectedSlotString]] of Array.from(
+      this.slotAssignments,
+    ).entries()) {
       const slotItem = document.createElement('div');
 
-      slotItem.className = `slot-item ${slot.isNew ? 'slot-item-new' : ''}`;
+      slotItem.className = 'slot-item';
       slotItem.dataset.index = `${index}`;
 
       const content = document.createElement('div');
@@ -408,12 +432,11 @@ class ModalManager {
       info.className = 'slot-item-info';
 
       const label = document.createElement('span');
+
       label.className = 'slot-item-label';
-      label.textContent = slot.isNew
-        ? t('modals.changeSlot.newSlot')
-        : t('modals.changeSlot.currentSlot', {
-          slot: slot.originalSlot,
-        });
+      label.textContent = t('modals.changeSlot.currentSlot', {
+        slot: originalSlotString,
+      });
 
       const arrow = document.createElement('i');
       arrow.className = 'bi bi-arrow-right slot-arrow';
@@ -429,7 +452,7 @@ class ModalManager {
       const selectedValueSpan = document.createElement('span');
       selectedValueSpan.className = 'selected-value';
       selectedValueSpan.textContent = t('modals.changeSlot.slotOption', {
-        slot: slot.newSlot,
+        slot: selectedSlotString,
       });
 
       const triggerIcon = document.createElement('i');
@@ -441,17 +464,23 @@ class ModalManager {
       const selectDropdown = document.createElement('div');
       selectDropdown.className = 'custom-select-dropdown';
 
-      for (let i = 0; i <= 7; i++) {
+      for (let slotNumber = 0; slotNumber <= 16; slotNumber++) {
+        const slotString = slotNumberToString(slotNumber);
         const option = document.createElement('div');
         option.className = 'custom-select-option';
-        if (i === slot.newSlot) {
+
+        const selectedSlotNumber = slotStringToNumber(selectedSlotString);
+
+        if (slotNumber === selectedSlotNumber) {
           option.classList.add('active');
         }
-        option.dataset.value = `${i}`;
+
+        option.dataset.value = `${slotNumber}`;
 
         const optionText = document.createElement('span');
+
         optionText.textContent = t('modals.changeSlot.slotOption', {
-          slot: i,
+          slot: slotString,
         });
 
         option.appendChild(optionText);
@@ -459,11 +488,12 @@ class ModalManager {
         option.addEventListener('click', (e) => {
           e.stopPropagation();
           // Update data
-          slot.newSlot = i;
+
+          this.slotAssignments.set(originalSlotString, slotString);
 
           // Update UI
           selectedValueSpan.textContent = t('modals.changeSlot.slotOption', {
-            slot: i,
+            slot: slotString,
           });
 
           // Close and restore
@@ -471,6 +501,7 @@ class ModalManager {
           selectDropdown.style.transition = 'none'; // Disable transition
           selectContainer.appendChild(selectDropdown);
           selectDropdown.style.cssText = '';
+
           void selectDropdown.offsetWidth; // Force reflow
           delete selectDropdown.dataset.parentId;
 
@@ -589,35 +620,36 @@ class ModalManager {
       });
 
       info.appendChild(label);
-      if (!slot.isNew) {
-        info.appendChild(arrow);
-      }
+      info.appendChild(arrow);
       info.appendChild(selectContainer);
 
       const filesInfo = document.createElement('div');
       filesInfo.className = 'slot-item-files';
 
-      if (slot.files.length > 0) {
+      const pathDataForSlot = this.fighterPathData[originalSlotString];
+
+      if (pathDataForSlot.pathsToBeModified.length > 0) {
         const filesList = document.createElement('details');
 
         const summary = document.createElement('summary');
         summary.textContent = t('modals.changeSlot.filesWillBeModified', {
-          count: slot.files.length,
+          count: pathDataForSlot.pathsToBeModified.length,
         });
 
         const fileListContainer = document.createElement('div');
         fileListContainer.className = 'slot-file-list';
 
-        slot.files.forEach((file) => {
+        pathDataForSlot.pathsToBeModified.forEach((pathDataEntry) => {
           const fileItem = document.createElement('div');
           fileItem.className = 'slot-file-item';
 
-          const icon = file.type === 'directory' ? '📁' : '📄';
+          const icon = pathDataEntry.type === 'directory' ? '📁' : '📄';
           const typeLabel =
-            file.type === 'directory'
+            pathDataEntry.type === 'directory'
               ? t('modals.changeSlot.directory')
               : t('modals.changeSlot.file');
-          fileItem.textContent = `${icon} ${typeLabel} ${file.path}`;
+
+          fileItem.textContent = `${icon} ${typeLabel} ${pathDataEntry.original}`;
           fileListContainer.appendChild(fileItem);
         });
 
@@ -635,10 +667,12 @@ class ModalManager {
       actions.className = 'slot-item-actions';
 
       const deleteBtn = document.createElement('button');
+
       deleteBtn.className = 'slot-action-btn slot-action-delete';
       deleteBtn.innerHTML = `<i class="bi bi-trash3"></i> ${t('modals.changeSlot.delete')}`;
+
       deleteBtn.addEventListener('click', () => {
-        this.deleteSlot(index);
+        this.toggleDeleteSlot(content, originalSlotString);
       });
 
       actions.appendChild(deleteBtn);
@@ -650,55 +684,22 @@ class ModalManager {
     }
   }
 
-  addNewSlot() {
-    if (!this.slotData) return;
+  toggleDeleteSlot(content: HTMLDivElement, slot: string) {
+    if (!this.deletedSlots) return;
 
-    this.slotData.push({
-      originalSlot: null,
-      newSlot: 0,
-      files: [],
-      isNew: true,
-    });
-
-    this.renderSlotList();
+    if (this.deletedSlots.has(slot)) {
+      this.deletedSlots.delete(slot);
+      content.classList.remove('deleted');
+    } else {
+      this.deletedSlots.add(slot);
+      content.classList.add('deleted');
+    }
   }
 
-  deleteSlot(index) {
-    if (!this.slotData) return;
+  confirmChangeSlots() {
+    if (!this.changeSlotCallback || !this.slotAssignments) return;
 
-    this.slotData.splice(index, 1);
-    this.renderSlotList();
-  }
-
-  confirmChangeSlot() {
-    if (!this.changeSlotCallback || !this.slotData) return;
-
-    const changes: Changes = {
-      modifications: [],
-      deletions: [],
-    };
-
-    this.slotData.forEach((slot) => {
-      if (slot.isNew) {
-        changes.modifications.push({
-          type: 'add',
-          targetSlot: slot.newSlot,
-        });
-      } else if (slot.originalSlot !== slot.newSlot) {
-        changes.modifications.push({
-          type: 'change',
-          originalSlot: slot.originalSlot,
-          newSlot: slot.newSlot,
-          files: slot.files,
-        });
-      }
-    });
-
-    const existingSlots = this.slotData
-      .filter((s) => !s.isNew)
-      .map((s) => s.originalSlot);
-
-    this.changeSlotCallback(changes);
+    this.changeSlotCallback(this.slotAssignments, this.deletedSlots);
     this.closeChangeSlotModal();
   }
 
@@ -1272,19 +1273,25 @@ class ModalManager {
     }
 
     const pluginsGrid = plugins
-      .map(
-        (plugin) => {
-          // Check if plugin is already installed by comparing repo
-          const isInstalled = installedRepos.some(
-            installedRepo => installedRepo.toLowerCase() === plugin.repo.toLowerCase()
-          );
-          const buttonClass = isInstalled ? 'marketplace-card-install-btn installed' : 'marketplace-card-install-btn';
-          const buttonIcon = isInstalled ? 'bi-arrow-clockwise' : 'bi-download';
-          const buttonTextKey = isInstalled ? 'plugins.reinstall' : 'plugins.install';
-          const buttonDefaultText = isInstalled ? 'Reinstall' : 'Install';
-          const cardClass = isInstalled ? 'marketplace-plugin-card installed' : 'marketplace-plugin-card';
+      .map((plugin) => {
+        // Check if plugin is already installed by comparing repo
+        const isInstalled = installedRepos.some(
+          (installedRepo) =>
+            installedRepo.toLowerCase() === plugin.repo.toLowerCase(),
+        );
+        const buttonClass = isInstalled
+          ? 'marketplace-card-install-btn installed'
+          : 'marketplace-card-install-btn';
+        const buttonIcon = isInstalled ? 'bi-arrow-clockwise' : 'bi-download';
+        const buttonTextKey = isInstalled
+          ? 'plugins.reinstall'
+          : 'plugins.install';
+        const buttonDefaultText = isInstalled ? 'Reinstall' : 'Install';
+        const cardClass = isInstalled
+          ? 'marketplace-plugin-card installed'
+          : 'marketplace-plugin-card';
 
-          return `
+        return `
       <div class="${cardClass}" data-installed="${isInstalled}">
         <div class="marketplace-card-header">
           <div class="marketplace-card-title-section">
@@ -1310,8 +1317,7 @@ class ModalManager {
         </div>
       </div>
     `;
-        }
-      )
+      })
       .join('');
 
     container.innerHTML = `<div class="marketplace-grid">${pluginsGrid}</div>`;
