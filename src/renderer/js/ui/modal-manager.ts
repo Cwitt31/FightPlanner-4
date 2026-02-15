@@ -377,6 +377,13 @@ class ModalManager {
     if (modal && container) {
       modal.classList.remove('closing');
       this.renderSlotList();
+
+      // Scan all mods for slot usage and render overview
+      const fighterName = modData.fighterNames[0];
+      this.scanAllModsForSlotUsage(fighterName).then((slotUsage) => {
+        this.renderSlotUsageOverview(slotUsage);
+      });
+
       this.showOverlay();
       modal.style.display = 'block';
 
@@ -397,11 +404,196 @@ class ModalManager {
       }, 300);
     }
 
+    // Clean up slot usage tooltips from body
+    document.querySelectorAll('.slot-usage-tooltip').forEach((tooltip) => {
+      tooltip.remove();
+    });
+
     this.hideOverlay();
 
     this.currentMod = null;
     this.changeSlotCallback = null;
     this.slotAssignments = new Map();
+  }
+
+  async scanAllModsForSlotUsage(
+    fighterName: string,
+  ): Promise<Map<string, { mods: { name: string; path: string }[] }>> {
+    const slotUsage = new Map<
+      string,
+      { mods: { name: string; path: string }[] }
+    >();
+
+    if (!window.modManager || !window.modManager.mods) {
+      return slotUsage;
+    }
+
+    const activeMods = window.modManager.mods.filter(
+      (m) => m.status === 'active' && m.path,
+    );
+
+    for (const mod of activeMods) {
+      if (!mod.path || !window.electronAPI?.scanMod) continue;
+
+      try {
+        const scanResult = await window.electronAPI.scanMod(mod.path);
+
+        if (
+          scanResult.success &&
+          scanResult.data.fighterNames.includes(fighterName)
+        ) {
+          const slots = scanResult.data.currentSlots;
+
+          for (const slot of slots) {
+            if (!slotUsage.has(slot)) {
+              slotUsage.set(slot, { mods: [] });
+            }
+
+            slotUsage.get(slot)!.mods.push({
+              name: mod.name,
+              path: mod.path,
+            });
+          }
+        }
+      } catch (error) {
+        console.warn(`Failed to scan mod ${mod.name}:`, error);
+      }
+    }
+
+    return slotUsage;
+  }
+
+  renderSlotUsageOverview(
+    slotUsage: Map<string, { mods: { name: string; path: string }[] }>,
+  ) {
+    const modalBody = document.querySelector('#change-slot-modal .modal-body');
+    const hintParagraph = document.querySelector('#slot-modal-hint');
+
+    if (!modalBody || !hintParagraph) return;
+
+    // Find or create the hint for slot usage
+    let slotUsageHint = document.querySelector<HTMLElement>('#slot-usage-hint');
+
+    if (!slotUsageHint) {
+      slotUsageHint = document.createElement('p');
+      slotUsageHint.id = 'slot-usage-hint';
+      slotUsageHint.className = 'modal-hint';
+      slotUsageHint.textContent = 'Slot Usage for this Fighter:';
+      modalBody.insertBefore(slotUsageHint, hintParagraph);
+    }
+
+    // Find or create the overview container
+    let overviewContainer = document.querySelector<HTMLElement>(
+      '#slot-usage-overview',
+    );
+
+    if (!overviewContainer) {
+      overviewContainer = document.createElement('div');
+      overviewContainer.id = 'slot-usage-overview';
+      overviewContainer.className = 'slot-usage-overview';
+      modalBody.insertBefore(overviewContainer, hintParagraph);
+    }
+
+    // Clear existing content
+    overviewContainer.innerHTML = '';
+
+    // Create grid for slots (show c00-c07 by default, can be expanded)
+    const grid = document.createElement('div');
+    grid.className = 'slot-usage-grid';
+
+    // Determine which slots to show
+    const slotsToShow = Math.max(
+      7,
+      ...Array.from(Object.keys(slotUsage)).map((s) => slotStringToNumber(s)),
+    );
+
+    for (let i = 0; i <= slotsToShow; i++) {
+      const slotString = slotNumberToString(i);
+      const usage = slotUsage.get(slotString);
+      const isUsed = usage && usage.mods.length > 0;
+      const isConflict = usage && usage.mods.length > 1;
+
+      const slotItem = document.createElement('div');
+      slotItem.className = 'slot-usage-item';
+
+      if (isUsed) {
+        slotItem.classList.add('slot-used');
+      }
+
+      if (isConflict) {
+        slotItem.classList.add('slot-conflict');
+      }
+
+      slotItem.textContent = slotString;
+
+      // Add tooltip on hover
+      if (isUsed && usage) {
+        slotItem.title = usage.mods.map((m) => m.name).join('\n');
+
+        // Create custom tooltip
+        const tooltip = document.createElement('div');
+        tooltip.className = 'slot-usage-tooltip';
+        tooltip.style.display = 'none';
+        tooltip.style.position = 'fixed';
+
+        const tooltipTitle = document.createElement('div');
+        tooltipTitle.className = 'slot-usage-tooltip-title';
+        tooltipTitle.textContent = `Slot ${slotString}`;
+        tooltip.appendChild(tooltipTitle);
+
+        usage.mods.forEach((mod) => {
+          const modItem = document.createElement('div');
+          modItem.className = 'slot-usage-tooltip-mod';
+          modItem.innerHTML = `<i class="bi bi-folder-fill"></i> ${mod.name}`;
+          tooltip.appendChild(modItem);
+        });
+
+        // Append tooltip to body to avoid clipping
+        document.body.appendChild(tooltip);
+
+        // Show/hide tooltip on hover with proper positioning
+        slotItem.addEventListener('mouseenter', () => {
+          const rect = slotItem.getBoundingClientRect();
+
+          // Position tooltip above the slot item
+          tooltip.style.left = `${rect.left + rect.width / 2}px`;
+          tooltip.style.top = `${rect.top - 8}px`;
+          tooltip.style.transform = 'translate(-50%, -100%)';
+          tooltip.style.display = 'block';
+        });
+
+        slotItem.addEventListener('mouseleave', () => {
+          tooltip.style.display = 'none';
+        });
+
+        // Clean up tooltip when modal closes
+        slotItem.dataset.tooltipId = `tooltip-${slotString}`;
+      }
+
+      grid.appendChild(slotItem);
+    }
+
+    overviewContainer.appendChild(grid);
+
+    // Add legend
+    const legend = document.createElement('div');
+    legend.className = 'slot-usage-legend';
+    legend.innerHTML = `
+      <div class="slot-usage-legend-item">
+        <span class="slot-usage-legend-box"></span>
+        <span>Available</span>
+      </div>
+      <div class="slot-usage-legend-item">
+        <span class="slot-usage-legend-box slot-used"></span>
+        <span>In Use</span>
+      </div>
+      <div class="slot-usage-legend-item">
+        <span class="slot-usage-legend-box slot-conflict"></span>
+        <span>Conflict (Multiple Mods)</span>
+      </div>
+    `;
+
+    overviewContainer.appendChild(legend);
   }
 
   renderSlotList() {
