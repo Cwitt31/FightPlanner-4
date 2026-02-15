@@ -7,6 +7,7 @@ class ModListRenderer {
   constructor(modManager: ModManager) {
     this.modManager = modManager;
     this.intersectionObserver = null;
+
     this.setupIntersectionObserver();
   }
 
@@ -43,10 +44,12 @@ class ModListRenderer {
       this.modManager.modListContainer.querySelectorAll<HTMLElement>(
         '.mod-item',
       );
+
     allModItems.forEach((modItem) => {
       if (modItem.dataset.processed !== 'true') {
         modItem.classList.add('mod-item-instant');
         modItem.dataset.processed = 'true';
+
         if (this.intersectionObserver) {
           this.intersectionObserver.unobserve(modItem);
         }

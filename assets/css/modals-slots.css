@@ -18,14 +18,48 @@
   max-height: 60vh;
 }
 
+#conflict-slot-modal .modal-body {
+  overflow-y: auto;
+  height: auto;
+  max-height: 60vh;
+}
+
+#conflict-auto-slot-modal .modal-body {
+  overflow-y: auto;
+  height: auto;
+  max-height: 60vh;
+}
+
 /* Slot Usage Overview */
 .slot-usage-overview {
-  margin-top: 16px;
   margin-bottom: 24px;
   padding: 16px;
   background: var(--bg-transparent-03);
   border: 1px solid var(--bg-hover);
   border-radius: 12px;
+}
+
+/* Loading State */
+.slot-usage-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.slot-usage-spinner {
+  font-size: 32px;
+  color: var(--accent-color);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .slot-usage-grid {

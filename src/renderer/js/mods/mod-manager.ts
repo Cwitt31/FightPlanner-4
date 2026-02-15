@@ -303,6 +303,7 @@ class ModManager {
           previewArea.classList.remove('no-preview');
 
           const img = document.createElement('img');
+
           img.style.opacity = '0';
           img.alt = 'Preview';
 
@@ -319,6 +320,7 @@ class ModManager {
               previewArea.style.height = `${optimalHeight}px`;
               resolve();
             };
+
             img.onerror = reject;
             img.src = previewPath;
           });

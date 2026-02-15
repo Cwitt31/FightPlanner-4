@@ -3,6 +3,15 @@ body.reduced-animations * {
   transition-duration: 0.15s !important;
 }
 
+/* Keep spinners spinning at normal speed */
+body.reduced-animations .slot-usage-spinner,
+body.reduced-animations .social-loading i,
+body.reduced-animations .install-preview-loading,
+body.reduced-animations [class*='loading'] i,
+body.reduced-animations [class*='spinner'] {
+  animation-duration: 1s !important;
+}
+
 body.reduced-animations .modal-overlay {
   backdrop-filter: none !important;
   transition: opacity 0.1s ease !important;
@@ -147,6 +156,7 @@ body.reduced-animations .mod-item {
   animation: none !important;
   opacity: 1 !important;
   transform: none !important;
+  filter: none !important;
 }
 
 body.reduced-animations .mod-info-item {

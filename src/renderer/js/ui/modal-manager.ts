@@ -50,8 +50,14 @@ class ModalManager {
     this.fighterPathData = {};
   }
 
+  _getAnimationDelay() {
+    const noAnimations = document.body.classList.contains('no-animations');
+    return noAnimations ? 0 : 300;
+  }
+
   showOverlay() {
     const overlay = document.querySelector<HTMLElement>('#modal-overlay');
+
     if (overlay) {
       overlay.classList.remove('closing');
       overlay.style.display = 'block';
@@ -75,27 +81,31 @@ class ModalManager {
     }
 
     const overlay = document.querySelector<HTMLElement>('#modal-overlay');
-    if (overlay) {
-      overlay.classList.add('closing');
-      setTimeout(() => {
-        // Re-check before hiding
-        const stillVisibleModals = Array.from(
-          document.querySelectorAll<HTMLElement>('.modal'),
-        ).filter(
-          (m) =>
-            m.style.display === 'block' && !m.classList.contains('closing'),
-        );
 
-        if (stillVisibleModals.length === 0) {
-          overlay.style.display = 'none';
-          overlay.classList.remove('closing');
-        } else {
-          // Restore overlay if a modal appeared
-          overlay.classList.remove('closing');
-          overlay.style.display = 'block';
-          overlay.style.opacity = '1';
-        }
-      }, 250);
+    if (overlay) {
+      this.closeModal(overlay, {
+        skipHideOverlay: true,
+
+        onModalClosed: () => {
+          // Re-check before hiding
+          const stillVisibleModals = Array.from(
+            document.querySelectorAll<HTMLElement>('.modal'),
+          ).filter(
+            (m) =>
+              m.style.display === 'block' && !m.classList.contains('closing'),
+          );
+
+          if (stillVisibleModals.length === 0) {
+            overlay.style.display = 'none';
+            overlay.classList.remove('closing');
+          } else {
+            // Restore overlay if a modal appeared
+            overlay.classList.remove('closing');
+            overlay.style.display = 'block';
+            overlay.style.opacity = '1';
+          }
+        },
+      });
     }
   }
 
@@ -131,16 +141,33 @@ class ModalManager {
     }
   }
 
-  closeRenameModal() {
-    const modal = document.querySelector<HTMLElement>('#rename-modal');
+  closeModal(
+    modalIdOrElement: string | HTMLElement,
+    options: { onModalClosed?: () => void; skipHideOverlay?: boolean } = {},
+  ) {
+    const modal =
+      typeof modalIdOrElement === 'string'
+        ? document.querySelector<HTMLElement>(`#${modalIdOrElement}`)
+        : modalIdOrElement;
+
     if (modal) {
       modal.classList.add('closing');
+
       setTimeout(() => {
         modal.style.display = 'none';
         modal.classList.remove('closing');
-      }, 300);
+
+        options.onModalClosed?.();
+      }, this._getAnimationDelay());
     }
-    this.hideOverlay();
+
+    if (!options.skipHideOverlay) {
+      this.hideOverlay();
+    }
+  }
+
+  closeRenameModal() {
+    this.closeModal('rename-modal');
     this.currentMod = null;
     this.renameCallback = null;
   }
@@ -200,15 +227,7 @@ class ModalManager {
   }
 
   closeUninstallModal() {
-    const modal = document.querySelector<HTMLElement>('#uninstall-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('uninstall-modal');
     this.currentMod = null;
     this.uninstallCallback = null;
   }
@@ -217,6 +236,7 @@ class ModalManager {
     if (this.uninstallCallback) {
       this.uninstallCallback();
     }
+
     this.closeUninstallModal();
   }
 
@@ -277,15 +297,7 @@ class ModalManager {
   }
 
   closeAlertModal() {
-    const modal = document.querySelector<HTMLElement>('#alert-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('alert-modal');
   }
 
   openDeletePluginModal(plugin, callback) {
@@ -322,15 +334,7 @@ class ModalManager {
   }
 
   closeDeletePluginModal() {
-    const modal = document.querySelector<HTMLElement>('#delete-plugin-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('delete-plugin-modal');
     this.currentPlugin = null;
     this.deletePluginCallback = null;
   }
@@ -378,6 +382,9 @@ class ModalManager {
       modal.classList.remove('closing');
       this.renderSlotList();
 
+      // Show loading spinner for slot usage
+      this.renderSlotUsageLoading();
+
       // Scan all mods for slot usage and render overview
       const fighterName = modData.fighterNames[0];
 
@@ -395,26 +402,48 @@ class ModalManager {
   }
 
   closeChangeSlotModal() {
-    const modal = document.querySelector<HTMLElement>('#change-slot-modal');
-
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
+    this.closeModal('change-slot-modal');
 
     // Clean up slot usage tooltips from body
     document.querySelectorAll('.slot-usage-tooltip').forEach((tooltip) => {
       tooltip.remove();
     });
 
-    this.hideOverlay();
+    // Clean up slot usage hint and overview
+    const slotUsageHint = document.querySelector('#slot-usage-hint');
+    const slotUsageOverview = document.querySelector('#slot-usage-overview');
 
-    this.currentMod = null;
+    if (slotUsageHint) slotUsageHint.remove();
+    if (slotUsageOverview) slotUsageOverview.remove();
+
     this.changeSlotCallback = null;
     this.slotAssignments = new Map();
+  }
+
+  renderSlotUsageLoading() {
+    const modalBody = document.querySelector('#change-slot-modal .modal-body');
+    const hintParagraph = document.querySelector('#slot-modal-hint');
+
+    if (!modalBody || !hintParagraph) return;
+
+    // Create hint
+    const slotUsageHint = document.createElement('p');
+    slotUsageHint.id = 'slot-usage-hint';
+    slotUsageHint.className = 'modal-hint';
+    slotUsageHint.textContent = 'Slot Usage for this Fighter:';
+    modalBody.insertBefore(slotUsageHint, hintParagraph);
+
+    // Create loading container
+    const loadingContainer = document.createElement('div');
+    loadingContainer.id = 'slot-usage-overview';
+    loadingContainer.className = 'slot-usage-overview slot-usage-loading';
+
+    const spinner = document.createElement('div');
+    spinner.className = 'slot-usage-spinner';
+    spinner.innerHTML = '<i class="bi bi-arrow-repeat"></i>';
+
+    loadingContainer.appendChild(spinner);
+    modalBody.insertBefore(loadingContainer, hintParagraph);
   }
 
   async scanAllModsForSlotUsage(
@@ -472,18 +501,7 @@ class ModalManager {
 
     if (!modalBody || !hintParagraph) return;
 
-    // Find or create the hint for slot usage
-    let slotUsageHint = document.querySelector<HTMLElement>('#slot-usage-hint');
-
-    if (!slotUsageHint) {
-      slotUsageHint = document.createElement('p');
-      slotUsageHint.id = 'slot-usage-hint';
-      slotUsageHint.className = 'modal-hint';
-      slotUsageHint.textContent = 'Slot Usage for this Fighter:';
-      modalBody.insertBefore(slotUsageHint, hintParagraph);
-    }
-
-    // Find or create the overview container
+    // Find the overview container (should already exist from loading)
     let overviewContainer = document.querySelector<HTMLElement>(
       '#slot-usage-overview',
     );
@@ -495,7 +513,8 @@ class ModalManager {
       modalBody.insertBefore(overviewContainer, hintParagraph);
     }
 
-    // Clear existing content
+    // Remove loading class and clear content
+    overviewContainer.classList.remove('slot-usage-loading');
     overviewContainer.innerHTML = '';
 
     // Create grid for slots (show c00-c07 by default, can be expanded)
@@ -921,15 +940,7 @@ class ModalManager {
   }
 
   closeEditInfoModal() {
-    const modal = document.querySelector<HTMLElement>('#edit-info-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('edit-info-modal');
     this.editInfoCallback = null;
   }
 
@@ -971,15 +982,7 @@ class ModalManager {
   }
 
   closeAdvancedInfoModal() {
-    const modal = document.querySelector<HTMLElement>('#advanced-info-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('advanced-info-modal');
     this.advancedInfoCallback = null;
     this.currentModPath = null;
   }
@@ -1091,36 +1094,36 @@ class ModalManager {
   }
 
   closeInstallConfirmModal() {
-    const modal = document.querySelector<HTMLElement>('#install-confirm-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-
+    this.closeModal('install-confirm-modal', {
+      onModalClosed: () => {
         const previewContainer = document.querySelector<HTMLElement>(
           '#install-preview-container',
         );
+
         const previewImage = document.querySelector<HTMLImageElement>(
           '#install-preview-image',
         );
+
         const previewLoading = document.querySelector<HTMLElement>(
           '.install-preview-loading',
         );
+
         if (previewContainer) {
           previewContainer.style.display = 'flex';
         }
+
         if (previewImage) {
           previewImage.src = '';
           previewImage.style.display = 'none';
           previewImage.classList.remove('loaded');
         }
+
         if (previewLoading) {
           previewLoading.style.display = 'flex';
         }
-      }, 300);
-    }
-    this.hideOverlay();
+      },
+    });
+
     this.pendingInstallData = null;
   }
 
@@ -1273,6 +1276,7 @@ class ModalManager {
 
       setTimeout(() => {
         this.closePluginUpdateModal();
+
         if (window.toastManager) {
           window.toastManager.success('All updates completed');
         }
@@ -1333,6 +1337,7 @@ class ModalManager {
         if (remainingUpdates.length === 0) {
           setTimeout(() => {
             this.closePluginUpdateModal();
+
             if (window.toastManager) {
               window.toastManager.success('All updates completed');
             }
@@ -1351,14 +1356,7 @@ class ModalManager {
   }
 
   closePluginUpdateModal() {
-    const modal = document.querySelector<HTMLElement>('#plugin-update-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.remove();
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('plugin-update-modal');
   }
 
   async openPluginMarketplaceModal() {
@@ -1583,20 +1581,12 @@ class ModalManager {
   }
 
   closePluginMarketplaceModal() {
-    const modal = document.querySelector<HTMLElement>(
-      '#plugin-marketplace-modal',
-    );
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.remove();
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('plugin-marketplace-modal');
   }
 
   openPluginUpdateIntroModal(onEnable, onDisable) {
     const modal = document.createElement('div');
+
     modal.className = 'modal';
     modal.id = 'plugin-intro-modal';
     modal.style.maxWidth = '500px';
@@ -1675,34 +1665,24 @@ class ModalManager {
       overlay.addEventListener('click', shakeHandler, true);
     }
 
-    const close = (keepOverlay = false) => {
-      if (overlay) {
-        overlay.removeEventListener('click', shakeHandler, true);
-      }
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.remove();
-      }, 300);
-      if (!keepOverlay) {
-        this.hideOverlay();
-      }
-    };
-
     enableBtn!.addEventListener('click', () => {
       if (onEnable) {
         // Pass close function to callback so it can control closure/overlay
         // Or just call it with keepOverlay = true if we know we are opening another modal?
         // Let's change the contract: onEnable returns true if it wants to keep overlay
         const keepOverlay = onEnable();
-        close(keepOverlay === true);
+
+        this.closeModal(modal, {
+          skipHideOverlay: keepOverlay,
+        });
       } else {
-        close();
+        this.closeModal(modal);
       }
     });
 
     disableBtn!.addEventListener('click', () => {
       if (onDisable) onDisable();
-      close();
+      this.closeModal(modal);
     });
   }
 
