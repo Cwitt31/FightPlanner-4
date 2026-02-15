@@ -202,8 +202,8 @@ export interface Config {
   modsPath: string;
   recentDownloads: Array<{
     id: string;
-    modName?: string;
-    folderPath?: string | null;
+    modName: string;
+    folderPath: string | null;
   }>;
 }
 

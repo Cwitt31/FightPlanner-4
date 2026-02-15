@@ -42,8 +42,7 @@ export interface Mod {
 }
 
 export default class ModUtils {
-  // Add this helper method to the ModUtils class
-  private static _findDirWithModFiles(rootDir: string): string | undefined {
+  private static _gatherDirsWithModFiles(rootDir: string): string[] {
     const checkIfModDir = (dir: string): boolean => {
       return (
         fs.existsSync(path.join(dir, 'config.json')) ||
@@ -54,8 +53,11 @@ export default class ModUtils {
       );
     };
 
+    const modDirs: string[] = [];
+
+    // If the root directory itself contains mod files, return it and skip subdirectories
     if (checkIfModDir(rootDir)) {
-      return rootDir;
+      return [rootDir];
     }
 
     const items = fs.readdirSync(rootDir);
@@ -66,16 +68,17 @@ export default class ModUtils {
 
       if (stats.isDirectory()) {
         if (checkIfModDir(itemPath)) {
-          return itemPath;
-        }
-
-        const nested = this._findDirWithModFiles(itemPath);
-
-        if (nested) {
-          return nested;
+          // Found a directory with mod files, add it and skip its subdirectories
+          modDirs.push(itemPath);
+        } else {
+          // This directory doesn't have mod files, recursively search its subdirectories
+          const nested = this._gatherDirsWithModFiles(itemPath);
+          modDirs.push(...nested);
         }
       }
     }
+
+    return modDirs;
   }
 
   /**
@@ -127,12 +130,12 @@ export default class ModUtils {
 
   /**
    * Get the path to the preview image for a mod
-   * @param {string} modFolderPath - Path to the mod folder
+   * @param {string} modPath - Path to the mod folder
    * @returns {string|null} Path to the preview image or null if not found
    */
-  static getPreviewImagePath(modFolderPath) {
+  static getPreviewImagePath(modPath: string) {
     try {
-      const previewPath = path.join(modFolderPath, 'preview.webp');
+      const previewPath = path.join(modPath, 'preview.webp');
 
       if (fs.existsSync(previewPath)) {
         return previewPath;
@@ -150,7 +153,7 @@ export default class ModUtils {
    * @param {string} filePath - File path to convert
    * @returns {string|null} File URL or null if path is invalid
    */
-  static pathToFileUrl(filePath) {
+  static pathToFileUrl(filePath: string) {
     if (!filePath) return null;
 
     const normalizedPath = filePath.replace(/\\/g, '/');
@@ -159,12 +162,12 @@ export default class ModUtils {
 
   /**
    * Read mod information from info.toml file
-   * @param {string} modFolderPath - Path to the mod folder
+   * @param {string} modPath - Path to the mod folder
    * @returns {Object|null} Mod info object or null if not found/error
    */
-  static readModInfo(modFolderPath: string): ModInfo | null {
+  static readModInfo(modPath: string): ModInfo | null {
     try {
-      const infoPath = path.join(modFolderPath, 'info.toml');
+      const infoPath = path.join(modPath, 'info.toml');
 
       if (!fs.existsSync(infoPath)) {
         return null;
@@ -450,49 +453,70 @@ export default class ModUtils {
       ? path.join(tempExtractDir, extractedItems[0])
       : tempExtractDir;
 
+    const resultingMods: {
+      modPath: string;
+      modName: string;
+    }[] = [];
+
     // Find a directory that contains actual mod files (sometimes there is some additional nesting)
-    const dirWithModFiles =
-      this._findDirWithModFiles(tempExtractDir) || tempExtractDir;
+    const dirsWithModFiles =
+      this._gatherDirsWithModFiles(tempExtractDir) || tempExtractDir;
 
-    const finalModFolderName = path.basename(dirWithModFiles);
-    const finalModPath = path.join(modsPath, finalModFolderName);
+    function _prepareModPath(modDirectory: string) {
+      const modName = path.basename(modDirectory);
+      const modPath = path.join(modsPath, modName);
 
-    if (fs.existsSync(finalModPath)) {
-      console.log('Mod already exists, removing old version');
-      fs.rmSync(finalModPath, { recursive: true, force: true });
-    }
+      resultingMods.push({
+        modPath,
+        modName,
+      });
 
-    if (fs.existsSync(dirWithModFiles)) {
-      console.log('Copying mod files from temp to mods folder...');
-      this.copyRecursiveSync(dirWithModFiles, finalModPath);
-    } else {
-      console.log('Copying multiple items to mods folder...');
-      this.copyRecursiveSync(tempExtractDir, finalModPath);
-    }
+      if (fs.existsSync(modPath)) {
+        console.log(`Mod ${modName} already exists, removing old version`);
 
-    // If the mod files were found in a nested directory, copy info.toml and preview.webp
-    if (dirWithModFiles !== topLevelModDir) {
-      const infoTomlSource = path.join(topLevelModDir, 'info.toml');
-      const infoTomlDest = path.join(finalModPath, 'info.toml');
-
-      if (fs.existsSync(infoTomlSource) && !fs.existsSync(infoTomlDest)) {
-        try {
-          fs.copyFileSync(infoTomlSource, infoTomlDest);
-          console.log('Copied info.toml from top level directory');
-        } catch (err) {
-          console.warn('Failed to copy info.toml:', err.message);
-        }
+        fs.rmSync(modPath, { recursive: true, force: true });
       }
 
-      const previewSource = path.join(topLevelModDir, 'preview.webp');
-      const previewDest = path.join(finalModPath, 'preview.webp');
+      return modPath;
+    }
 
-      if (fs.existsSync(previewSource) && !fs.existsSync(previewDest)) {
-        try {
-          fs.copyFileSync(previewSource, previewDest);
-          console.log('Copied preview.webp from top level directory');
-        } catch (err) {
-          console.warn('Failed to copy preview.webp:', err.message);
+    if (!dirsWithModFiles.length) {
+      // No mod files found, copy everything and hope for the best
+
+      console.log('Copying multiple items to mods folder...');
+      this.copyRecursiveSync(tempExtractDir, _prepareModPath(tempExtractDir));
+    } else {
+      for (const dir of dirsWithModFiles) {
+        console.log(`Copying mod files from ${dir} to mods folder...`);
+
+        const modPath = _prepareModPath(dir);
+        this.copyRecursiveSync(dir, modPath);
+
+        // If the mod files were found in a nested directory, copy info.toml and preview.webp
+        if (dir !== topLevelModDir) {
+          const infoTomlSource = path.join(topLevelModDir, 'info.toml');
+          const infoTomlDest = path.join(modPath, 'info.toml');
+
+          if (fs.existsSync(infoTomlSource) && !fs.existsSync(infoTomlDest)) {
+            try {
+              fs.copyFileSync(infoTomlSource, infoTomlDest);
+              console.log('Copied info.toml from top level directory');
+            } catch (err) {
+              console.warn('Failed to copy info.toml:', err.message);
+            }
+          }
+
+          const previewSource = path.join(topLevelModDir, 'preview.webp');
+          const previewDest = path.join(modPath, 'preview.webp');
+
+          if (fs.existsSync(previewSource) && !fs.existsSync(previewDest)) {
+            try {
+              fs.copyFileSync(previewSource, previewDest);
+              console.log('Copied preview.webp from top level directory');
+            } catch (err) {
+              console.warn('Failed to copy preview.webp:', err.message);
+            }
+          }
         }
       }
     }
@@ -514,27 +538,24 @@ export default class ModUtils {
       }
     }
 
-    return {
-      modFolderName: finalModFolderName,
-      finalModPath,
-    };
+    return resultingMods;
   }
 
   static async installFromDirectory(sourceDirPath: string, modsPath: string) {
     console.log('Installing mod from directory:', sourceDirPath);
-    const modFolderName = path.basename(sourceDirPath);
+    const modName = path.basename(sourceDirPath);
 
-    let finalModPath = path.join(modsPath, modFolderName);
+    let modPath = path.join(modsPath, modName);
 
-    if (fs.existsSync(finalModPath)) {
+    if (fs.existsSync(modPath)) {
       console.log('Mod already exists, removing old version');
-      fs.rmSync(finalModPath, { recursive: true, force: true });
+      fs.rmSync(modPath, { recursive: true, force: true });
     }
 
     console.log('Moving mod directory to mods folder...');
-    fs.renameSync(sourceDirPath, finalModPath);
+    fs.renameSync(sourceDirPath, modPath);
 
-    return { modFolderName, finalModPath };
+    return { modPath, modName };
   }
 
   /**
@@ -567,90 +588,90 @@ export default class ModUtils {
       const ext = path.extname(sourcePath).toLowerCase();
       const isArchive = ['.zip', '.rar', '.7z', '.tar', '.gz'].includes(ext);
 
-      let modFolderName: string;
-      let finalModPath: string;
+      let resultingMods: Awaited<ReturnType<typeof this.installFromArchive>>;
 
       if (isArchive) {
-        ({ modFolderName, finalModPath } = await this.installFromArchive(
-          sourcePath,
-          modsPath,
-        ));
+        resultingMods = await this.installFromArchive(sourcePath, modsPath);
       } else if (isDirectory) {
-        ({ modFolderName, finalModPath } = await this.installFromDirectory(
-          sourcePath,
-          modsPath,
-        ));
+        resultingMods = [await this.installFromDirectory(sourcePath, modsPath)];
       } else {
         throw new Error(
           'Source path must be an archive file (.zip, .rar, .7z, etc.) or a directory',
         );
       }
 
-      if (/^mod-\d+$/.test(modFolderName) && fs.existsSync(finalModPath)) {
-        const modInfo = this.readModInfo(finalModPath);
-        if (modInfo) {
-          const newName = modInfo.s_name || modInfo.display_name;
+      for (let i = 0; i < resultingMods.length; i++) {
+        const { modPath, modName } = resultingMods[i];
 
-          if (newName) {
-            const sanitizedName = newName.replace(/[<>:"/\\|?*]/g, '_').trim();
+        if (/^mod-\d+$/.test(modName) && fs.existsSync(modPath)) {
+          const modInfo = this.readModInfo(modPath);
 
-            if (sanitizedName && sanitizedName !== modFolderName) {
-              const newModPath = path.join(modsPath, sanitizedName);
+          if (modInfo) {
+            const newName = modInfo.s_name || modInfo.display_name;
 
-              if (!fs.existsSync(newModPath)) {
-                try {
-                  fs.renameSync(finalModPath, newModPath);
+            if (newName) {
+              const sanitizedName = newName
+                .replace(/[<>:"/\\|?*]/g, '_')
+                .trim();
 
-                  console.log(
-                    `Mod renamed from ${modFolderName} to ${sanitizedName}`,
-                  );
+              if (sanitizedName && sanitizedName !== modName) {
+                const newModPath = path.join(modsPath, sanitizedName);
 
-                  modFolderName = sanitizedName;
-                  finalModPath = newModPath;
-                } catch (renameErr) {
-                  console.warn(`Failed to rename mod: ${renameErr.message}`);
+                if (!fs.existsSync(newModPath)) {
+                  try {
+                    fs.renameSync(modPath, newModPath);
+
+                    console.log(
+                      `Mod renamed from ${modName} to ${sanitizedName}`,
+                    );
+
+                    resultingMods[i].modPath = newModPath;
+                    resultingMods[i].modName = sanitizedName;
+                  } catch (renameErr) {
+                    console.warn(`Failed to rename mod: ${renameErr.message}`);
+                  }
                 }
               }
             }
           }
         }
-      }
 
-      console.log('Mod installed successfully to:', finalModPath);
+        console.log('Mod installed successfully to:', modPath);
 
-      if (sharedStore.get('autoDisableNewMods')) {
-        try {
-          const modName = path.basename(finalModPath);
-          const parentDir = path.dirname(modsPath);
-          const disabledModsPath = path.join(parentDir, '{disabled_mod}');
+        if (sharedStore.get('autoDisableNewMods')) {
+          try {
+            const modName = path.basename(modPath);
+            const parentDir = path.dirname(modsPath);
+            const disabledModsPath = path.join(parentDir, '{disabled_mod}');
 
-          if (!fs.existsSync(disabledModsPath)) {
-            fs.mkdirSync(disabledModsPath, { recursive: true });
+            if (!fs.existsSync(disabledModsPath)) {
+              fs.mkdirSync(disabledModsPath, { recursive: true });
+            }
+
+            const targetPath = path.join(disabledModsPath, modName);
+
+            if (!fs.existsSync(targetPath)) {
+              fs.renameSync(modPath, targetPath);
+
+              console.log(
+                `[AutoDisable] Moved ${modName} to disabled mods folder`,
+              );
+
+              resultingMods[i].modPath = targetPath;
+            } else {
+              console.warn(
+                `[AutoDisable] Cannot move ${modName}, target already exists`,
+              );
+            }
+          } catch (disableError) {
+            console.error('[AutoDisable] Failed to disable mod:', disableError);
           }
-
-          const targetPath = path.join(disabledModsPath, modName);
-          if (!fs.existsSync(targetPath)) {
-            fs.renameSync(finalModPath, targetPath);
-
-            console.log(
-              `[AutoDisable] Moved ${modName} to disabled mods folder`,
-            );
-
-            finalModPath = targetPath;
-          } else {
-            console.warn(
-              `[AutoDisable] Cannot move ${modName}, target already exists`,
-            );
-          }
-        } catch (disableError) {
-          console.error('[AutoDisable] Failed to disable mod:', disableError);
         }
       }
 
       return {
         success: true,
-        modPath: finalModPath,
-        modName: modFolderName,
+        resultingMods,
       };
     } catch (error) {
       console.error('Error installing mod from path:', error);

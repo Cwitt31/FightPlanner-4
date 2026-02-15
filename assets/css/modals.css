@@ -53,12 +53,28 @@
 
 .modal-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 24px;
   border-bottom: 1px solid var(--border-hover);
   flex-shrink: 0;
   flex-grow: 0;
+  gap: 16px;
+}
+
+.modal-header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.modal-subtitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+  padding: 0;
 }
 
 .conflict-modal-header {

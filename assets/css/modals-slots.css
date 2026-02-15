@@ -89,10 +89,34 @@
   color: rgb(59, 130, 246);
 }
 
-.slot-usage-item.slot-conflict {
+.slot-usage-item.slot-conflict-other {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.5);
+  color: rgb(234, 179, 8);
+}
+
+.slot-usage-item.slot-conflict-current {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.5);
   color: rgb(239, 68, 68);
+}
+
+@keyframes pulse-conflict-other {
+  0%, 100% {
+    border-color: rgba(234, 179, 8, 0.5);
+  }
+  50% {
+    border-color: rgba(234, 179, 8, 0.8);
+  }
+}
+
+@keyframes pulse-conflict-current {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 0.8);
+  }
 }
 
 .slot-usage-item:hover {
@@ -169,7 +193,12 @@
   border-color: rgba(59, 130, 246, 0.4);
 }
 
-.slot-usage-legend-box.slot-conflict {
+.slot-usage-legend-box.slot-conflict-other {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.5);
+}
+
+.slot-usage-legend-box.slot-conflict-current {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.5);
 }

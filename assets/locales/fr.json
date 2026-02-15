@@ -288,7 +288,7 @@
     "conflict": {
       "title": "Conflits de Mods Détectés",
       "badge": "{{count}} fichiers en conflit",
-      "changeSlot": "Changer le Slot",
+      "changeSlot": "Changer le Slot - {{characterName}}",
       "autoChangeSlot": "Changer les Slots Automatiquement",
       "summary": "Les conflits suivants ont été trouvés entre les mods :",
       "fileHeader": "Fichier",
@@ -513,7 +513,7 @@
     "failedToSelectFile": "Échec de la sélection du fichier",
     "modsFolderNotConfigured": "Dossier mods non configuré. Veuillez le définir dans les Paramètres.",
     "installingMod": "Installation du mod...",
-    "modInstalledSuccessfully": "Mod \"{{name}}\" installé avec succès !",
+    "modInstalledSuccessfully": "Mod{{plural}} \"{{name}}\" installé avec succès !",
     "installationError": "Erreur d'installation : {{error}}",
     "errorInstallingMod": "Erreur lors de l'installation du mod : {{error}}",
     "settingsManagerNotAvailable": "Gestionnaire de paramètres non disponible",

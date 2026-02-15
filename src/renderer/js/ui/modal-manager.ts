@@ -354,6 +354,10 @@ class ModalManager {
       deletedSlots: Set<string>,
     ) => void,
   ) {
+    const t = (key, params = {}) => {
+      return window.i18n && window.i18n.t ? window.i18n.t(key, params) : key;
+    };
+
     this.currentMod = mod;
     this.changeSlotCallback = callback;
 
@@ -363,6 +367,8 @@ class ModalManager {
       );
     }
 
+    const fighterName = modData.fighterNames[0];
+
     this.slotAssignments = modData.currentSlots.reduce<SlotAssignments>(
       (acc, slot) => {
         acc.set(slot, slot);
@@ -371,7 +377,7 @@ class ModalManager {
       new Map(),
     );
 
-    this.fighterPathData = modData.pathData[modData.fighterNames[0]];
+    this.fighterPathData = modData.pathData[fighterName];
 
     const modal = document.querySelector<HTMLElement>('#change-slot-modal');
     const container = document.querySelector<HTMLElement>(
@@ -380,16 +386,70 @@ class ModalManager {
 
     if (modal && container) {
       modal.classList.remove('closing');
+
+      // Update modal title to show mod name
+      const modalHeader = modal.querySelector<HTMLElement>('.modal-header');
+      const modalTitle = modalHeader?.querySelector<HTMLElement>('h3');
+
+      if (modalTitle && modalHeader) {
+        // Set title to mod name
+        modalTitle.textContent = mod.name;
+
+        // Remove existing subtitle if any
+        const existingSubtitle = modalHeader.querySelector('.modal-subtitle');
+        if (existingSubtitle) {
+          existingSubtitle.remove();
+        }
+
+        // Wrap title in content div if not already wrapped
+        let contentDiv = modalHeader.querySelector<HTMLElement>(
+          '.modal-header-content',
+        );
+
+        if (!contentDiv) {
+          contentDiv = document.createElement('div');
+          contentDiv.className = 'modal-header-content';
+
+          // Find close button to insert before it
+          const closeButton = modalHeader.querySelector('.modal-close');
+          if (closeButton) {
+            modalHeader.insertBefore(contentDiv, closeButton);
+          } else {
+            modalHeader.appendChild(contentDiv);
+          }
+
+          // Move title into content div
+          contentDiv.appendChild(modalTitle);
+        }
+
+        // Add subtitle with character name
+        const resolvedFighterId = window.resolveFolderName
+          ? window.resolveFolderName(fighterName)
+          : fighterName.toLowerCase();
+
+        const characterInfo = window.SSBU_CHARACTERS?.[resolvedFighterId];
+        const characterName = characterInfo?.name || fighterName;
+
+        const subtitle = document.createElement('div');
+        subtitle.className = 'modal-subtitle';
+
+        subtitle.textContent = t('modals.changeSlot.subtitle', {
+          characterName: characterName,
+        });
+
+        // Add subtitle after title in content div
+        contentDiv.appendChild(subtitle);
+      }
+
       this.renderSlotList();
 
       // Show loading spinner for slot usage
       this.renderSlotUsageLoading();
 
       // Scan all mods for slot usage and render overview
-      const fighterName = modData.fighterNames[0];
 
       this.scanAllModsForSlotUsage(fighterName).then((slotUsage) => {
-        this.renderSlotUsageOverview(slotUsage);
+        this.renderSlotUsageOverview(slotUsage, mod.path);
       });
 
       this.showOverlay();
@@ -403,6 +463,24 @@ class ModalManager {
 
   closeChangeSlotModal() {
     this.closeModal('change-slot-modal');
+
+    // Reset modal title and remove subtitle/content wrapper
+    const modal = document.querySelector<HTMLElement>('#change-slot-modal');
+    const modalHeader = modal?.querySelector<HTMLElement>('.modal-header');
+    const contentDiv = modalHeader?.querySelector<HTMLElement>(
+      '.modal-header-content',
+    );
+    const modalTitle = modalHeader?.querySelector<HTMLElement>('h3');
+
+    if (modalTitle) {
+      modalTitle.textContent = 'Change Character Slot';
+    }
+
+    // Remove content wrapper and move title back to header
+    if (contentDiv && modalTitle && modalHeader) {
+      modalHeader.insertBefore(modalTitle, contentDiv);
+      contentDiv.remove();
+    }
 
     // Clean up slot usage tooltips from body
     document.querySelectorAll('.slot-usage-tooltip').forEach((tooltip) => {
@@ -430,7 +508,7 @@ class ModalManager {
     const slotUsageHint = document.createElement('p');
     slotUsageHint.id = 'slot-usage-hint';
     slotUsageHint.className = 'modal-hint';
-    slotUsageHint.textContent = 'Slot Usage for this Fighter:';
+    slotUsageHint.textContent = 'Slot Usage:';
     modalBody.insertBefore(slotUsageHint, hintParagraph);
 
     // Create loading container
@@ -495,6 +573,7 @@ class ModalManager {
 
   renderSlotUsageOverview(
     slotUsage: Map<string, { mods: { name: string; path: string }[] }>,
+    currentModPath: string,
   ) {
     const modalBody = document.querySelector('#change-slot-modal .modal-body');
     const hintParagraph = document.querySelector('#slot-modal-hint');
@@ -521,17 +600,19 @@ class ModalManager {
     const grid = document.createElement('div');
     grid.className = 'slot-usage-grid';
 
-    // Determine which slots to show
-    const slotsToShow = Math.max(
-      7,
-      ...Array.from(Object.keys(slotUsage)).map((s) => slotStringToNumber(s)),
-    );
+    const slotsToShow = 16; // Show c00-c15 for better visibility, can be adjusted as needed
 
-    for (let i = 0; i <= slotsToShow; i++) {
+    for (let i = 0; i < slotsToShow; i++) {
       const slotString = slotNumberToString(i);
       const usage = slotUsage.get(slotString);
       const isUsed = usage && usage.mods.length > 0;
       const isConflict = usage && usage.mods.length > 1;
+
+      // Check if current mod is involved in the conflict
+      const currentModInvolved =
+        usage?.mods.some((m) => m.path === currentModPath) || false;
+      const isCurrentModConflict = isConflict && currentModInvolved;
+      const isOtherModsConflict = isConflict && !currentModInvolved;
 
       const slotItem = document.createElement('div');
       slotItem.className = 'slot-usage-item';
@@ -540,8 +621,10 @@ class ModalManager {
         slotItem.classList.add('slot-used');
       }
 
-      if (isConflict) {
-        slotItem.classList.add('slot-conflict');
+      if (isCurrentModConflict) {
+        slotItem.classList.add('slot-conflict-current');
+      } else if (isOtherModsConflict) {
+        slotItem.classList.add('slot-conflict-other');
       }
 
       slotItem.textContent = slotString;
@@ -608,8 +691,12 @@ class ModalManager {
         <span>In Use</span>
       </div>
       <div class="slot-usage-legend-item">
-        <span class="slot-usage-legend-box slot-conflict"></span>
-        <span>Conflict (Multiple Mods)</span>
+        <span class="slot-usage-legend-box slot-conflict-other"></span>
+        <span>Conflict (Other Mods)</span>
+      </div>
+      <div class="slot-usage-legend-item">
+        <span class="slot-usage-legend-box slot-conflict-current"></span>
+        <span>Conflict (Current Mod)</span>
       </div>
     `;
 

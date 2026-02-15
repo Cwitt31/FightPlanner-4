@@ -45,9 +45,11 @@ export interface ProtocolHandlerEvents {
 
   'mod-install-success': {
     url: string;
-    modName: string | null;
     downloadId: string;
-    folderPath: string | null;
+    resultingMods: {
+      modPath: string;
+      modName: string;
+    }[];
   };
 
   'mod-install-error': {
@@ -488,19 +490,15 @@ export default class ProtocolHandler {
       );
 
       if (modInstallResult.success) {
-        if (modId) {
-          await this.fetchAndSaveModMetadata(
-            modId,
-            modInstallResult.modPath,
-            modType,
-          );
+        if (modId && modInstallResult.resultingMods.length === 1) {
+          const modData = modInstallResult.resultingMods[0];
+          await this.fetchAndSaveModMetadata(modId, modData.modPath, modType);
         }
 
         this.sendToRenderer('mod-install-success', {
           url: downloadUrl,
-          modName: modInstallResult.modName,
+          resultingMods: modInstallResult.resultingMods,
           downloadId,
-          folderPath: modInstallResult.modPath,
         });
 
         this.pendingInstalls.delete(downloadId);

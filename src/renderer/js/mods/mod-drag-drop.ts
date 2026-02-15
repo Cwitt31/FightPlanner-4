@@ -263,12 +263,19 @@ class ModDragDropHandler {
             filePath,
             modsPath,
           );
+
           if (result && result.success) {
             if (window.toastManager) {
               window.toastManager.success(
                 'toasts.modInstalledSuccessfully',
-                3000,
-                { name: result.modName },
+                5000,
+                {
+                  name: result.resultingMods
+                    .map((resultingMod) => resultingMod.modName)
+                    .join(', '),
+
+                  plural: result.resultingMods.length > 1 ? 's' : '',
+                },
               );
             }
 
