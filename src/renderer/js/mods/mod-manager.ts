@@ -298,7 +298,6 @@ class ModManager {
 
           if (existingImg) {
             existingImg.style.opacity = '0';
-            await new Promise((resolve) => setTimeout(resolve, 200));
           }
 
           previewArea.classList.remove('no-preview');

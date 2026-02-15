@@ -59,16 +59,6 @@
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.5);
   color: rgb(239, 68, 68);
-  animation: pulse-conflict 2s ease-in-out infinite;
-}
-
-@keyframes pulse-conflict {
-  0%, 100% {
-    border-color: rgba(239, 68, 68, 0.5);
-  }
-  50% {
-    border-color: rgba(239, 68, 68, 0.8);
-  }
 }
 
 .slot-usage-item:hover {

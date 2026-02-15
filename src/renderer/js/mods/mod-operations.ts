@@ -120,12 +120,15 @@ class ModOperations {
               this.modManager.selectedMod.id === mod.id
             ) {
               this.modManager.selectedMod = null;
+
               const previewArea =
                 document.querySelector<HTMLElement>('.preview-area');
+
               if (previewArea) {
                 previewArea.innerHTML =
                   '<p style="color: #666; text-align: center;">No preview available</p>';
               }
+
               if (window.modInfoManager) {
                 window.modInfoManager.clearModInfo();
               }

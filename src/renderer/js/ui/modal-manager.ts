@@ -380,6 +380,7 @@ class ModalManager {
 
       // Scan all mods for slot usage and render overview
       const fighterName = modData.fighterNames[0];
+
       this.scanAllModsForSlotUsage(fighterName).then((slotUsage) => {
         this.renderSlotUsageOverview(slotUsage);
       });
