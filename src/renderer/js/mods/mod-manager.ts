@@ -29,9 +29,16 @@ class ModManager {
   searchQuery: string;
   categoryFilter: string;
   renderedModIds: Set<string>;
-  conflicts: {
-    filePath: string;
-    mods: { name: string; path: string }[];
+  conflictGroups: {
+    fighter: string;
+    slot: string;
+    conflicts: {
+      filePath: string;
+      mods: {
+        name: string;
+        path: string;
+      }[];
+    }[];
   }[];
   isCheckingConflicts: boolean;
   listRenderer: ModListRenderer | null;
@@ -47,7 +54,7 @@ class ModManager {
     this.searchQuery = '';
     this.categoryFilter = '';
     this.renderedModIds = new Set();
-    this.conflicts = [];
+    this.conflictGroups = [];
     this.isCheckingConflicts = false;
 
     this.listRenderer = null;
@@ -291,12 +298,12 @@ class ModManager {
 
           if (existingImg) {
             existingImg.style.opacity = '0';
-            await new Promise((resolve) => setTimeout(resolve, 200));
           }
 
           previewArea.classList.remove('no-preview');
 
           const img = document.createElement('img');
+
           img.style.opacity = '0';
           img.alt = 'Preview';
 
@@ -313,6 +320,7 @@ class ModManager {
               previewArea.style.height = `${optimalHeight}px`;
               resolve();
             };
+
             img.onerror = reject;
             img.src = previewPath;
           });
@@ -590,18 +598,21 @@ class ModManager {
         whitelistPatterns,
       );
 
-      this.conflicts = (result.success && result.conflicts) || [];
-
       this.isCheckingConflicts = false;
+      this.conflictGroups = (result.success && result.conflictGroups) || [];
 
       if (window.statusBarManager) {
         if (result.success && result.totalConflicts > 0) {
-          const modsWithConflicts = this.conflicts.reduce<Set<string>>(
-            (mods, nextConflict) => {
-              return new Set([
-                ...Array.from(mods),
-                ...nextConflict.mods.map((mod) => mod.name),
-              ]);
+          // Collect unique mods from all conflict groups
+          const modsWithConflicts = this.conflictGroups.reduce<Set<string>>(
+            (mods, group) => {
+              group.conflicts.forEach((conflict) => {
+                conflict.mods.forEach((mod) => {
+                  mods.add(mod.name);
+                });
+              });
+
+              return mods;
             },
             new Set(),
           );

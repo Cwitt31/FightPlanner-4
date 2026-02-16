@@ -291,7 +291,8 @@
       "modsLoaded": "{{count}} mods loaded"
     },
     "changeSlot": {
-      "title": "Change Character Slot",
+      "title": "Change Character Slot - {{modName}}",
+      "subtitle": "Character: {{characterName}}",
       "hint": "Detected slots in this mod:",
       "applyChanges": "Apply Changes",
       "currentSlot": "Current: {{slot}}",
@@ -309,7 +310,10 @@
       "autoChangeSlot": "Change Slots Automatically",
       "summary": "The following conflicts were found between mods:",
       "fileHeader": "File",
-      "conflictingModsHeader": "Conflicting Mods"
+      "conflictingModsHeader": "Conflicting Mods",
+      "unknownFighter": "Unknown Fighter",
+      "unknownSlot": "Unknown Slot",
+      "conflictsLabel": "conflicts"
     },
     "conflictSlot": {
       "title": "Change Slot for Conflicting Mod",
@@ -511,7 +515,7 @@
     "failedToSelectFile": "Failed to select file",
     "modsFolderNotConfigured": "Mods folder not configured. Please set it in Settings.",
     "installingMod": "Installing mod...",
-    "modInstalledSuccessfully": "Mod \"{{name}}\" installed successfully!",
+    "modInstalledSuccessfully": "Mod{{plural}} \"{{name}}\" installed successfully!",
     "installationError": "Installation error: {{error}}",
     "errorInstallingMod": "Error installing mod: {{error}}",
     "settingsManagerNotAvailable": "Settings manager not available",

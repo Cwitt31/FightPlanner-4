@@ -50,8 +50,14 @@ class ModalManager {
     this.fighterPathData = {};
   }
 
+  _getAnimationDelay() {
+    const noAnimations = document.body.classList.contains('no-animations');
+    return noAnimations ? 0 : 300;
+  }
+
   showOverlay() {
     const overlay = document.querySelector<HTMLElement>('#modal-overlay');
+
     if (overlay) {
       overlay.classList.remove('closing');
       overlay.style.display = 'block';
@@ -75,27 +81,31 @@ class ModalManager {
     }
 
     const overlay = document.querySelector<HTMLElement>('#modal-overlay');
-    if (overlay) {
-      overlay.classList.add('closing');
-      setTimeout(() => {
-        // Re-check before hiding
-        const stillVisibleModals = Array.from(
-          document.querySelectorAll<HTMLElement>('.modal'),
-        ).filter(
-          (m) =>
-            m.style.display === 'block' && !m.classList.contains('closing'),
-        );
 
-        if (stillVisibleModals.length === 0) {
-          overlay.style.display = 'none';
-          overlay.classList.remove('closing');
-        } else {
-          // Restore overlay if a modal appeared
-          overlay.classList.remove('closing');
-          overlay.style.display = 'block';
-          overlay.style.opacity = '1';
-        }
-      }, 250);
+    if (overlay) {
+      this.closeModal(overlay, {
+        skipHideOverlay: true,
+
+        onModalClosed: () => {
+          // Re-check before hiding
+          const stillVisibleModals = Array.from(
+            document.querySelectorAll<HTMLElement>('.modal'),
+          ).filter(
+            (m) =>
+              m.style.display === 'block' && !m.classList.contains('closing'),
+          );
+
+          if (stillVisibleModals.length === 0) {
+            overlay.style.display = 'none';
+            overlay.classList.remove('closing');
+          } else {
+            // Restore overlay if a modal appeared
+            overlay.classList.remove('closing');
+            overlay.style.display = 'block';
+            overlay.style.opacity = '1';
+          }
+        },
+      });
     }
   }
 
@@ -131,16 +141,33 @@ class ModalManager {
     }
   }
 
-  closeRenameModal() {
-    const modal = document.querySelector<HTMLElement>('#rename-modal');
+  closeModal(
+    modalIdOrElement: string | HTMLElement,
+    options: { onModalClosed?: () => void; skipHideOverlay?: boolean } = {},
+  ) {
+    const modal =
+      typeof modalIdOrElement === 'string'
+        ? document.querySelector<HTMLElement>(`#${modalIdOrElement}`)
+        : modalIdOrElement;
+
     if (modal) {
       modal.classList.add('closing');
+
       setTimeout(() => {
         modal.style.display = 'none';
         modal.classList.remove('closing');
-      }, 300);
+
+        options.onModalClosed?.();
+      }, this._getAnimationDelay());
     }
-    this.hideOverlay();
+
+    if (!options.skipHideOverlay) {
+      this.hideOverlay();
+    }
+  }
+
+  closeRenameModal() {
+    this.closeModal('rename-modal');
     this.currentMod = null;
     this.renameCallback = null;
   }
@@ -200,15 +227,7 @@ class ModalManager {
   }
 
   closeUninstallModal() {
-    const modal = document.querySelector<HTMLElement>('#uninstall-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('uninstall-modal');
     this.currentMod = null;
     this.uninstallCallback = null;
   }
@@ -217,6 +236,7 @@ class ModalManager {
     if (this.uninstallCallback) {
       this.uninstallCallback();
     }
+
     this.closeUninstallModal();
   }
 
@@ -277,15 +297,7 @@ class ModalManager {
   }
 
   closeAlertModal() {
-    const modal = document.querySelector<HTMLElement>('#alert-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('alert-modal');
   }
 
   openDeletePluginModal(plugin, callback) {
@@ -322,15 +334,7 @@ class ModalManager {
   }
 
   closeDeletePluginModal() {
-    const modal = document.querySelector<HTMLElement>('#delete-plugin-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('delete-plugin-modal');
     this.currentPlugin = null;
     this.deletePluginCallback = null;
   }
@@ -350,6 +354,10 @@ class ModalManager {
       deletedSlots: Set<string>,
     ) => void,
   ) {
+    const t = (key, params = {}) => {
+      return window.i18n && window.i18n.t ? window.i18n.t(key, params) : key;
+    };
+
     this.currentMod = mod;
     this.changeSlotCallback = callback;
 
@@ -359,6 +367,8 @@ class ModalManager {
       );
     }
 
+    const fighterName = modData.fighterNames[0];
+
     this.slotAssignments = modData.currentSlots.reduce<SlotAssignments>(
       (acc, slot) => {
         acc.set(slot, slot);
@@ -367,7 +377,7 @@ class ModalManager {
       new Map(),
     );
 
-    this.fighterPathData = modData.pathData[modData.fighterNames[0]];
+    this.fighterPathData = modData.pathData[fighterName];
 
     const modal = document.querySelector<HTMLElement>('#change-slot-modal');
     const container = document.querySelector<HTMLElement>(
@@ -376,7 +386,72 @@ class ModalManager {
 
     if (modal && container) {
       modal.classList.remove('closing');
+
+      // Update modal title to show mod name
+      const modalHeader = modal.querySelector<HTMLElement>('.modal-header');
+      const modalTitle = modalHeader?.querySelector<HTMLElement>('h3');
+
+      if (modalTitle && modalHeader) {
+        // Set title to mod name
+        modalTitle.textContent = mod.name;
+
+        // Remove existing subtitle if any
+        const existingSubtitle = modalHeader.querySelector('.modal-subtitle');
+        if (existingSubtitle) {
+          existingSubtitle.remove();
+        }
+
+        // Wrap title in content div if not already wrapped
+        let contentDiv = modalHeader.querySelector<HTMLElement>(
+          '.modal-header-content',
+        );
+
+        if (!contentDiv) {
+          contentDiv = document.createElement('div');
+          contentDiv.className = 'modal-header-content';
+
+          // Find close button to insert before it
+          const closeButton = modalHeader.querySelector('.modal-close');
+          if (closeButton) {
+            modalHeader.insertBefore(contentDiv, closeButton);
+          } else {
+            modalHeader.appendChild(contentDiv);
+          }
+
+          // Move title into content div
+          contentDiv.appendChild(modalTitle);
+        }
+
+        // Add subtitle with character name
+        const resolvedFighterId = window.resolveFolderName
+          ? window.resolveFolderName(fighterName)
+          : fighterName.toLowerCase();
+
+        const characterInfo = window.SSBU_CHARACTERS?.[resolvedFighterId];
+        const characterName = characterInfo?.name || fighterName;
+
+        const subtitle = document.createElement('div');
+        subtitle.className = 'modal-subtitle';
+
+        subtitle.textContent = t('modals.changeSlot.subtitle', {
+          characterName: characterName,
+        });
+
+        // Add subtitle after title in content div
+        contentDiv.appendChild(subtitle);
+      }
+
       this.renderSlotList();
+
+      // Show loading spinner for slot usage
+      this.renderSlotUsageLoading();
+
+      // Scan all mods for slot usage and render overview
+
+      this.scanAllModsForSlotUsage(fighterName).then((slotUsage) => {
+        this.renderSlotUsageOverview(slotUsage, mod.path);
+      });
+
       this.showOverlay();
       modal.style.display = 'block';
 
@@ -387,21 +462,245 @@ class ModalManager {
   }
 
   closeChangeSlotModal() {
-    const modal = document.querySelector<HTMLElement>('#change-slot-modal');
+    this.closeModal('change-slot-modal');
 
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
+    // Reset modal title and remove subtitle/content wrapper
+    const modal = document.querySelector<HTMLElement>('#change-slot-modal');
+    const modalHeader = modal?.querySelector<HTMLElement>('.modal-header');
+    const contentDiv = modalHeader?.querySelector<HTMLElement>(
+      '.modal-header-content',
+    );
+    const modalTitle = modalHeader?.querySelector<HTMLElement>('h3');
+
+    if (modalTitle) {
+      modalTitle.textContent = 'Change Character Slot';
     }
 
-    this.hideOverlay();
+    // Remove content wrapper and move title back to header
+    if (contentDiv && modalTitle && modalHeader) {
+      modalHeader.insertBefore(modalTitle, contentDiv);
+      contentDiv.remove();
+    }
 
-    this.currentMod = null;
+    // Clean up slot usage tooltips from body
+    document.querySelectorAll('.slot-usage-tooltip').forEach((tooltip) => {
+      tooltip.remove();
+    });
+
+    // Clean up slot usage hint and overview
+    const slotUsageHint = document.querySelector('#slot-usage-hint');
+    const slotUsageOverview = document.querySelector('#slot-usage-overview');
+
+    if (slotUsageHint) slotUsageHint.remove();
+    if (slotUsageOverview) slotUsageOverview.remove();
+
     this.changeSlotCallback = null;
     this.slotAssignments = new Map();
+  }
+
+  renderSlotUsageLoading() {
+    const modalBody = document.querySelector('#change-slot-modal .modal-body');
+    const hintParagraph = document.querySelector('#slot-modal-hint');
+
+    if (!modalBody || !hintParagraph) return;
+
+    // Create hint
+    const slotUsageHint = document.createElement('p');
+    slotUsageHint.id = 'slot-usage-hint';
+    slotUsageHint.className = 'modal-hint';
+    slotUsageHint.textContent = 'Slot Usage:';
+    modalBody.insertBefore(slotUsageHint, hintParagraph);
+
+    // Create loading container
+    const loadingContainer = document.createElement('div');
+    loadingContainer.id = 'slot-usage-overview';
+    loadingContainer.className = 'slot-usage-overview slot-usage-loading';
+
+    const spinner = document.createElement('div');
+    spinner.className = 'slot-usage-spinner';
+    spinner.innerHTML = '<i class="bi bi-arrow-repeat"></i>';
+
+    loadingContainer.appendChild(spinner);
+    modalBody.insertBefore(loadingContainer, hintParagraph);
+  }
+
+  async scanAllModsForSlotUsage(
+    fighterName: string,
+  ): Promise<Map<string, { mods: { name: string; path: string }[] }>> {
+    const slotUsage = new Map<
+      string,
+      { mods: { name: string; path: string }[] }
+    >();
+
+    if (!window.modManager || !window.modManager.mods) {
+      return slotUsage;
+    }
+
+    const activeMods = window.modManager.mods.filter(
+      (m) => m.status === 'active' && m.path,
+    );
+
+    for (const mod of activeMods) {
+      if (!mod.path || !window.electronAPI?.scanMod) continue;
+
+      try {
+        const scanResult = await window.electronAPI.scanMod(mod.path);
+
+        if (
+          scanResult.success &&
+          scanResult.data.fighterNames.includes(fighterName)
+        ) {
+          const slots = scanResult.data.currentSlots;
+
+          for (const slot of slots) {
+            if (!slotUsage.has(slot)) {
+              slotUsage.set(slot, { mods: [] });
+            }
+
+            slotUsage.get(slot)!.mods.push({
+              name: mod.name,
+              path: mod.path,
+            });
+          }
+        }
+      } catch (error) {
+        console.warn(`Failed to scan mod ${mod.name}:`, error);
+      }
+    }
+
+    return slotUsage;
+  }
+
+  renderSlotUsageOverview(
+    slotUsage: Map<string, { mods: { name: string; path: string }[] }>,
+    currentModPath: string,
+  ) {
+    const modalBody = document.querySelector('#change-slot-modal .modal-body');
+    const hintParagraph = document.querySelector('#slot-modal-hint');
+
+    if (!modalBody || !hintParagraph) return;
+
+    // Find the overview container (should already exist from loading)
+    let overviewContainer = document.querySelector<HTMLElement>(
+      '#slot-usage-overview',
+    );
+
+    if (!overviewContainer) {
+      overviewContainer = document.createElement('div');
+      overviewContainer.id = 'slot-usage-overview';
+      overviewContainer.className = 'slot-usage-overview';
+      modalBody.insertBefore(overviewContainer, hintParagraph);
+    }
+
+    // Remove loading class and clear content
+    overviewContainer.classList.remove('slot-usage-loading');
+    overviewContainer.innerHTML = '';
+
+    // Create grid for slots (show c00-c07 by default, can be expanded)
+    const grid = document.createElement('div');
+    grid.className = 'slot-usage-grid';
+
+    const slotsToShow = 16; // Show c00-c15 for better visibility, can be adjusted as needed
+
+    for (let i = 0; i < slotsToShow; i++) {
+      const slotString = slotNumberToString(i);
+      const usage = slotUsage.get(slotString);
+      const isUsed = usage && usage.mods.length > 0;
+      const isConflict = usage && usage.mods.length > 1;
+
+      // Check if current mod is involved in the conflict
+      const currentModInvolved =
+        usage?.mods.some((m) => m.path === currentModPath) || false;
+      const isCurrentModConflict = isConflict && currentModInvolved;
+      const isOtherModsConflict = isConflict && !currentModInvolved;
+
+      const slotItem = document.createElement('div');
+      slotItem.className = 'slot-usage-item';
+
+      if (isUsed) {
+        slotItem.classList.add('slot-used');
+      }
+
+      if (isCurrentModConflict) {
+        slotItem.classList.add('slot-conflict-current');
+      } else if (isOtherModsConflict) {
+        slotItem.classList.add('slot-conflict-other');
+      }
+
+      slotItem.textContent = slotString;
+
+      // Add tooltip on hover
+      if (isUsed && usage) {
+        slotItem.title = usage.mods.map((m) => m.name).join('\n');
+
+        // Create custom tooltip
+        const tooltip = document.createElement('div');
+        tooltip.className = 'slot-usage-tooltip';
+        tooltip.style.display = 'none';
+        tooltip.style.position = 'fixed';
+
+        const tooltipTitle = document.createElement('div');
+        tooltipTitle.className = 'slot-usage-tooltip-title';
+        tooltipTitle.textContent = `Slot ${slotString}`;
+        tooltip.appendChild(tooltipTitle);
+
+        usage.mods.forEach((mod) => {
+          const modItem = document.createElement('div');
+          modItem.className = 'slot-usage-tooltip-mod';
+          modItem.innerHTML = `<i class="bi bi-folder-fill"></i> ${mod.name}`;
+          tooltip.appendChild(modItem);
+        });
+
+        // Append tooltip to body to avoid clipping
+        document.body.appendChild(tooltip);
+
+        // Show/hide tooltip on hover with proper positioning
+        slotItem.addEventListener('mouseenter', () => {
+          const rect = slotItem.getBoundingClientRect();
+
+          // Position tooltip above the slot item
+          tooltip.style.left = `${rect.left + rect.width / 2}px`;
+          tooltip.style.top = `${rect.top - 8}px`;
+          tooltip.style.transform = 'translate(-50%, -100%)';
+          tooltip.style.display = 'block';
+        });
+
+        slotItem.addEventListener('mouseleave', () => {
+          tooltip.style.display = 'none';
+        });
+
+        // Clean up tooltip when modal closes
+        slotItem.dataset.tooltipId = `tooltip-${slotString}`;
+      }
+
+      grid.appendChild(slotItem);
+    }
+
+    overviewContainer.appendChild(grid);
+
+    // Add legend
+    const legend = document.createElement('div');
+    legend.className = 'slot-usage-legend';
+    legend.innerHTML = `
+      <div class="slot-usage-legend-item">
+        <span class="slot-usage-legend-box"></span>
+        <span>Available</span>
+      </div>
+      <div class="slot-usage-legend-item">
+        <span class="slot-usage-legend-box slot-used"></span>
+        <span>In Use</span>
+      </div>
+      <div class="slot-usage-legend-item">
+        <span class="slot-usage-legend-box slot-conflict-other"></span>
+        <span>Conflict (Other Mods)</span>
+      </div>
+      <div class="slot-usage-legend-item">
+        <span class="slot-usage-legend-box slot-conflict-current"></span>
+        <span>Conflict (Current Mod)</span>
+      </div>
+    `;
+
+    overviewContainer.appendChild(legend);
   }
 
   renderSlotList() {
@@ -496,14 +795,12 @@ class ModalManager {
             slot: slotString,
           });
 
-          // Close and restore
+          // Close dropdown
           selectContainer.classList.remove('open');
-          selectDropdown.style.transition = 'none'; // Disable transition
-          selectContainer.appendChild(selectDropdown);
-          selectDropdown.style.cssText = '';
-
-          void selectDropdown.offsetWidth; // Force reflow
-          delete selectDropdown.dataset.parentId;
+          selectDropdown.style.opacity = '0';
+          selectDropdown.style.pointerEvents = 'none';
+          selectDropdown.style.visibility = 'hidden';
+          selectDropdown.style.transform = 'translateY(-10px)';
 
           // Update active state in dropdown
           const allOptions = selectDropdown.querySelectorAll<HTMLElement>(
@@ -517,7 +814,14 @@ class ModalManager {
       }
 
       selectContainer.appendChild(selectTrigger);
-      selectContainer.appendChild(selectDropdown);
+
+      // Portal dropdown to body immediately to prevent overflow issues
+      selectDropdown.dataset.parentId = `${index}`;
+      selectDropdown.style.position = 'fixed';
+      selectDropdown.style.opacity = '0';
+      selectDropdown.style.pointerEvents = 'none';
+      selectDropdown.style.visibility = 'hidden';
+      document.body.appendChild(selectDropdown);
 
       // Toggle dropdown
       selectTrigger.addEventListener('click', (e) => {
@@ -525,7 +829,7 @@ class ModalManager {
 
         const wasOpen = selectContainer.classList.contains('open');
 
-        // Close other open selects and restore them
+        // Close other open selects
         document
           .querySelectorAll<HTMLElement>('.custom-select.open')
           .forEach((el) => {
@@ -536,17 +840,10 @@ class ModalManager {
               );
 
               if (drop) {
-                drop.style.transition = 'none'; // Disable transition
-                el.appendChild(drop);
-                drop.style.cssText = '';
-                void drop.offsetWidth; // Force reflow
-                delete drop.dataset.parentId;
-              } else {
-                // Fallback for non-portaled ones or if already moved back
-                const internalDrop = el.querySelector<HTMLElement>(
-                  '.custom-select-dropdown',
-                );
-                if (internalDrop) internalDrop.style.cssText = '';
+                drop.style.opacity = '0';
+                drop.style.pointerEvents = 'none';
+                drop.style.visibility = 'hidden';
+                drop.style.transform = 'translateY(-10px)';
               }
             }
           });
@@ -554,25 +851,19 @@ class ModalManager {
         if (!wasOpen) {
           selectContainer.classList.add('open');
 
-          // Portal logic: Move to body and position fixed
-          selectDropdown.dataset.parentId = `${index}`;
-
-          // CRITICAL: Disable transition before appending to body to prevent "flying from bottom"
-          selectDropdown.style.transition = 'none';
-
-          document.body.appendChild(selectDropdown);
-
+          // Position and show dropdown
           const rect = selectContainer.getBoundingClientRect();
-          selectDropdown.style.position = 'fixed';
           selectDropdown.style.top = `${rect.bottom + 5}px`;
           selectDropdown.style.left = `${rect.left}px`;
           selectDropdown.style.width = `${rect.width}px`;
           selectDropdown.style.zIndex = '100005';
 
           // Set start state for animation
+          selectDropdown.style.transition = 'none';
           selectDropdown.style.opacity = '0';
           selectDropdown.style.transform = 'translateY(-10px)';
           selectDropdown.style.pointerEvents = 'all';
+          selectDropdown.style.visibility = 'visible';
 
           // Force reflow
           void selectDropdown.offsetWidth;
@@ -588,14 +879,11 @@ class ModalManager {
           });
         } else {
           selectContainer.classList.remove('open');
-          // Disable transition temporarily to avoid "flying" animation when reparenting
-          selectDropdown.style.transition = 'none';
-          selectContainer.appendChild(selectDropdown);
-          selectDropdown.style.cssText = '';
-          // Restore transition after a frame if needed (though cssText="" restores class styles which include transition)
-          // The browser needs a reflow to apply the new position without animating from the old one
-          void selectDropdown.offsetWidth;
-          delete selectDropdown.dataset.parentId;
+          // Hide dropdown
+          selectDropdown.style.opacity = '0';
+          selectDropdown.style.pointerEvents = 'none';
+          selectDropdown.style.visibility = 'hidden';
+          selectDropdown.style.transform = 'translateY(-10px)';
         }
       });
 
@@ -609,12 +897,11 @@ class ModalManager {
         ) {
           if (selectContainer.classList.contains('open')) {
             selectContainer.classList.remove('open');
-            // Move dropdown back to container
-            selectDropdown.style.transition = 'none'; // Disable transition
-            selectContainer.appendChild(selectDropdown);
-            selectDropdown.style.cssText = ''; // Clear fixed positioning styles
-            void selectDropdown.offsetWidth; // Force reflow
-            delete selectDropdown.dataset.parentId;
+            // Hide dropdown
+            selectDropdown.style.opacity = '0';
+            selectDropdown.style.pointerEvents = 'none';
+            selectDropdown.style.visibility = 'hidden';
+            selectDropdown.style.transform = 'translateY(-10px)';
           }
         }
       });
@@ -740,15 +1027,7 @@ class ModalManager {
   }
 
   closeEditInfoModal() {
-    const modal = document.querySelector<HTMLElement>('#edit-info-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('edit-info-modal');
     this.editInfoCallback = null;
   }
 
@@ -790,15 +1069,7 @@ class ModalManager {
   }
 
   closeAdvancedInfoModal() {
-    const modal = document.querySelector<HTMLElement>('#advanced-info-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('advanced-info-modal');
     this.advancedInfoCallback = null;
     this.currentModPath = null;
   }
@@ -910,36 +1181,36 @@ class ModalManager {
   }
 
   closeInstallConfirmModal() {
-    const modal = document.querySelector<HTMLElement>('#install-confirm-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.remove('closing');
-
+    this.closeModal('install-confirm-modal', {
+      onModalClosed: () => {
         const previewContainer = document.querySelector<HTMLElement>(
           '#install-preview-container',
         );
+
         const previewImage = document.querySelector<HTMLImageElement>(
           '#install-preview-image',
         );
+
         const previewLoading = document.querySelector<HTMLElement>(
           '.install-preview-loading',
         );
+
         if (previewContainer) {
           previewContainer.style.display = 'flex';
         }
+
         if (previewImage) {
           previewImage.src = '';
           previewImage.style.display = 'none';
           previewImage.classList.remove('loaded');
         }
+
         if (previewLoading) {
           previewLoading.style.display = 'flex';
         }
-      }, 300);
-    }
-    this.hideOverlay();
+      },
+    });
+
     this.pendingInstallData = null;
   }
 
@@ -1092,6 +1363,7 @@ class ModalManager {
 
       setTimeout(() => {
         this.closePluginUpdateModal();
+
         if (window.toastManager) {
           window.toastManager.success('All updates completed');
         }
@@ -1152,6 +1424,7 @@ class ModalManager {
         if (remainingUpdates.length === 0) {
           setTimeout(() => {
             this.closePluginUpdateModal();
+
             if (window.toastManager) {
               window.toastManager.success('All updates completed');
             }
@@ -1170,14 +1443,7 @@ class ModalManager {
   }
 
   closePluginUpdateModal() {
-    const modal = document.querySelector<HTMLElement>('#plugin-update-modal');
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.remove();
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('plugin-update-modal');
   }
 
   async openPluginMarketplaceModal() {
@@ -1402,20 +1668,12 @@ class ModalManager {
   }
 
   closePluginMarketplaceModal() {
-    const modal = document.querySelector<HTMLElement>(
-      '#plugin-marketplace-modal',
-    );
-    if (modal) {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.remove();
-      }, 300);
-    }
-    this.hideOverlay();
+    this.closeModal('plugin-marketplace-modal');
   }
 
   openPluginUpdateIntroModal(onEnable, onDisable) {
     const modal = document.createElement('div');
+
     modal.className = 'modal';
     modal.id = 'plugin-intro-modal';
     modal.style.maxWidth = '500px';
@@ -1494,34 +1752,24 @@ class ModalManager {
       overlay.addEventListener('click', shakeHandler, true);
     }
 
-    const close = (keepOverlay = false) => {
-      if (overlay) {
-        overlay.removeEventListener('click', shakeHandler, true);
-      }
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.remove();
-      }, 300);
-      if (!keepOverlay) {
-        this.hideOverlay();
-      }
-    };
-
     enableBtn!.addEventListener('click', () => {
       if (onEnable) {
         // Pass close function to callback so it can control closure/overlay
         // Or just call it with keepOverlay = true if we know we are opening another modal?
         // Let's change the contract: onEnable returns true if it wants to keep overlay
         const keepOverlay = onEnable();
-        close(keepOverlay === true);
+
+        this.closeModal(modal, {
+          skipHideOverlay: keepOverlay,
+        });
       } else {
-        close();
+        this.closeModal(modal);
       }
     });
 
     disableBtn!.addEventListener('click', () => {
       if (onDisable) onDisable();
-      close();
+      this.closeModal(modal);
     });
   }
 

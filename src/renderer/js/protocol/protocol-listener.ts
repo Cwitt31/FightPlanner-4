@@ -66,15 +66,17 @@ class ProtocolListener {
 
       if (window.downloadManager) {
         const rendererId = this.idMap.get(data.downloadId) || data.downloadId;
-        window.downloadManager.completeDownload(
-          rendererId,
-          data.modName,
-          data.folderPath,
-        );
+        window.downloadManager.completeDownload(rendererId, data.resultingMods);
       }
 
       if (window.toastManager) {
-        window.toastManager.success('toasts.modInstalledSuccess');
+        window.toastManager.success('toasts.modInstalledSuccessfully', 5000, {
+          name: data.resultingMods
+            .map((resultingMod) => resultingMod.modName)
+            .join(', '),
+
+          plural: data.resultingMods.length > 1 ? 's' : '',
+        });
       }
 
       setTimeout(() => {

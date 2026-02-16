@@ -22,8 +22,10 @@ export type PluginInstallResult =
 export type ModInstallResult =
   | {
       success: true;
-      modPath: string;
-      modName: string;
+      resultingMods: {
+        modPath: string;
+        modName: string;
+      }[];
     }
   | {
       success: false;

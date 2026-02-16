@@ -397,7 +397,10 @@ class SettingsManager {
     const disableAllOnDownload = document.querySelector<HTMLInputElement>(
       '#disable-all-mods-on-download-enabled',
     );
-    if (disableAllOnDownload && !disableAllOnDownload.dataset.listenerAttached) {
+    if (
+      disableAllOnDownload &&
+      !disableAllOnDownload.dataset.listenerAttached
+    ) {
       disableAllOnDownload.addEventListener('change', () => {
         this.settings.disableAllModsOnDownload = disableAllOnDownload.checked;
         this.saveSettings();
@@ -780,17 +783,28 @@ class SettingsManager {
     const intervalInput = document.querySelector<HTMLInputElement>(
       '#settings-social-auto-download-interval',
     );
-    const statusSpan = document.querySelector<HTMLElement>('#settings-social-status');
-    const usernameSpan = document.querySelector<HTMLElement>('#settings-social-username');
-    const goToSocialBtn = document.querySelector<HTMLElement>('#settings-go-to-social-btn');
+    const statusSpan = document.querySelector<HTMLElement>(
+      '#settings-social-status',
+    );
+    const usernameSpan = document.querySelector<HTMLElement>(
+      '#settings-social-username',
+    );
+    const goToSocialBtn = document.querySelector<HTMLElement>(
+      '#settings-go-to-social-btn',
+    );
 
     // Load current values from store
     if (autoDownloadToggle && !autoDownloadToggle.dataset.listenerAttached) {
-      const enabled = await window.electronAPI.store.get('social.autoDownloadEnabled');
+      const enabled = await window.electronAPI.store.get(
+        'social.autoDownloadEnabled',
+      );
       autoDownloadToggle.checked = enabled !== false; // Default to true
 
       autoDownloadToggle.addEventListener('change', async () => {
-        await window.electronAPI.store.set('social.autoDownloadEnabled', autoDownloadToggle.checked);
+        await window.electronAPI.store.set(
+          'social.autoDownloadEnabled',
+          autoDownloadToggle.checked,
+        );
 
         // Sync with social manager if available
         if (window.socialManager) {
@@ -803,7 +817,9 @@ class SettingsManager {
         }
 
         // Also sync the checkbox in social tab
-        const socialTabToggle = document.querySelector<HTMLInputElement>('#social-auto-download-enabled');
+        const socialTabToggle = document.querySelector<HTMLInputElement>(
+          '#social-auto-download-enabled',
+        );
         if (socialTabToggle) {
           socialTabToggle.checked = autoDownloadToggle.checked;
         }
@@ -814,13 +830,18 @@ class SettingsManager {
     }
 
     if (intervalInput && !intervalInput.dataset.listenerAttached) {
-      const interval = await window.electronAPI.store.get('social.autoDownloadInterval');
+      const interval = await window.electronAPI.store.get(
+        'social.autoDownloadInterval',
+      );
       intervalInput.value = String(interval || 5);
 
       intervalInput.addEventListener('change', async () => {
         const value = parseInt(intervalInput.value, 10);
         if (value >= 1 && value <= 60) {
-          await window.electronAPI.store.set('social.autoDownloadInterval', value);
+          await window.electronAPI.store.set(
+            'social.autoDownloadInterval',
+            value,
+          );
 
           // Sync with social manager if available
           if (window.socialManager) {
@@ -832,7 +853,9 @@ class SettingsManager {
           }
 
           // Also sync the input in social tab
-          const socialTabInput = document.querySelector<HTMLInputElement>('#social-auto-download-interval');
+          const socialTabInput = document.querySelector<HTMLInputElement>(
+            '#social-auto-download-interval',
+          );
           if (socialTabInput) {
             socialTabInput.value = String(value);
           }
@@ -845,13 +868,17 @@ class SettingsManager {
 
     // Update account status display
     if (statusSpan && usernameSpan) {
-      const userData = await window.electronAPI.store.get('social.userData') as { displayName?: string } | null;
+      const userData = (await window.electronAPI.store.get(
+        'social.userData',
+      )) as { displayName?: string } | null;
       if (userData && userData.displayName) {
-        statusSpan.textContent = this.translate('settings.socialConnected') || 'Connected';
+        statusSpan.textContent =
+          this.translate('settings.socialConnected') || 'Connected';
         statusSpan.style.color = 'var(--success-color)';
         usernameSpan.textContent = userData.displayName;
       } else {
-        statusSpan.textContent = this.translate('settings.socialNotConnected') || 'Not connected';
+        statusSpan.textContent =
+          this.translate('settings.socialNotConnected') || 'Not connected';
         statusSpan.style.color = 'var(--text-muted)';
         usernameSpan.textContent = '-';
       }
@@ -861,7 +888,9 @@ class SettingsManager {
     if (goToSocialBtn && !goToSocialBtn.dataset.listenerAttached) {
       goToSocialBtn.addEventListener('click', () => {
         // Switch to Social tab
-        const socialTab = document.querySelector<HTMLElement>('[data-tab="social"]');
+        const socialTab = document.querySelector<HTMLElement>(
+          '[data-tab="social"]',
+        );
         if (socialTab) {
           socialTab.click();
         }
@@ -1638,9 +1667,8 @@ ${t('settings.okUnderstand')}
         'pluginUpdateIntroShown',
       );
       const theme = await window.electronAPI.store.get('theme');
-      const autoDisableNewMods = await window.electronAPI.store.get(
-        'autoDisableNewMods',
-      );
+      const autoDisableNewMods =
+        await window.electronAPI.store.get('autoDisableNewMods');
       const disableAllModsOnDownload = await window.electronAPI.store.get(
         'disableAllModsOnDownload',
       );
@@ -1837,10 +1865,14 @@ ${t('settings.okUnderstand')}
   async loadAnimationPreference() {
     try {
       const preference =
-        (await window.electronAPI.store.get('animationPreference')) || 'full';
+        ((await window.electronAPI.store.get('animationPreference')) as
+          | string
+          | null) || 'full';
+
       const animationSelector = document.querySelector<HTMLElement>(
         '#animation-preference',
       );
+
       if (animationSelector) {
         animationSelector
           .querySelectorAll<HTMLElement>('.animation-option')
@@ -1852,6 +1884,7 @@ ${t('settings.okUnderstand')}
             }
           });
       }
+
       this.applyAnimationPreference(preference);
     } catch (error) {
       console.error('Failed to load animation preference:', error);
@@ -1859,13 +1892,14 @@ ${t('settings.okUnderstand')}
     }
   }
 
-  applyAnimationPreference(preference) {
+  applyAnimationPreference(preference: string) {
     document.body.classList.remove('reduced-animations', 'no-animations');
 
     if (preference === 'reduced') {
       document.body.classList.add('reduced-animations');
     } else if (preference === 'none') {
       document.body.classList.add('no-animations');
+      document.body.classList.add('reduced-animations');
     }
   }
 
@@ -1963,9 +1997,13 @@ ${t('settings.okUnderstand')}
     const confirmed = confirm(t('settings.resetStoreConfirmMessage'));
 
     if (confirmed) {
-      window.electronAPI.store.clear()
+      window.electronAPI.store
+        .clear()
         .then(() => {
-          this.showToast(this.translate('toasts.electronStoreReset'), 'success');
+          this.showToast(
+            this.translate('toasts.electronStoreReset'),
+            'success',
+          );
           setTimeout(() => {
             window.location.reload();
           }, 1000);
@@ -1983,11 +2021,14 @@ if (typeof window !== 'undefined') {
   console.log('Settings Manager initialized');
 
   if (window.electronAPI && window.electronAPI.store) {
-    window.electronAPI.store.get('animationPreference').then((preference) => {
-      if (window.settingsManager && preference) {
-        window.settingsManager.applyAnimationPreference(preference);
-      }
-    });
+    window.electronAPI.store
+      .get('animationPreference')
+      .then((preference: string | null) => {
+        if (window.settingsManager && preference) {
+          window.settingsManager.applyAnimationPreference(preference);
+        }
+      });
+
     window.electronAPI.store.get('theme').then((theme) => {
       if (window.settingsManager && theme) {
         window.settingsManager.applyTheme(theme);

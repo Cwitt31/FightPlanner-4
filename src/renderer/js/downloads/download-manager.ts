@@ -211,43 +211,51 @@ class DownloadManager {
    */
   completeDownload(
     downloadId: string,
-    modName: string | null,
-    folderPath: string | null = null,
+    resultingMods: {
+      modPath: string;
+      modName: string;
+    }[],
   ) {
-    const download = this.activeDownloads.get(downloadId);
+    const downloadBase = this.activeDownloads.get(downloadId);
 
-    if (!download) {
+    if (!downloadBase) {
       const downloads = Array.from(this.activeDownloads.values());
 
       if (downloads.length > 0) {
         const latestDownload = downloads[downloads.length - 1];
-        this.completeDownload(latestDownload.id, modName, folderPath);
+        this.completeDownload(latestDownload.id, resultingMods);
       }
 
       return;
     }
 
-    download.status = 'completed';
-    download.progress = 100;
-    download.modName = modName || download.fileName;
-    download.folderPath = folderPath;
-    download.endTime = Date.now();
+    resultingMods.forEach((mod) => {
+      const download = { ...downloadBase };
+
+      download.status = 'completed';
+      download.progress = 100;
+      download.modName = mod.modName;
+      download.folderPath = mod.modPath;
+      download.endTime = Date.now();
+
+      this.completedDownloads.unshift(download);
+
+      if (this.initialized) {
+        const element = document.querySelector<HTMLElement>(
+          `[data-download-id="${downloadId}"]`,
+        );
+
+        if (element) {
+          element.remove();
+        }
+
+        this.renderCompletedDownload(download);
+      }
+    });
 
     this.activeDownloads.delete(downloadId);
-    this.completedDownloads.unshift(download);
 
-    if (this.initialized) {
-      const element = document.querySelector<HTMLElement>(
-        `[data-download-id="${downloadId}"]`,
-      );
-      if (element) {
-        element.remove();
-      }
-
-      this.renderCompletedDownload(download);
-      this.updateUI();
-    }
-
+    this.updateUI();
     this.updateBadge();
 
     if (window.statusBarManager) {

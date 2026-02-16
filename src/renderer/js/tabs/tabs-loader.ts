@@ -80,6 +80,7 @@ function initializeTabFeatures(tabName) {
 
     const actionButtons =
       document.querySelectorAll<HTMLButtonElement>('.action-btn');
+
     actionButtons.forEach((btn) => {
       const title = btn.getAttribute('title');
 
@@ -134,8 +135,14 @@ function initializeTabFeatures(tabName) {
               if (window.toastManager) {
                 window.toastManager.success(
                   'toasts.modInstalledSuccessfully',
-                  3000,
-                  { name: installResult.modName },
+                  5000,
+                  {
+                    name: installResult.resultingMods
+                      .map((resultingMod) => resultingMod.modName)
+                      .join(', '),
+
+                    plural: installResult.resultingMods.length > 1 ? 's' : '',
+                  },
                 );
               }
               setTimeout(() => {

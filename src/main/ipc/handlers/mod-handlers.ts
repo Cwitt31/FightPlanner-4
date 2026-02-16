@@ -249,11 +249,15 @@ const ModHandlers = {
     modsPath: string,
     whitelistPatterns: string[] = [],
   ): HandlerResponse<{
-    conflicts: {
-      filePath: string;
-      mods: {
-        name: string;
-        path: string;
+    conflictGroups: {
+      fighter: string;
+      slot: string;
+      conflicts: {
+        filePath: string;
+        mods: {
+          name: string;
+          path: string;
+        }[];
       }[];
     }[];
     totalConflicts: number;
@@ -261,15 +265,22 @@ const ModHandlers = {
   }> => {
     try {
       const result = ModUtils.readAllMods(modsPath);
-      const conflicts = await ModUtils.detectConflicts(
+
+      const conflictGroups = await ModUtils.detectConflicts(
         result.activeMods,
         whitelistPatterns,
       );
 
+      // Calculate total conflicts across all groups
+      const totalConflicts = conflictGroups.reduce(
+        (sum, group) => sum + group.conflicts.length,
+        0,
+      );
+
       return {
         success: true,
-        conflicts: conflicts,
-        totalConflicts: conflicts.length,
+        conflictGroups,
+        totalConflicts,
         activeModsCount: result.activeMods.length,
       };
     } catch (error) {

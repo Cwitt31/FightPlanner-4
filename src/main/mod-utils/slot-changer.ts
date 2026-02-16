@@ -85,6 +85,7 @@ export class SlotChanger {
             `Error moving file to temp ${mapping.originalPath}:`,
             error,
           );
+
           throw new Error(
             `Failed to move file to temp ${mapping.originalPath}: ${error.message}`,
           );

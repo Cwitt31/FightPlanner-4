@@ -17,3 +17,189 @@
   height: auto;
   max-height: 60vh;
 }
+
+#conflict-slot-modal .modal-body {
+  overflow-y: auto;
+  height: auto;
+  max-height: 60vh;
+}
+
+#conflict-auto-slot-modal .modal-body {
+  overflow-y: auto;
+  height: auto;
+  max-height: 60vh;
+}
+
+/* Slot Usage Overview */
+.slot-usage-overview {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--bg-transparent-03);
+  border: 1px solid var(--bg-hover);
+  border-radius: 12px;
+}
+
+/* Loading State */
+.slot-usage-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.slot-usage-spinner {
+  font-size: 32px;
+  color: var(--accent-color);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.slot-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.slot-usage-item {
+  position: relative;
+  padding: 12px 8px;
+  background: var(--bg-input);
+  border: 2px solid var(--border-hover);
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: default;
+  transition: all 0.2s ease;
+}
+
+.slot-usage-item.slot-used {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: rgb(59, 130, 246);
+}
+
+.slot-usage-item.slot-conflict-other {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.5);
+  color: rgb(234, 179, 8);
+}
+
+.slot-usage-item.slot-conflict-current {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: rgb(239, 68, 68);
+}
+
+@keyframes pulse-conflict-other {
+  0%, 100% {
+    border-color: rgba(234, 179, 8, 0.5);
+  }
+  50% {
+    border-color: rgba(234, 179, 8, 0.8);
+  }
+}
+
+@keyframes pulse-conflict-current {
+  0%, 100% {
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 0.8);
+  }
+}
+
+.slot-usage-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Tooltip */
+.slot-usage-tooltip {
+  display: none;
+  position: fixed;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-hover);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 100010;
+  min-width: 150px;
+  max-width: 250px;
+  white-space: normal;
+  pointer-events: none;
+}
+
+.slot-usage-tooltip-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-hover);
+}
+
+.slot-usage-tooltip-mod {
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.slot-usage-tooltip-mod i {
+  color: var(--accent-color);
+  font-size: 10px;
+}
+
+/* Legend */
+.slot-usage-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-hover);
+}
+
+.slot-usage-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.slot-usage-legend-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--bg-input);
+  border: 2px solid var(--border-hover);
+}
+
+.slot-usage-legend-box.slot-used {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.slot-usage-legend-box.slot-conflict-other {
+  background: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.5);
+}
+
+.slot-usage-legend-box.slot-conflict-current {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
