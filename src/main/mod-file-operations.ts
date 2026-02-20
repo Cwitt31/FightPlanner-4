@@ -9,7 +9,10 @@ export class ModFileOperations {
   static async getAllModFiles(
     modPath: string,
     arrayOfFiles: string[] = [],
+    baseModPath?: string,
   ): Promise<string[]> {
+    // Set baseModPath on first call
+    const basePath = baseModPath ?? modPath;
     const files = await fsp.readdir(modPath);
 
     await Promise.all(
@@ -18,10 +21,18 @@ export class ModFileOperations {
         const stat = await fsp.stat(filePath);
 
         if (stat.isDirectory()) {
-          arrayOfFiles.push(filePath);
-          await ModFileOperations.getAllModFiles(filePath, arrayOfFiles);
+          // Push relative path for directories
+          const relativePath = path.relative(basePath, filePath);
+          arrayOfFiles.push(relativePath);
+          await ModFileOperations.getAllModFiles(
+            filePath,
+            arrayOfFiles,
+            basePath,
+          );
         } else {
-          arrayOfFiles.push(filePath);
+          // Push relative path for files
+          const relativePath = path.relative(basePath, filePath);
+          arrayOfFiles.push(relativePath);
         }
       }),
     );

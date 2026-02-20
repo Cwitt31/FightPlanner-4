@@ -201,7 +201,10 @@ export class SlotChanger {
               }
 
               if (slotNum > 7 || customAnnouncer) {
-                const nxyIndex = slotNum + 8;
+                const hasCustomNames =
+                  slotCustomNames && Object.keys(slotCustomNames).length;
+
+                const nxyIndex = !hasCustomNames ? 0 : slotNum + 8;
 
                 // Add nXY_index parameter
                 structParams.push(
@@ -244,6 +247,15 @@ export class SlotChanger {
           console.error('Error editing ui_chara_db.prcxml:', error);
           throw new Error(`Error editing ui_chara_db.prcxml: ${error.message}`);
         }
+      } else {
+        console.log(
+          'Deleting ui_chara_db.prcxml as no slots above c07 and no custom names provided',
+        );
+
+        await ModFileOperations.deleteModFile(
+          modPath,
+          'ui/param/database/ui_chara_db.prcxml',
+        );
       }
 
       // Update msg_name.xmsbt with custom names if provided (for all slots)
