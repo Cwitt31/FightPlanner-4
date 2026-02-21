@@ -14,6 +14,7 @@ import { MigrationHandlers } from './ipc/handlers/migration-handlers';
 import { ParamsWithoutFirstArg } from './types/common';
 import { WindowHandlers } from './ipc/handlers/window-handlers';
 import { DiscordHandlers } from './ipc/handlers/discord-handlers';
+import { AnalyticsHandlers } from './ipc/handlers/analytics-handlers';
 import { ProtocolHandlerEvents } from './protocol-handler';
 import { MainEvents } from './main';
 import { AnimationEvents } from './animations/animation-handler';
@@ -37,8 +38,8 @@ function wrapInvoke<
   return <K extends keyof Handlers>(channel: K) => {
     return ((...args: any[]) =>
       ipcRenderer.invoke(channel as string, ...args)) as (
-      ...args: ParamsWithoutFirstArg<Handlers[K]>
-    ) => ReturnType<Handlers[K]>;
+        ...args: ParamsWithoutFirstArg<Handlers[K]>
+      ) => ReturnType<Handlers[K]>;
   };
 }
 
@@ -76,6 +77,7 @@ const invokeTutorialHandler = wrapInvoke<TutorialHandlers>();
 const invokeMigrationHandler = wrapInvoke<MigrationHandlers>();
 const invokeWindowHandler = wrapInvoke<WindowHandlers>();
 const invokeDiscordHandler = wrapInvoke<DiscordHandlers>();
+const invokeAnalyticsHandler = wrapInvoke<AnalyticsHandlers>();
 
 const registerProtocolCallback = wrapEventCallback<ProtocolHandlerEvents>();
 const registerMainCallback = wrapEventCallback<MainEvents>();
@@ -145,6 +147,14 @@ const electronAPI = {
   close: invokeWindowHandler('close-window'),
   updateDiscordRPC: invokeDiscordHandler('discord-rpc-update'),
 
+  // Analytics
+  trackEvent: invokeAnalyticsHandler('analytics-track-event'),
+  trackError: invokeAnalyticsHandler('analytics-track-error'),
+  testPosthogEvent: invokeAnalyticsHandler('analytics-test-event'),
+  testPosthogError: invokeAnalyticsHandler('analytics-test-error'),
+  getAnalyticsEnabled: invokeAnalyticsHandler('analytics-get-enabled'),
+  setAnalyticsEnabled: invokeAnalyticsHandler('analytics-set-enabled'),
+
   store: {
     get: invokeStoreHandler('store-get'),
     set: invokeStoreHandler('store-set'),
@@ -167,6 +177,10 @@ const electronAPI = {
 
   onModInstallConfirmRequest: registerProtocolCallback(
     'mod-install-confirm-request',
+  ),
+
+  onGameBananaPairingSuccess: registerProtocolCallback(
+    'gamebanana-pairing-success',
   ),
 
   onStartIntroAnimation: registerAnimationCallback('start-intro-animation'),

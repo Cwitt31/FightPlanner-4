@@ -9,6 +9,7 @@ import DiscordRPCManager from './discord-rpc';
 import { registerAllHandlers } from './ipc';
 import { PATHS } from './config';
 import autoUpdater from './auto-updater';
+import { initPosthog, identifyUser, shutdownPosthog } from './posthog';
 
 import AnimationHandler from './animations/animation-handler';
 
@@ -243,6 +244,10 @@ if (!gotTheLock) {
   app.whenReady().then(async () => {
     registerAllHandlers(ipcMain, discordRPC);
 
+    // Initialize PostHog analytics
+    initPosthog();
+    identifyUser();
+
     console.log('Checking for FightPlanner 3 settings...');
     const migrationResult = await migrateFromV3();
 
@@ -292,10 +297,11 @@ if (!gotTheLock) {
     if (process.platform !== 'darwin') app.quit();
   });
 
-  app.on('quit', () => {
+  app.on('quit', async () => {
     if (discordRPC) {
       discordRPC.disconnect();
       discordRPC = null;
     }
+    await shutdownPosthog();
   });
 }

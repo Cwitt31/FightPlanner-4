@@ -244,7 +244,18 @@
     "socialAccountHint": "Connectez-vous via l'onglet Social pour synchroniser vos mods et vous connecter avec vos amis",
     "socialQuickActions": "Actions Rapides",
     "goToSocialTab": "Ouvrir l'Onglet Social",
-    "goToSocialTabDesc": "Gérer votre compte, amis et mods"
+    "goToSocialTabDesc": "Gérer votre compte, amis et mods",
+    "analytics": "Analytiques",
+    "enableAnalytics": "Envoyer des données d'utilisation anonymes pour améliorer FightPlanner",
+    "analyticsHint": "Lorsque activé, des rapports de crash anonymes et des statistiques d'utilisation sont envoyés pour nous aider à améliorer l'application. Aucune donnée personnelle n'est collectée. Vous pouvez désactiver cette option à tout moment.",
+    "devWarningTitle": "Attention — Options Développeur",
+    "devWarningText": "Modifier ces paramètres peut causer un comportement inattendu, casser votre application ou corrompre vos données. Ne changez ces options que si vous savez ce que vous faites. Ces paramètres sont destinés au développement et aux tests uniquement.",
+    "posthogTests": "Tests Analytiques PostHog",
+    "posthogTestsHint": "Envoyer des événements de test à PostHog pour vérifier que l'intégration analytique fonctionne correctement. Vérifiez votre tableau de bord PostHog pour confirmer la réception des événements.",
+    "sendTestEvent": "Envoyer un Événement Test",
+    "sendTestEventDesc": "Envoyer un événement test à PostHog",
+    "sendTestError": "Envoyer une Erreur Test",
+    "sendTestErrorDesc": "Envoyer une erreur test à PostHog"
   },
   "modals": {
     "rename": {
@@ -344,7 +355,8 @@
       "question": "Voulez-vous télécharger et installer ce mod ?",
       "downloadUrl": "URL de Téléchargement :",
       "hint": "Le mod sera téléchargé et automatiquement installé dans votre dossier mods.",
-      "downloadInstall": "Télécharger & Installer"
+      "downloadInstall": "Télécharger & Installer",
+      "cancelAll": "Tout Annuler"
     },
     "socialServiceUnavailable": {
       "title": "Service social indisponible",

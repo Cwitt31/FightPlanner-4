@@ -663,6 +663,27 @@ class SettingsManager {
     this.updateEnhancedStatusBarUI();
     this.updateDeveloperModeUI();
 
+    // Analytics toggle
+    const analyticsToggle = document.querySelector<HTMLInputElement>(
+      '#analytics-enabled',
+    );
+    if (analyticsToggle && !analyticsToggle.dataset.listenerAttached) {
+      // Load current value
+      if (window.electronAPI && window.electronAPI.getAnalyticsEnabled) {
+        window.electronAPI.getAnalyticsEnabled().then((enabled: boolean) => {
+          analyticsToggle.checked = enabled;
+        });
+      }
+
+      analyticsToggle.addEventListener('change', async () => {
+        if (window.electronAPI && window.electronAPI.setAnalyticsEnabled) {
+          await window.electronAPI.setAnalyticsEnabled(analyticsToggle.checked);
+          this.showToast(this.translate('toasts.settingSaved'), 'success');
+        }
+      });
+      analyticsToggle.dataset.listenerAttached = 'true';
+    }
+
     const devModeToggle = document.querySelector<HTMLInputElement>(
       '#developer-mode-enabled',
     );
@@ -741,6 +762,61 @@ class SettingsManager {
           }
         });
       }
+    }
+
+    // PostHog test buttons
+    const posthogTestEventBtn = document.querySelector<HTMLElement>(
+      '#posthog-test-event-btn',
+    );
+    const posthogTestErrorBtn = document.querySelector<HTMLElement>(
+      '#posthog-test-error-btn',
+    );
+    const posthogTestStatus = document.querySelector<HTMLElement>(
+      '#posthog-test-status',
+    );
+
+    if (posthogTestEventBtn && !posthogTestEventBtn.dataset.listenerAttached) {
+      posthogTestEventBtn.addEventListener('click', async () => {
+        try {
+          if (window.electronAPI && window.electronAPI.testPosthogEvent) {
+            const result = await window.electronAPI.testPosthogEvent();
+            if (result?.success) {
+              this.showToast('Test event sent to PostHog', 'success');
+              if (posthogTestStatus) {
+                const span = posthogTestStatus.querySelector('span');
+                if (span) span.textContent = 'Test event sent successfully!';
+                posthogTestStatus.style.display = 'flex';
+              }
+            }
+          }
+        } catch (err) {
+          this.showToast('Failed to send test event', 'error');
+          console.error('PostHog test event failed:', err);
+        }
+      });
+      posthogTestEventBtn.dataset.listenerAttached = 'true';
+    }
+
+    if (posthogTestErrorBtn && !posthogTestErrorBtn.dataset.listenerAttached) {
+      posthogTestErrorBtn.addEventListener('click', async () => {
+        try {
+          if (window.electronAPI && window.electronAPI.testPosthogError) {
+            const result = await window.electronAPI.testPosthogError();
+            if (result?.success) {
+              this.showToast('Test error sent to PostHog', 'success');
+              if (posthogTestStatus) {
+                const span = posthogTestStatus.querySelector('span');
+                if (span) span.textContent = 'Test error sent successfully!';
+                posthogTestStatus.style.display = 'flex';
+              }
+            }
+          }
+        } catch (err) {
+          this.showToast('Failed to send test error', 'error');
+          console.error('PostHog test error failed:', err);
+        }
+      });
+      posthogTestErrorBtn.dataset.listenerAttached = 'true';
     }
 
     const logRetentionInput = document.querySelector<HTMLInputElement>(

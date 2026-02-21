@@ -228,7 +228,6 @@
     "enhancedStatusBar": "Enhanced Status Bar",
     "enableEnhancedStatusBar": "Enable Enhanced Status Bar",
     "enhancedStatusBarHint": "Display detailed information cards in status bar (downloads, conflicts, etc.)",
-    "channelPrerelease": "Prerelease",
     "social": "FightPlanner Social",
     "socialTitle": "FightPlanner Social Settings",
     "socialAutoDownload": "Auto-Download Settings",
@@ -246,7 +245,18 @@
     "socialQuickActions": "Quick Actions",
     "goToSocialTab": "Open Social Tab",
     "goToSocialTabDesc": "Manage your account, friends and mods",
-    "channelPrerelease": "Prerelease"
+    "channelPrerelease": "Prerelease",
+    "analytics": "Analytics",
+    "enableAnalytics": "Send anonymous usage data to help improve FightPlanner",
+    "analyticsHint": "When enabled, anonymous crash reports and usage statistics are sent to help us improve the application. No personal data is collected. You can disable this at any time.",
+    "devWarningTitle": "Warning — Developer Options",
+    "devWarningText": "Modifying these settings can cause unexpected behavior, break your application, or corrupt your data. Only change these options if you know what you are doing. These settings are intended for development and testing purposes only.",
+    "posthogTests": "PostHog Analytics Tests",
+    "posthogTestsHint": "Send test events to PostHog to verify analytics integration is working correctly. Check your PostHog dashboard to confirm events are received.",
+    "sendTestEvent": "Send Test Event",
+    "sendTestEventDesc": "Send a test_event to PostHog",
+    "sendTestError": "Send Test Error",
+    "sendTestErrorDesc": "Send a test error to PostHog"
   },
   "modals": {
     "rename": {
@@ -346,7 +356,8 @@
       "question": "Do you want to download and install this mod?",
       "downloadUrl": "Download URL:",
       "hint": "The mod will be downloaded and automatically installed to your mods folder.",
-      "downloadInstall": "Download & Install"
+      "downloadInstall": "Download & Install",
+      "cancelAll": "Cancel All"
     },
     "socialServiceUnavailable": {
       "title": "Social service unavailable",

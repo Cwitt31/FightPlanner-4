@@ -28,6 +28,7 @@ export class StatusBarManager {
   hasActiveDownloads: boolean = false;
   userDismissedExtendedBar: boolean = false;
   lastExtendedBarData: string | null = null;
+  pendingDynamicIsland: boolean = false;
 
   constructor() {
     this.updateInterval = null;
@@ -332,6 +333,10 @@ export class StatusBarManager {
         bottomBar.classList.add('download-mode');
       }
 
+      if (this.pendingDynamicIsland) {
+        return;
+      }
+
       if (!bottomBar.classList.contains('expanded')) {
         bottomBar.classList.add('expanded');
       }
@@ -509,9 +514,14 @@ export class StatusBarManager {
 
           if (statusText) {
             statusText.classList.add('status-downloading');
+            const dlName = active.modName || active.fileName || active.url?.split('/').pop() || 'Downloading...';
+            const shortName = dlName.length > 30 ? dlName.substring(0, 27) + '...' : dlName;
+            const prog = active.progress !== undefined ? ` • ${Math.round(active.progress)}%` : '';
             statusText.textContent = this.t('statusBar.downloadsDownloading', {
-              count: activeDownloads.length,
-              percent: Math.round(active.progress),
+              fileName: shortName,
+              progress: prog,
+              size: '',
+              speed: '',
             });
           }
         }

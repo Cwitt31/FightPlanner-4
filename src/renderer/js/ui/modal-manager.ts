@@ -22,12 +22,12 @@ class ModalManager {
   advancedInfoCallback: (() => void) | null;
   currentModPath: string | null;
   fighterPathData: PathData[string];
-  pendingInstallData: {
+  installQueue: {
     url: string;
     downloadId: string;
     modId: string;
     modType: string;
-  } | null;
+  }[];
 
   slotAssignments: SlotAssignments;
   deletedSlots: Set<string> = new Set();
@@ -45,7 +45,7 @@ class ModalManager {
     this.editInfoCallback = null;
     this.advancedInfoCallback = null;
     this.currentModPath = null;
-    this.pendingInstallData = null;
+    this.installQueue = [];
     this.slotAssignments = new Map();
     this.fighterPathData = {};
   }
@@ -272,16 +272,16 @@ class ModalManager {
 
     const translatedTitle =
       title &&
-      (title.startsWith('modals.') ||
-        title.startsWith('common.') ||
-        title.startsWith('toasts.'))
+        (title.startsWith('modals.') ||
+          title.startsWith('common.') ||
+          title.startsWith('toasts.'))
         ? t(title, params)
         : title || '';
     const translatedMessage =
       message &&
-      (message.startsWith('modals.') ||
-        message.startsWith('common.') ||
-        message.startsWith('toasts.'))
+        (message.startsWith('modals.') ||
+          message.startsWith('common.') ||
+          message.startsWith('toasts.'))
         ? t(message, params)
         : message || '';
 
@@ -1115,13 +1115,22 @@ class ModalManager {
   }
 
   async openInstallConfirmModal(url, downloadId, modId, modType = 'Mod') {
-    this.pendingInstallData = { url, downloadId, modId, modType };
+    this.installQueue.push({ url, downloadId, modId, modType });
 
-    const urlDisplay = document.querySelector<HTMLElement>(
-      '#install-url-display',
-    );
+    if (this.installQueue.length === 1) {
+      this._showInstallModal();
+    } else {
+      this._updateInstallQueueUI();
+    }
+  }
+
+  private async _showInstallModal() {
+    const item = this.installQueue[0];
+    if (!item) return;
+
+    const urlDisplay = document.querySelector<HTMLElement>('#install-url-display');
     if (urlDisplay) {
-      urlDisplay.textContent = url;
+      urlDisplay.textContent = item.url;
     }
 
     const modal = document.querySelector<HTMLElement>('#install-confirm-modal');
@@ -1131,33 +1140,26 @@ class ModalManager {
       modal.style.display = 'block';
     }
 
-    const previewContainer = document.querySelector<HTMLElement>(
-      '#install-preview-container',
-    );
+    const previewContainer = document.querySelector<HTMLElement>('#install-preview-container');
     if (previewContainer) {
-      if (modType === 'Sound') {
-        previewContainer.style.display = 'none';
-      } else {
-        previewContainer.style.display = 'flex';
-      }
+      previewContainer.style.display = item.modType === 'Sound' ? 'none' : 'flex';
     }
 
-    if (
-      modId &&
-      modType !== 'Sound' &&
-      window.electronAPI?.fetchGameBananaPreview
-    ) {
-      const previewImage = document.querySelector<HTMLImageElement>(
-        '#install-preview-image',
-      );
+    const previewImage = document.querySelector<HTMLImageElement>('#install-preview-image');
+    const previewLoading = document.querySelector<HTMLElement>('.install-preview-loading');
 
-      const previewLoading = document.querySelector<HTMLElement>(
-        '.install-preview-loading',
-      );
+    if (previewImage) {
+      previewImage.src = '';
+      previewImage.style.display = 'none';
+      previewImage.classList.remove('loaded');
+    }
+    if (previewLoading) {
+      previewLoading.style.display = 'flex';
+    }
 
+    if (item.modId && item.modType !== 'Sound' && window.electronAPI?.fetchGameBananaPreview) {
       try {
-        const result = await window.electronAPI.fetchGameBananaPreview(modId);
-
+        const result = await window.electronAPI.fetchGameBananaPreview(item.modId);
         if (result.success && result.imageUrl) {
           previewImage!.onload = () => {
             previewImage!.classList.add('loaded');
@@ -1172,68 +1174,313 @@ class ModalManager {
         console.error('Failed to fetch preview:', error);
         if (previewLoading) previewLoading.style.display = 'none';
       }
-    } else if (modType === 'Sound') {
-      const previewLoading = document.querySelector<HTMLElement>(
-        '.install-preview-loading',
-      );
+    } else if (item.modType === 'Sound') {
       if (previewLoading) previewLoading.style.display = 'none';
     }
+
+    this._updateInstallQueueUI();
   }
 
-  closeInstallConfirmModal() {
-    this.closeModal('install-confirm-modal', {
-      onModalClosed: () => {
-        const previewContainer = document.querySelector<HTMLElement>(
-          '#install-preview-container',
-        );
+  private _updateInstallQueueUI() {
+    const modal = document.querySelector<HTMLElement>('#install-confirm-modal');
+    if (!modal) return;
 
-        const previewImage = document.querySelector<HTMLImageElement>(
-          '#install-preview-image',
-        );
+    const total = this.installQueue.length;
 
-        const previewLoading = document.querySelector<HTMLElement>(
-          '.install-preview-loading',
-        );
+    // Update badge
+    let badge = modal.querySelector<HTMLElement>('.install-queue-badge');
+    if (total > 1) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'install-queue-badge';
+        const header = modal.querySelector('.modal-header h3');
+        if (header) header.appendChild(badge);
+      }
+      badge.textContent = `1 / ${total}`;
+      badge.style.display = 'inline-flex';
+    } else if (badge) {
+      badge.style.display = 'none';
+    }
+
+    // Update cancel all button
+    let cancelAllBtn = modal.querySelector<HTMLElement>('#install-cancel-all-btn');
+    if (total > 1) {
+      if (cancelAllBtn) cancelAllBtn.style.display = 'inline-flex';
+    } else if (cancelAllBtn) {
+      cancelAllBtn.style.display = 'none';
+    }
+
+    // Remove all existing stacked cards (we'll rebuild them to ensure fresh data)
+    document.querySelectorAll('.install-stack-card').forEach((c) => c.remove());
+
+    if (total > 1) {
+      const cardsToShow = Math.min(total - 1, 2);
+      for (let i = 1; i <= cardsToShow; i++) {
+        const item = this.installQueue[i];
+        if (!item) continue;
+
+        const card = modal.cloneNode(true) as HTMLElement;
+        card.removeAttribute('id');
+        card.className = `modal install-stack-card install-stack-card-${i} install-stack-card-enter`;
+
+        // Update URL
+        const urlDisplay = card.querySelector('.install-url-display');
+        if (urlDisplay) urlDisplay.textContent = item.url;
+
+        // Update Badge
+        const badge = card.querySelector('.install-queue-badge');
+        if (badge) badge.textContent = `${i + 1} / ${total}`;
+
+        // Reset and fetch preview
+        const previewContainer = card.querySelector('.install-preview-container') as HTMLElement;
+        const previewImage = card.querySelector('.install-preview-image') as HTMLImageElement;
+        const previewLoading = card.querySelector('.install-preview-loading') as HTMLElement;
 
         if (previewContainer) {
-          previewContainer.style.display = 'flex';
+          previewContainer.style.display = item.modType === 'Sound' ? 'none' : 'flex';
         }
-
         if (previewImage) {
           previewImage.src = '';
           previewImage.style.display = 'none';
           previewImage.classList.remove('loaded');
+          // Important: clear duplicate IDs from clones
+          previewImage.removeAttribute('id');
         }
-
         if (previewLoading) {
           previewLoading.style.display = 'flex';
         }
-      },
-    });
 
-    this.pendingInstallData = null;
-  }
-
-  async confirmInstall() {
-    if (this.pendingInstallData && window.electronAPI?.confirmProtocolInstall) {
-      const { url, downloadId } = this.pendingInstallData;
-      this.closeInstallConfirmModal();
-
-      try {
-        await window.electronAPI.confirmProtocolInstall(url, downloadId);
-      } catch (error) {
-        console.error('Error confirming install:', error);
-        if (window.toastManager) {
-          window.toastManager.error('toasts.failedToStartInstallation');
+        if (item.modId && item.modType !== 'Sound' && window.electronAPI?.fetchGameBananaPreview) {
+          window.electronAPI.fetchGameBananaPreview(item.modId).then(result => {
+            if (result.success && result.imageUrl) {
+              previewImage.onload = () => {
+                previewImage.classList.add('loaded');
+                if (previewLoading) previewLoading.style.display = 'none';
+              };
+              previewImage.src = result.imageUrl;
+              previewImage.style.display = 'block';
+            } else {
+              if (previewLoading) previewLoading.style.display = 'none';
+            }
+          }).catch(() => {
+            if (previewLoading) previewLoading.style.display = 'none';
+          });
         }
+
+        modal.parentElement?.insertBefore(card, modal);
+
+        setTimeout(() => {
+          card.classList.remove('install-stack-card-enter');
+        }, 400);
       }
     }
   }
 
+  private _clearInstallQueueUI() {
+    const modal = document.querySelector<HTMLElement>('#install-confirm-modal');
+    if (modal) {
+      const badge = modal.querySelector<HTMLElement>('.install-queue-badge');
+      if (badge) badge.style.display = 'none';
+
+      const cancelAllBtn = modal.querySelector<HTMLElement>('#install-cancel-all-btn');
+      if (cancelAllBtn) cancelAllBtn.style.display = 'none';
+    }
+
+    document.querySelectorAll('.install-stack-card').forEach((c) => c.remove());
+  }
+
+  private _resetInstallPreview() {
+    const previewContainer = document.querySelector<HTMLElement>('#install-preview-container');
+    const previewImage = document.querySelector<HTMLImageElement>('#install-preview-image');
+    const previewLoading = document.querySelector<HTMLElement>('.install-preview-loading');
+
+    if (previewContainer) previewContainer.style.display = 'flex';
+    if (previewImage) {
+      previewImage.src = '';
+      previewImage.style.display = 'none';
+      previewImage.classList.remove('loaded');
+    }
+    if (previewLoading) previewLoading.style.display = 'flex';
+  }
+
+  closeInstallConfirmModal() {
+    this._clearInstallQueueUI();
+
+    this.closeModal('install-confirm-modal', {
+      onModalClosed: () => {
+        this._resetInstallPreview();
+      },
+    });
+
+    this.installQueue = [];
+  }
+
+  private _advanceInstallQueue(useDynamicIsland = false) {
+    this.installQueue.shift();
+
+    if (this.installQueue.length > 0) {
+      const modal = document.querySelector<HTMLElement>('#install-confirm-modal');
+      if (modal) {
+        modal.classList.add('install-modal-advance');
+        setTimeout(() => {
+          modal.classList.remove('install-modal-advance');
+        }, 350);
+      }
+      this._showInstallModal();
+    } else {
+      this._clearInstallQueueUI();
+      if (useDynamicIsland) {
+        this._animateModalToStatusBar();
+      } else {
+        this.closeModal('install-confirm-modal', {
+          onModalClosed: () => {
+            this._resetInstallPreview();
+          },
+        });
+      }
+    }
+  }
+
+  private _animateModalToStatusBar() {
+    const modal = document.querySelector<HTMLElement>('#install-confirm-modal');
+    const statusBar = document.getElementById('main-status-bar');
+    if (!modal || !statusBar) {
+      this.closeModal('install-confirm-modal', {
+        onModalClosed: () => this._resetInstallPreview(),
+      });
+      return;
+    }
+
+    const noAnimations = document.body.classList.contains('no-animations');
+    if (noAnimations) {
+      this.closeModal('install-confirm-modal', {
+        onModalClosed: () => this._resetInstallPreview(),
+      });
+      return;
+    }
+
+    if (window.statusBarManager) {
+      window.statusBarManager.pendingDynamicIsland = true;
+      const bottomBar = document.getElementById('main-status-bar');
+      if (bottomBar) {
+        bottomBar.classList.remove('expanded');
+        const extContent = bottomBar.querySelector('.extended-content') as HTMLElement;
+        if (extContent) extContent.style.display = 'none';
+      }
+    }
+
+    modal.style.animation = 'none';
+    modal.style.transition = 'none';
+    modal.style.overflow = 'hidden';
+
+    const statusBarRect = statusBar.getBoundingClientRect();
+    const statusBarCenterX = statusBarRect.left + statusBarRect.width / 2;
+    const statusBarCenterY = statusBarRect.top + statusBarRect.height / 2;
+
+    const overlay = document.querySelector<HTMLElement>('#modal-overlay');
+
+    const gsapRef = (window as any).gsap;
+
+    gsapRef.set(modal, {
+      opacity: 1,
+      scale: 1,
+      filter: 'blur(0px)',
+    });
+
+    const tl = gsapRef.timeline({
+      onComplete: () => {
+        modal.style.display = 'none';
+        modal.removeAttribute('style');
+        modal.style.display = 'none';
+        this._resetInstallPreview();
+
+        if (overlay) {
+          overlay.style.display = 'none';
+          overlay.removeAttribute('style');
+          overlay.style.display = 'none';
+        }
+
+        const accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '90,90,122';
+        gsapRef.fromTo(statusBar, {
+          boxShadow: `0 -2px 25px 6px rgba(${accentRgb}, 0.6)`,
+          filter: 'brightness(1.2)',
+        }, {
+          duration: 0.8,
+          boxShadow: `0 -2px 0px 0px rgba(${accentRgb}, 0)`,
+          filter: 'brightness(1)',
+          ease: 'power2.out',
+          onComplete: () => {
+            statusBar.style.boxShadow = '';
+            statusBar.style.filter = '';
+          },
+        });
+
+        setTimeout(() => {
+          if (window.statusBarManager) {
+            window.statusBarManager.pendingDynamicIsland = false;
+            window.statusBarManager.userDismissedExtendedBar = false;
+            window.statusBarManager.checkActiveDownloads();
+          }
+        }, 200);
+      },
+    });
+
+    tl.to(modal, {
+      duration: 0.45,
+      top: statusBarCenterY,
+      left: statusBarCenterX,
+      scale: 0.12,
+      borderRadius: '24px',
+      opacity: 0.7,
+      filter: 'blur(2px)',
+      ease: 'power3.in',
+    });
+
+    tl.to(modal, {
+      duration: 0.12,
+      opacity: 0,
+      scale: 0.05,
+      filter: 'blur(12px)',
+      ease: 'power2.in',
+    });
+
+    if (overlay) {
+      overlay.style.animation = 'none';
+      overlay.style.transition = 'none';
+      gsapRef.to(overlay, {
+        duration: 0.4,
+        opacity: 0,
+        ease: 'power2.inOut',
+      });
+    }
+  }
+
+  confirmInstall() {
+    const item = this.installQueue[0];
+    if (item && window.electronAPI?.confirmProtocolInstall) {
+      window.electronAPI.confirmProtocolInstall(item.url, item.downloadId).catch((error) => {
+        console.error('Error confirming install:', error);
+        if (window.toastManager) {
+          window.toastManager.error('toasts.failedToStartInstallation');
+        }
+      });
+    }
+    this._advanceInstallQueue(true);
+  }
+
   cancelInstallConfirm() {
-    if (this.pendingInstallData && window.electronAPI?.cancelProtocolInstall) {
-      const { downloadId } = this.pendingInstallData;
-      window.electronAPI.cancelProtocolInstall(downloadId);
+    const item = this.installQueue[0];
+    if (item && window.electronAPI?.cancelProtocolInstall) {
+      window.electronAPI.cancelProtocolInstall(item.downloadId);
+    }
+    this._advanceInstallQueue();
+  }
+
+  cancelAllInstalls() {
+    for (const item of this.installQueue) {
+      if (window.electronAPI?.cancelProtocolInstall) {
+        window.electronAPI.cancelProtocolInstall(item.downloadId);
+      }
     }
     this.closeInstallConfirmModal();
   }

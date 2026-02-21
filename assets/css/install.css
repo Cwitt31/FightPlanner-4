@@ -61,6 +61,7 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -118,4 +119,80 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+/* ── Queue badge ── */
+.install-queue-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: 10px;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+}
+
+/* ── Stacked cards behind modal ── */
+/* ── Stacked cards behind modal ── */
+.install-stack-card {
+  z-index: 9998 !important;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    opacity 0.35s ease;
+}
+
+.install-stack-card-1 {
+  transform: translate(-50%, calc(-50% + 14px)) scale(0.95) !important;
+  opacity: 0.6;
+  z-index: 9998 !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+.install-stack-card-2 {
+  transform: translate(-50%, calc(-50% + 28px)) scale(0.90) !important;
+  opacity: 0.3;
+  z-index: 9997 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ── Stack Animations ── */
+@keyframes stackCardEnter {
+  0% {
+    transform: translate(-50%, calc(-50% + 40px)) scale(0.85);
+    opacity: 0;
+  }
+}
+
+.install-stack-card-enter {
+  animation: stackCardEnter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes modalAdvancePop {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95) translateY(14px);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1) translateY(0);
+  }
+}
+
+.install-modal-advance {
+  animation: modalAdvancePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+}
+
+/* ── Cancel All button ── */
+#install-cancel-all-btn {
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+#install-cancel-all-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
 }

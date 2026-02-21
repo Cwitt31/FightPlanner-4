@@ -395,9 +395,86 @@ class DownloadManager {
         <span><i class="bi bi-file-earmark-zip"></i> ${fileSize}</span>
       </div>
     </div>
+    <div class="download-actions">
+      <button class="download-action-btn" data-action="goto" title="Go to mod">
+        <i class="bi bi-arrow-right-circle"></i>
+      </button>
+    </div>
   `;
 
+    const gotoBtn = element.querySelector<HTMLElement>('[data-action="goto"]');
+    if (gotoBtn) {
+      gotoBtn.addEventListener('click', () => {
+        this.navigateToMod(download.modName || download.fileName);
+      });
+    }
+
     this.completedDownloadsList.appendChild(element);
+  }
+
+  navigateToMod(modName: string) {
+    if (!window.modManager || !window.modManager.mods) return;
+
+    const normalizedName = modName.toLowerCase().replace(/^\[.*?\]\s*/, '');
+    const mod = window.modManager.mods.find((m) => {
+      const mName = m.name.toLowerCase().replace(/^\[.*?\]\s*/, '');
+      return mName === normalizedName || m.name.toLowerCase().includes(normalizedName);
+    });
+
+    if (!mod) {
+      console.log('[navigateToMod] Mod not found:', modName);
+      if (window.toastManager) {
+        window.toastManager.warning('Mod not found in your library');
+      }
+      return;
+    }
+
+    const toolsBtn = document.querySelector<HTMLElement>('[data-tab="tools"]');
+    if (toolsBtn) {
+      toolsBtn.click();
+    }
+
+    setTimeout(() => {
+      window.modManager.selectMod(mod.id);
+
+      const modElement = document.querySelector<HTMLElement>(`[data-mod-id="${mod.id}"]`);
+      if (modElement) {
+        modElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+  }
+
+  navigateToSetting(settingsTab: string, targetSelector: string) {
+    const settingsBtn = document.querySelector<HTMLElement>('[data-tab="settings"]');
+    if (settingsBtn) settingsBtn.click();
+
+    setTimeout(() => {
+      if (window.settingsManager) {
+        window.settingsManager.switchSettingsTab(settingsTab);
+      }
+
+      setTimeout(() => {
+        const target = document.querySelector<HTMLElement>(targetSelector);
+        if (!target) return;
+
+        const section = target.closest<HTMLElement>('.settings-section') || target;
+
+        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        const original = section.style.boxShadow;
+        section.style.transition = 'box-shadow 0.4s ease';
+        section.style.boxShadow = '0 0 0 2px rgba(var(--accent-rgb), 0.6), 0 0 20px rgba(var(--accent-rgb), 0.3)';
+        section.style.borderRadius = '12px';
+
+        setTimeout(() => {
+          section.style.boxShadow = original;
+          setTimeout(() => {
+            section.style.transition = '';
+            section.style.borderRadius = '';
+          }, 400);
+        }, 3000);
+      }, 400);
+    }, 300);
   }
 
   /**
@@ -547,12 +624,14 @@ class DownloadManager {
    * Send newly installed mods to Switch via FTP
    */
   async sendToSwitch() {
-    // Check if Switch settings are configured
     if (!window.settingsManager || !window.settingsManager.hasSwitchConfig()) {
       if (window.toastManager) {
-        window.toastManager.error('toasts.switchSettingsNotConfigured');
-      } else {
-        alert('Please configure Switch settings in Settings > Advanced');
+        window.toastManager.error('toasts.switchSettingsNotConfigured', 5000, {}, {
+          actionButton: {
+            text: 'Settings',
+            onClick: () => this.navigateToSetting('advanced', '#switch-transfer-method-select'),
+          },
+        });
       }
       return;
     }
@@ -561,9 +640,12 @@ class DownloadManager {
 
     if (transferMethod === 'none') {
       if (window.toastManager) {
-        window.toastManager.error('toasts.switchSettingsNotConfigured');
-      } else {
-        alert('Please configure Switch transfer method in Settings > Advanced');
+        window.toastManager.error('toasts.switchSettingsNotConfigured', 5000, {}, {
+          actionButton: {
+            text: 'Settings',
+            onClick: () => this.navigateToSetting('advanced', '#switch-transfer-method-select'),
+          },
+        });
       }
       return;
     }
@@ -574,12 +656,14 @@ class DownloadManager {
       window.settingsManager.getSwitchFtpPath() || '/switch';
     const switchDriveLetter = window.settingsManager.getSwitchDriveLetter();
 
-    // Get mods path
     if (!window.settingsManager || !window.settingsManager.hasModsPath()) {
       if (window.toastManager) {
-        window.toastManager.error('toasts.modsFolderPathNotSet');
-      } else {
-        alert('Please set the mods folder path in Settings');
+        window.toastManager.error('toasts.modsFolderPathNotSet', 5000, {}, {
+          actionButton: {
+            text: 'Settings',
+            onClick: () => this.navigateToSetting('paths', '#mods-folder-path'),
+          },
+        });
       }
       return;
     }

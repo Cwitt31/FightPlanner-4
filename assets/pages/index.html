@@ -586,13 +586,18 @@
       </div>
     </div>
     <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" id="install-cancel-all-btn"
+        onclick="window.modalManager.cancelAllInstalls()" style="display: none"
+        data-i18n="modals.installConfirm.cancelAll">
+        Cancel All
+      </button>
       <button class="modal-btn modal-btn-cancel" onclick="window.modalManager.cancelInstallConfirm()"
         data-i18n="common.cancel">
         Cancel
       </button>
       <button class="modal-btn modal-btn-primary" onclick="window.modalManager.confirmInstall()">
         <i class="fas fa-download"></i>
-        <span data-i18n="modals.installConfirm.downloadInstall">Download & Install</span>
+        <span data-i18n="modals.installConfirm.downloadInstall">Download &amp; Install</span>
       </button>
     </div>
   </div>

@@ -209,6 +209,21 @@
           update channel to receive stable, beta, or alpha releases.
         </p>
       </div>
+      <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.analytics">Analytics</label>
+        <div class="settings-input-group">
+          <label class="settings-switch">
+            <input type="checkbox" id="analytics-enabled" checked />
+            <span class="settings-switch-slider"></span>
+          </label>
+          <span style="margin-left: 12px; color: var(--text-secondary)" data-i18n="settings.enableAnalytics">Send
+            anonymous usage data to help improve FightPlanner</span>
+        </div>
+        <p class="settings-hint" data-i18n="settings.analyticsHint">
+          When enabled, anonymous crash reports and usage statistics are sent to help us improve the application.
+          No personal data is collected. You can disable this at any time.
+        </p>
+      </div>
     </div>
 
     <!-- Paths Settings -->
@@ -735,6 +750,31 @@
         Developer Options
       </h2>
 
+      <!-- Warning Banner -->
+      <div class="settings-section" style="
+          background: linear-gradient(
+            135deg,
+            rgba(239, 68, 68, 0.15) 0%,
+            rgba(239, 68, 68, 0.05) 100%
+          );
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          border-radius: 10px;
+        ">
+        <label class="settings-label" style="color: #ef4444; display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-exclamation-triangle-fill" style="font-size: 20px;"></i>
+          <span data-i18n="settings.devWarningTitle">Warning — Developer Options</span>
+        </label>
+        <p style="
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 0;
+          " data-i18n="settings.devWarningText">
+          Modifying these settings can cause unexpected behavior, break your application, or corrupt your data.
+          Only change these options if you know what you are doing. These settings are intended for development and
+          testing purposes only.
+        </p>
+      </div>
+
       <div class="settings-section">
         <label class="settings-label" data-i18n="settings.fakeVersion">Fake App Version</label>
         <div class="settings-input-group">
@@ -777,6 +817,48 @@
             <span data-i18n="settings.simulateUpdate">Simulate Update</span>
           </button>
         </div>
+      </div>
+
+      <!-- PostHog Analytics Tests -->
+      <div class="settings-section" style="
+          background: linear-gradient(
+            135deg,
+            rgba(99, 102, 241, 0.1) 0%,
+            rgba(99, 102, 241, 0.05) 100%
+          );
+          border-color: rgba(99, 102, 241, 0.2);
+        ">
+        <label class="settings-label"
+          style="color: var(--primary-color); display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-graph-up"></i>
+          <span data-i18n="settings.posthogTests">PostHog Analytics Tests</span>
+        </label>
+        <p class="settings-hint" style="margin-bottom: 12px;" data-i18n="settings.posthogTestsHint">
+          Send test events to PostHog to verify analytics integration is working correctly.
+          Check your PostHog dashboard to confirm events are received.
+        </p>
+        <div class="settings-input-group" style="gap: 10px;">
+          <button class="settings-btn-action" id="posthog-test-event-btn" style="flex: 1;">
+            <i class="bi bi-send"></i>
+            <div class="settings-btn-action-content">
+              <span class="settings-btn-action-title" data-i18n="settings.sendTestEvent">Send Test Event</span>
+              <span class="settings-btn-action-desc" data-i18n="settings.sendTestEventDesc">Send a test_event to
+                PostHog</span>
+            </div>
+          </button>
+          <button class="settings-btn-action" id="posthog-test-error-btn" style="flex: 1;">
+            <i class="bi bi-bug"></i>
+            <div class="settings-btn-action-content">
+              <span class="settings-btn-action-title" data-i18n="settings.sendTestError">Send Test Error</span>
+              <span class="settings-btn-action-desc" data-i18n="settings.sendTestErrorDesc">Send a test error to
+                PostHog</span>
+            </div>
+          </button>
+        </div>
+        <p id="posthog-test-status" class="settings-hint" style="margin-top: 10px; display: none;">
+          <i class="bi bi-check-circle-fill" style="color: var(--success-color);"></i>
+          <span></span>
+        </p>
       </div>
 
       <div class="settings-section" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">

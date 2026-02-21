@@ -56,6 +56,10 @@ export interface ProtocolHandlerEvents {
     downloadId?: string;
     error: string;
   };
+
+  'gamebanana-pairing-success': {
+    memberId: string;
+  };
 }
 
 export default class ProtocolHandler {
@@ -76,6 +80,8 @@ export default class ProtocolHandler {
     { url: string; modId: string | null; downloadId: string; modType: string }
   >;
   processingUrls: Set<string>;
+  pollingIntervalId: NodeJS.Timeout | null = null;
+  seenRemoteInstalls: Set<string>;
 
   constructor(mainWindow) {
     this.mainWindow = mainWindow;
@@ -83,6 +89,12 @@ export default class ProtocolHandler {
     this.activeDownloads = new Map(); // Map of downloadId -> {request, file, filePath, cancelled, paused}
     this.pendingInstalls = new Map();
     this.processingUrls = new Set();
+    this.seenRemoteInstalls = new Set();
+
+    // Start polling automatically if credentials exist
+    setTimeout(() => {
+      this.startRemoteInstallPolling();
+    }, 2000);
   }
   static async registerProtocol() {
     // On Linux, wait for app to be ready before registering
@@ -334,29 +346,48 @@ export default class ProtocolHandler {
 
     try {
       const cleanUrl = url.replace('fightplanner:', '');
+      const strippedUrl = cleanUrl.replace(/^\/+/, '');
 
-      if (this.processingUrls.has(cleanUrl)) {
+      const pairingMatch = strippedUrl.match(/^registerKey,(\d+),([a-zA-Z0-9_-]+)$/i);
+      if (pairingMatch) {
+        const memberId = pairingMatch[1];
+        const secretKey = pairingMatch[2];
+        console.log('[protocol] Parsed pairing info - memberId:', memberId);
+
+        sharedStore.set('gb_secret_key', secretKey);
+        sharedStore.set('gb_member_id', memberId);
+
+        this.sendToRenderer('gamebanana-pairing-success', { memberId });
+
+        this.startRemoteInstallPolling();
+        return;
+      }
+
+      const isRemoteInstall = cleanUrl.includes('FromRemoteInstall=true');
+      const dedupeKey = isRemoteInstall ? cleanUrl : cleanUrl;
+
+      if (this.processingUrls.has(dedupeKey)) {
         console.log(
           '[protocol] URL already being processed, skipping duplicate:',
-          cleanUrl,
+          dedupeKey,
         );
         return;
       }
 
-      this.processingUrls.add(cleanUrl);
+      this.processingUrls.add(dedupeKey);
 
       setTimeout(() => {
-        this.processingUrls.delete(cleanUrl);
+        this.processingUrls.delete(dedupeKey);
       }, 5000);
 
       const downloadId = `dl_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-      const modId = this.extractModId(cleanUrl);
-      const modType = this.extractModType(cleanUrl);
+      const modId = this.extractModId(strippedUrl);
+      const modType = this.extractModType(strippedUrl);
 
-      const downloadUrl = this.parseGameBananaUrl(cleanUrl);
+      const downloadUrl = this.parseGameBananaUrl(strippedUrl);
 
       if (!downloadUrl) {
-        this.processingUrls.delete(cleanUrl);
+        this.processingUrls.delete(dedupeKey);
         this.showError('Invalid URL format');
         return;
       }
@@ -384,6 +415,96 @@ export default class ProtocolHandler {
       this.processingUrls.delete(cleanUrl);
       this.showError(`Installation failed: ${error.message}`);
       this.sendToRenderer('mod-install-error', { error: error.message });
+    }
+  }
+
+  startRemoteInstallPolling() {
+    if (this.pollingIntervalId) return;
+
+    const secretKey = sharedStore.get('gb_secret_key') as string | undefined;
+    const memberId = sharedStore.get('gb_member_id') as string | undefined;
+
+    if (!secretKey || !memberId) {
+      console.log('[protocol] Remote install credentials missing, polling not started');
+      return;
+    }
+
+    console.log('[protocol] Starting Remote Install polling for member:', memberId);
+
+    this.pollRemoteInstalls(memberId, secretKey);
+
+    this.pollingIntervalId = setInterval(() => {
+      this.pollRemoteInstalls(memberId, secretKey);
+    }, 10 * 1000);
+  }
+
+  stopRemoteInstallPolling() {
+    if (this.pollingIntervalId) {
+      clearInterval(this.pollingIntervalId);
+      this.pollingIntervalId = null;
+      console.log('[protocol] Stopped Remote Install polling');
+    }
+  }
+
+  private async pollRemoteInstalls(memberId: string, secretKey: string) {
+    try {
+      const apiUrl = `https://gamebanana.com/apiv11/RemoteInstall/${memberId}/${secretKey}/fightplanner`;
+      const response = await this.fetchWithTimeout(apiUrl, 10000);
+
+      if (!response) return;
+
+      let data;
+      try {
+        data = JSON.parse(response);
+      } catch (e) {
+        console.error('[protocol] Failed to parse RemoteInstall API response', e);
+        return;
+      }
+
+      if (data && typeof data === 'object' && !Array.isArray(data) && data.error) {
+        console.error('[protocol] RemoteInstall API returned error:', data.error);
+        if (data.error.includes("Invalid credentials") || data.error.toLowerCase().includes("unauthorized")) {
+          this.stopRemoteInstallPolling();
+          sharedStore.delete('gb_secret_key');
+          sharedStore.delete('gb_member_id');
+          this.showError("GameBanana remote install pairing revoked or invalid.");
+        }
+        return;
+      }
+
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          let urlToHandle: string | null = null;
+          let timestamp = Date.now();
+
+          if (typeof item === 'string') {
+            urlToHandle = item;
+          } else if (typeof item === 'object' && item !== null) {
+            if (item._sUrl) urlToHandle = item._sUrl;
+            else if (item._sDownloadUrl) urlToHandle = item._sDownloadUrl;
+            else if (item.url) urlToHandle = item.url;
+
+            if (item._tsDateAdded) timestamp = item._tsDateAdded;
+          }
+
+          if (urlToHandle) {
+            const uniqueIdent = `${urlToHandle}_${timestamp}`;
+
+            if (!this.seenRemoteInstalls.has(uniqueIdent)) {
+              this.seenRemoteInstalls.add(uniqueIdent);
+
+              const processedUrl = urlToHandle.includes('?')
+                ? `${urlToHandle}&FromRemoteInstall=true`
+                : `${urlToHandle}?FromRemoteInstall=true`;
+
+              console.log('[protocol] Processing new Remote Install request:', processedUrl);
+              this.handleDeepLink(processedUrl);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[protocol] Error fetching from RemoteInstall API:', error.message);
     }
   }
 

@@ -44,3 +44,11 @@ if (window.electronAPI && window.electronAPI.onModInstallConfirmRequest) {
 
   console.log('Protocol install listener initialized');
 }
+
+if (window.electronAPI && window.electronAPI.onGameBananaPairingSuccess) {
+  window.electronAPI.onGameBananaPairingSuccess((data) => {
+    if (window.toastManager) {
+      window.toastManager.success('GameBanana account successfully paired. Listening for remote installs...', 5000);
+    }
+  });
+}
