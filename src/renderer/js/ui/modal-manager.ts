@@ -25,10 +25,8 @@ type SlotAssignmentsByFighter = Map<string, SlotAssignments>;
 /**
  * Represents the slot usage across all active mods for each fighter, mapping fighter name to a map of slot to mods using that slot.
  */
-type SlotUsageByFighter = Map<
-  string,
-  Map<string, { mods: { name: string; path: string }[] }>
->;
+type SlotUsageMod = { name: string; path: string; files: string[] };
+type SlotUsageByFighter = Map<string, Map<string, { mods: SlotUsageMod[] }>>;
 
 // Fighter group definitions for multi-character fighters
 const MULTI_CHAR_FIGHTER_GROUPS: Record<
@@ -564,6 +562,7 @@ class ModalManager {
       // Scan all active mods once and build slot usage per fighter
       this.scanAllModsSlotUsage().then(() => {
         this.renderSlotUsageForSelectedFighter();
+        this.updateFighterTabConflicts();
       });
 
       this.showOverlay();
@@ -765,19 +764,15 @@ class ModalManager {
       return;
     }
 
-    // Get actual fighters for the selected tab
-    const actualFighters = getActualFighterNames(
+    const fighterGroup = getActualFighterNames(
       this.selectedFighterName,
       this.rawFighterNames,
     );
 
     // Merge slot usage from all fighters in the group
-    const mergedSlotUsage = new Map<
-      string,
-      { mods: { name: string; path: string }[] }
-    >();
+    const mergedSlotUsage = new Map<string, { mods: SlotUsageMod[] }>();
 
-    for (const fighter of actualFighters) {
+    for (const fighter of fighterGroup) {
       const fighterUsage = this.slotUsageByFighter.get(fighter);
 
       if (!fighterUsage) continue;
@@ -790,15 +785,79 @@ class ModalManager {
         const existing = mergedSlotUsage.get(slot)!;
 
         for (const mod of usage.mods) {
-          // Avoid duplicate mod entries
-          if (!existing.mods.some((m) => m.path === mod.path)) {
-            existing.mods.push(mod);
+          const existingMod = existing.mods.find((m) => m.path === mod.path);
+
+          if (existingMod) {
+            // Merge files from multiple fighters into same mod entry
+            for (const file of mod.files) {
+              if (!existingMod.files.includes(file)) {
+                existingMod.files.push(file);
+              }
+            }
+          } else {
+            existing.mods.push({ ...mod, files: [...mod.files] });
           }
         }
       }
     }
 
     this.renderSlotUsageOverview(mergedSlotUsage, this.currentMod.path);
+  }
+
+  /**
+   * Checks each fighter tab for file-level conflicts involving the current mod
+   * and toggles the 'tab-conflict' CSS class accordingly.
+   */
+  updateFighterTabConflicts() {
+    if (!this.slotUsageByFighter || !this.currentMod) return;
+
+    const currentModPath = this.currentMod.path;
+    const tabs = document.querySelectorAll<HTMLElement>(
+      '.slot-usage-fighter-tab',
+    );
+
+    for (const tab of tabs) {
+      const fighterName = tab.dataset.fighter;
+      if (!fighterName) continue;
+
+      const actualFighters = getActualFighterNames(
+        fighterName,
+        this.rawFighterNames,
+      );
+
+      let hasConflict = false;
+
+      for (const fighter of actualFighters) {
+        const fighterUsage = this.slotUsageByFighter.get(fighter);
+        if (!fighterUsage) continue;
+
+        for (const [, usage] of fighterUsage) {
+          if (usage.mods.length < 2) continue;
+
+          const currentModFiles = usage.mods
+            .filter((m) => m.path === currentModPath)
+            .flatMap((m) => m.files);
+
+          if (currentModFiles.length === 0) continue;
+
+          const currentFileSet = new Set(currentModFiles);
+          const otherMods = usage.mods.filter((m) => m.path !== currentModPath);
+
+          for (const other of otherMods) {
+            if (other.files.some((f) => currentFileSet.has(f))) {
+              hasConflict = true;
+              break;
+            }
+          }
+
+          if (hasConflict) break;
+        }
+
+        if (hasConflict) break;
+      }
+
+      tab.classList.toggle('tab-conflict', hasConflict);
+    }
   }
 
   async scanAllModsSlotUsage(): Promise<void> {
@@ -829,9 +888,8 @@ class ModalManager {
         for (const fighterName of this.rawFighterNames) {
           if (!scanResult.data.fighterNames.includes(fighterName)) continue;
 
-          const fighterSlots = Object.keys(
-            scanResult.data.pathData[fighterName] || {},
-          );
+          const fighterData = scanResult.data.pathData[fighterName] || {};
+          const fighterSlots = Object.keys(fighterData);
 
           const fighterUsage = this.slotUsageByFighter.get(fighterName)!;
 
@@ -840,7 +898,16 @@ class ModalManager {
               fighterUsage.set(slot, { mods: [] });
             }
 
-            fighterUsage.get(slot)!.mods.push(modEntry);
+            const slotData = fighterData[slot];
+
+            const files = (slotData?.filesToBeModified || []).map(
+              (f) => f.original,
+            );
+
+            fighterUsage.get(slot)!.mods.push({
+              ...modEntry,
+              files,
+            });
           }
         }
       } catch (error) {
@@ -850,7 +917,7 @@ class ModalManager {
   }
 
   renderSlotUsageOverview(
-    slotUsage: Map<string, { mods: { name: string; path: string }[] }>,
+    slotUsage: Map<string, { mods: SlotUsageMod[] }>,
     currentModPath: string,
   ) {
     const modalBody = document.querySelector('#change-slot-modal .modal-body');
@@ -884,13 +951,48 @@ class ModalManager {
       const slotString = slotNumberToString(i);
       const usage = slotUsage.get(slotString);
       const isUsed = usage && usage.mods.length > 0;
-      const isConflict = usage && usage.mods.length > 1;
+
+      // Only consider it a conflict if mods have overlapping files, not just the same slot
+      let hasCurrentModConflict = false;
+      let hasOtherModsConflict = false;
+      if (usage && usage.mods.length > 1) {
+        const currentModFiles = usage.mods
+          .filter((m) => m.path === currentModPath)
+          .flatMap((m) => m.files);
+        const currentModFileSet = new Set(currentModFiles);
+
+        const otherMods = usage.mods.filter((m) => m.path !== currentModPath);
+
+        // Check if current mod has file overlaps with any other mod
+        if (currentModFileSet.size > 0) {
+          for (const other of otherMods) {
+            if (other.files.some((f) => currentModFileSet.has(f))) {
+              hasCurrentModConflict = true;
+              break;
+            }
+          }
+        }
+
+        // Check if other mods conflict with each other
+        if (otherMods.length > 1) {
+          const otherFileSets = otherMods.map((m) => new Set(m.files));
+          outer: for (let a = 0; a < otherFileSets.length; a++) {
+            for (let b = a + 1; b < otherFileSets.length; b++) {
+              for (const file of otherFileSets[a]) {
+                if (otherFileSets[b].has(file)) {
+                  hasOtherModsConflict = true;
+                  break outer;
+                }
+              }
+            }
+          }
+        }
+      }
 
       // Check if current mod is involved in the conflict
-      const currentModInvolved =
-        usage?.mods.some((m) => m.path === currentModPath) || false;
-      const isCurrentModConflict = isConflict && currentModInvolved;
-      const isOtherModsConflict = isConflict && !currentModInvolved;
+      const isCurrentModConflict = hasCurrentModConflict;
+      const isOtherModsConflict =
+        hasOtherModsConflict && !hasCurrentModConflict;
 
       const slotItem = document.createElement('div');
       slotItem.className = 'slot-usage-item';
