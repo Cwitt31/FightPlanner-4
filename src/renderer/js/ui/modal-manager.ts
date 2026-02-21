@@ -604,7 +604,7 @@ class ModalManager {
     // Clean up slot usage hint and overview
     const slotUsageHint = document.querySelector('#slot-usage-hint');
     const slotUsageOverview = document.querySelector('#slot-usage-overview');
-    const fighterTabs = document.querySelector('#fighter-tabs');
+    const fighterTabs = document.querySelector('#fighter-tabs-wrapper');
 
     if (slotUsageHint) slotUsageHint.remove();
     if (slotUsageOverview) slotUsageOverview.remove();
@@ -649,8 +649,12 @@ class ModalManager {
     if (!modalBody) return;
 
     // Remove existing tabs if any
-    const existingTabs = document.querySelector('#fighter-tabs');
+    const existingTabs = document.querySelector('#fighter-tabs-wrapper');
     if (existingTabs) existingTabs.remove();
+
+    const tabsWrapper = document.createElement('div');
+    tabsWrapper.id = 'fighter-tabs-wrapper';
+    tabsWrapper.className = 'slot-usage-fighter-tabs-wrapper';
 
     const tabsContainer = document.createElement('div');
     tabsContainer.id = 'fighter-tabs';
@@ -675,8 +679,54 @@ class ModalManager {
       tabsContainer.appendChild(tab);
     });
 
+    tabsWrapper.appendChild(tabsContainer);
+
+    // Update fade masks based on scroll position
+    const updateFadeMasks = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsContainer;
+      const canScrollLeft = scrollLeft > 1;
+      const canScrollRight = scrollLeft < scrollWidth - clientWidth - 1;
+
+      tabsWrapper.classList.toggle('fade-left', canScrollLeft);
+      tabsWrapper.classList.toggle('fade-right', canScrollRight);
+    };
+
+    tabsContainer.addEventListener('scroll', updateFadeMasks);
+    requestAnimationFrame(updateFadeMasks);
+
     // Insert at the top of modal-body
-    modalBody.insertBefore(tabsContainer, modalBody.firstChild);
+    modalBody.insertBefore(tabsWrapper, modalBody.firstChild);
+
+    // Allow vertical scroll wheel to scroll tabs horizontally with smooth momentum
+    let scrollVelocity = 0;
+    let scrollAnimationId: number | null = null;
+
+    const animateScroll = () => {
+      tabsContainer.scrollLeft += scrollVelocity;
+      scrollVelocity *= 0.85;
+
+      if (Math.abs(scrollVelocity) > 0.5) {
+        scrollAnimationId = requestAnimationFrame(animateScroll);
+      } else {
+        scrollVelocity = 0;
+        scrollAnimationId = null;
+      }
+    };
+
+    tabsContainer.addEventListener(
+      'wheel',
+      (e) => {
+        if (e.deltaY !== 0) {
+          e.preventDefault();
+          scrollVelocity += e.deltaY * 0.5;
+
+          if (scrollAnimationId === null) {
+            scrollAnimationId = requestAnimationFrame(animateScroll);
+          }
+        }
+      },
+      { passive: false },
+    );
   }
 
   selectFighter(fighterName: string) {
@@ -971,9 +1021,14 @@ class ModalManager {
       }
     }
 
-    for (const [index, [originalSlotString, selectedSlotString]] of Array.from(
-      mergedAssignments,
-    ).entries()) {
+    const sortedAssignments = Array.from(mergedAssignments).sort(
+      ([a], [b]) => slotStringToNumber(a) - slotStringToNumber(b),
+    );
+
+    for (const [
+      index,
+      [originalSlotString, selectedSlotString],
+    ] of sortedAssignments.entries()) {
       const slotItem = document.createElement('div');
 
       slotItem.className = 'slot-item';

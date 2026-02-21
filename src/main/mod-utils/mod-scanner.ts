@@ -106,8 +106,6 @@ export const ModScanner = {
           } = await ModScanner.extractFighterAndSlotInfo(relativePath);
 
           if (fighterName) {
-            fighterNames.add(fighterName);
-
             const slotKey = slot || 'unknown';
             const isFile = fileOrDirectory.isFile();
 
@@ -115,6 +113,8 @@ export const ModScanner = {
             if (slotKey === 'unknown' && !isFile) {
               return;
             }
+
+            fighterNames.add(fighterName);
 
             slots.add(slotKey);
             _createPathDataEntry(fighterName, slotKey);
@@ -283,12 +283,15 @@ export const ModScanner = {
     }
 
     // Check original files
-    const kirbyCopyMatch = /kirby[\/\\]model[\/\\]copy_(\w+)_/.exec(filePath);
+    const kirbyCopyMatch =
+      /kirby[\/\\]model[\/\\]copy_(\w+)_|fighter[\/\\]kirby[\/\\]motion[\/\\](\w+)body/.exec(
+        filePath,
+      );
 
     if (!kirbyCopyMatch) {
       return 'kirby';
     }
 
-    return kirbyCopyMatch[1];
+    return kirbyCopyMatch[1] || kirbyCopyMatch[2];
   },
 };

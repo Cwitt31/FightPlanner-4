@@ -204,12 +204,37 @@
 }
 
 /* Fighter character tabs */
+.slot-usage-fighter-tabs-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+  mask-image: linear-gradient(to right, black, black);
+  -webkit-mask-image: linear-gradient(to right, black, black);
+  transition: mask-image 0.3s ease, -webkit-mask-image 0.3s ease;
+}
+
+.slot-usage-fighter-tabs-wrapper.fade-right {
+  mask-image: linear-gradient(to right, black calc(100% - 40px), transparent);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 40px), transparent);
+}
+
+.slot-usage-fighter-tabs-wrapper.fade-left {
+  mask-image: linear-gradient(to right, transparent, black 40px);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40px);
+}
+
+.slot-usage-fighter-tabs-wrapper.fade-left.fade-right {
+  mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+}
+
 .slot-usage-fighter-tabs {
   display: flex;
   gap: 4px;
-  margin-bottom: 16px;
   border-bottom: 1px solid var(--border-hover);
   padding-bottom: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
 
 .slot-usage-fighter-tab {
@@ -223,6 +248,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 6px 6px 0 0;
+  white-space: nowrap;
 }
 
 .slot-usage-fighter-tab:hover {
