@@ -302,7 +302,6 @@
     },
     "changeSlot": {
       "title": "Change Character Slot - {{modName}}",
-      "subtitle": "Character: {{characterName}}",
       "hint": "Detected slots in this mod:",
       "applyChanges": "Apply Changes",
       "currentSlot": "Current: {{slot}}",

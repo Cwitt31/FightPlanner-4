@@ -16,24 +16,28 @@ interface CustomData {
 export class SlotChanger {
   static async changeSlots(
     modPath: string,
-    slotAssignments: Map<string, string>,
+    slotAssignments: Map<string, Map<string, string>>,
     pathData: PathData,
     slotCustomNames: Record<string, CustomData> = {},
   ) {
     const changedPaths: string[] = [];
 
-    const tempMappings: {
-      originalPath: string;
-      tempPath: string;
-      finalPath: string;
-    }[] = [];
-
     for (const fighterName of Object.keys(pathData)) {
       const defaultCustomNames = await this.getDefaultCustomNames(fighterName);
-      const finalSlots = Array.from(slotAssignments.values());
+      const fighterAssignments = slotAssignments.get(fighterName);
+
+      if (!fighterAssignments) continue;
+
+      const finalSlots = Array.from(fighterAssignments.values());
+
+      const fighterTempMappings: {
+        originalPath: string;
+        tempPath: string;
+        finalPath: string;
+      }[] = [];
 
       Object.keys(pathData[fighterName]).forEach((currentSlot) => {
-        const newSlot = slotAssignments.get(currentSlot);
+        const newSlot = fighterAssignments.get(currentSlot);
 
         if (!newSlot) {
           return;
@@ -65,7 +69,7 @@ export class SlotChanger {
 
           const tempPath = tempPathParts.join('/');
 
-          tempMappings.push({
+          fighterTempMappings.push({
             originalPath: original,
             tempPath: tempPath,
             finalPath: newPath,
@@ -73,7 +77,7 @@ export class SlotChanger {
         });
       });
 
-      for (const mapping of tempMappings) {
+      for (const mapping of fighterTempMappings) {
         try {
           await ModFileOperations.renameModFile(
             modPath,
@@ -97,7 +101,7 @@ export class SlotChanger {
         '[changeSlots] Moving files from temporary to final paths...',
       );
 
-      for (const mapping of tempMappings) {
+      for (const mapping of fighterTempMappings) {
         try {
           await ModFileOperations.renameModFile(
             modPath,
@@ -278,20 +282,26 @@ export class SlotChanger {
 
         await jsonCreator.generateConfig(finalSlots);
       }
-
-      return changedPaths.length;
     }
+
+    return changedPaths.length;
   }
 
-  static async removeSlot(modPath: string, slot: string, pathData: PathData) {
+  static async removeSlots(
+    modPath: string,
+    deletedSlots: Map<string, Set<string>>,
+    pathData: PathData,
+  ) {
     let deletedPaths = 0;
 
-    for (const fighter in pathData) {
-      for (const currentSlot in pathData[fighter]) {
-        if (currentSlot !== slot) continue;
+    for (const [fighterName, slots] of deletedSlots) {
+      const fighterData = pathData[fighterName];
+
+      for (const slot of slots) {
+        if (!fighterData || !fighterData[slot]) continue;
 
         for (const { original } of Object.values(
-          pathData[fighter][currentSlot].pathsToBeModified,
+          fighterData[slot].pathsToBeModified,
         )) {
           await ModFileOperations.deleteModFile(modPath, original);
           deletedPaths++;
