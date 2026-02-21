@@ -10,7 +10,119 @@ function slotNumberToString(slotNumber: number): string {
   return `c${slotNumber.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Represents the slot assignments for a single fighter, mapping original slot to new slot.
+ * Example: { "c00": "c01", "c01": "c00", ... }
+ */
 type SlotAssignments = Map<string, string>;
+
+/**
+ * Represents the slot assignments for all fighters in a mod, mapping fighter name to its SlotAssignments.
+ * Example: { "mario": {@link SlotAssignments}, "link": {@link SlotAssignments}, ... }
+ */
+type SlotAssignmentsByFighter = Map<string, SlotAssignments>;
+
+/**
+ * Represents the slot usage across all active mods for each fighter, mapping fighter name to a map of slot to mods using that slot.
+ */
+type SlotUsageMod = { name: string; path: string; files: string[] };
+type SlotUsageByFighter = Map<string, Map<string, { mods: SlotUsageMod[] }>>;
+
+// Fighter group definitions for multi-character fighters
+const MULTI_CHAR_FIGHTER_GROUPS: Record<
+  string,
+  { members: string[]; displayName: string }
+> = {
+  'ptrainer-group': {
+    members: ['ptrainer', 'pzenigame', 'pfushigisou', 'plizardon'],
+    displayName: 'Pokemon Trainer',
+  },
+
+  'element-group': {
+    members: [
+      'element',
+      'eflame',
+      'elight',
+      'flame_first',
+      'light_first',
+      'flame_only',
+      'light_only',
+    ],
+    displayName: 'Pyra/Mythra',
+  },
+};
+
+/**
+ * Given a raw fighter name, returns the group id it belongs to, or null.
+ */
+function getFighterGroupId(fighterName: string): string | null {
+  for (const [groupId, group] of Object.entries(MULTI_CHAR_FIGHTER_GROUPS)) {
+    if (group.members.includes(fighterName)) {
+      return groupId;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Given an array of raw fighter names, returns a deduplicated list where
+ * grouped fighters are replaced by their group id, preserving order.
+ */
+function groupFighterNames(rawNames: string[]): string[] {
+  const result: string[] = [];
+  const groups = new Set<string>();
+
+  for (const name of rawNames) {
+    const groupId = getFighterGroupId(name);
+
+    if (groupId) {
+      if (!groups.has(groupId)) {
+        groups.add(groupId);
+        result.push(groupId);
+      }
+    } else {
+      result.push(name);
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Given a display fighter name (which may be a group id), returns the
+ * actual fighter names present in the mod's pathData.
+ */
+function getActualFighterNames(
+  displayName: string,
+  allRawNames: string[],
+): string[] {
+  const group = MULTI_CHAR_FIGHTER_GROUPS[displayName];
+
+  if (group) {
+    return allRawNames.filter((name) => group.members.includes(name));
+  }
+
+  return [displayName];
+}
+
+/**
+ * Returns a display name for a fighter or group.
+ */
+function getFighterDisplayName(fighterNameOrGroup: string): string {
+  const group = MULTI_CHAR_FIGHTER_GROUPS[fighterNameOrGroup];
+
+  if (group) {
+    return group.displayName;
+  }
+
+  const resolvedFighterId = window.resolveFolderName
+    ? window.resolveFolderName(fighterNameOrGroup)
+    : fighterNameOrGroup.toLowerCase();
+
+  const characterInfo = window.SSBU_CHARACTERS?.[resolvedFighterId];
+  return characterInfo?.name || fighterNameOrGroup;
+}
 
 class ModalManager {
   currentMod: any | null;
@@ -21,7 +133,11 @@ class ModalManager {
   editInfoCallback: ((info: any) => void) | null;
   advancedInfoCallback: (() => void) | null;
   currentModPath: string | null;
-  fighterPathData: PathData[string];
+  fighterNames: string[];
+  rawFighterNames: string[];
+  selectedFighterName: string | null;
+  pathData: PathData;
+  slotUsageByFighter: SlotUsageByFighter | null;
   pendingInstallData: {
     url: string;
     downloadId: string;
@@ -29,11 +145,14 @@ class ModalManager {
     modType: string;
   } | null;
 
-  slotAssignments: SlotAssignments;
-  deletedSlots: Set<string> = new Set();
+  slotAssignments: SlotAssignmentsByFighter;
+  deletedSlots: Map<string, Set<string>> = new Map();
 
   changeSlotCallback?:
-    | ((slotAssignments: SlotAssignments, deletedSlots: Set<string>) => void)
+    | ((
+        slotAssignments: SlotAssignmentsByFighter,
+        deletedSlots: Map<string, Set<string>>,
+      ) => void)
     | null;
 
   constructor() {
@@ -47,7 +166,10 @@ class ModalManager {
     this.currentModPath = null;
     this.pendingInstallData = null;
     this.slotAssignments = new Map();
-    this.fighterPathData = {};
+    this.fighterNames = [];
+    this.rawFighterNames = [];
+    this.selectedFighterName = null;
+    this.slotUsageByFighter = null;
   }
 
   _getAnimationDelay() {
@@ -350,8 +472,8 @@ class ModalManager {
     mod: Mod,
     modData: ScanModResult,
     callback: (
-      slotAssignments: SlotAssignments,
-      deletedSlots: Set<string>,
+      slotAssignments: SlotAssignmentsByFighter,
+      deletedSlots: Map<string, Set<string>>,
     ) => void,
   ) {
     const t = (key, params = {}) => {
@@ -361,23 +483,29 @@ class ModalManager {
     this.currentMod = mod;
     this.changeSlotCallback = callback;
 
-    if (modData.fighterNames.length !== 1) {
+    if (modData.fighterNames.length === 0) {
       throw new Error(
-        'Cannot change slots for mods with multiple or unknown fighters.',
+        'Cannot change slots for mods with no detected fighters.',
       );
     }
 
-    const fighterName = modData.fighterNames[0];
+    this.rawFighterNames = modData.fighterNames;
+    this.fighterNames = groupFighterNames(modData.fighterNames);
 
-    this.slotAssignments = modData.currentSlots.reduce<SlotAssignments>(
-      (acc, slot) => {
-        acc.set(slot, slot);
-        return acc;
-      },
-      new Map(),
-    );
+    this.slotAssignments = new Map<string, SlotAssignments>();
 
-    this.fighterPathData = modData.pathData[fighterName];
+    for (const fighterName of modData.fighterNames) {
+      const fighterSlots = Object.keys(modData.pathData[fighterName] || {});
+      const assignments = new Map<string, string>();
+
+      for (const slot of fighterSlots) {
+        assignments.set(slot, slot);
+      }
+
+      this.slotAssignments.set(fighterName, assignments);
+    }
+
+    this.pathData = modData.pathData;
 
     const modal = document.querySelector<HTMLElement>('#change-slot-modal');
     const container = document.querySelector<HTMLElement>(
@@ -421,35 +549,20 @@ class ModalManager {
           // Move title into content div
           contentDiv.appendChild(modalTitle);
         }
-
-        // Add subtitle with character name
-        const resolvedFighterId = window.resolveFolderName
-          ? window.resolveFolderName(fighterName)
-          : fighterName.toLowerCase();
-
-        const characterInfo = window.SSBU_CHARACTERS?.[resolvedFighterId];
-        const characterName = characterInfo?.name || fighterName;
-
-        const subtitle = document.createElement('div');
-        subtitle.className = 'modal-subtitle';
-
-        subtitle.textContent = t('modals.changeSlot.subtitle', {
-          characterName: characterName,
-        });
-
-        // Add subtitle after title in content div
-        contentDiv.appendChild(subtitle);
       }
 
+      this.selectedFighterName = this.fighterNames[0];
+
+      this.renderFighterTabs();
       this.renderSlotList();
 
       // Show loading spinner for slot usage
       this.renderSlotUsageLoading();
 
-      // Scan all mods for slot usage and render overview
-
-      this.scanAllModsForSlotUsage(fighterName).then((slotUsage) => {
-        this.renderSlotUsageOverview(slotUsage, mod.path);
+      // Scan all active mods once and build slot usage per fighter
+      this.scanAllModsSlotUsage().then(() => {
+        this.renderSlotUsageForSelectedFighter();
+        this.updateFighterTabConflicts();
       });
 
       this.showOverlay();
@@ -490,12 +603,18 @@ class ModalManager {
     // Clean up slot usage hint and overview
     const slotUsageHint = document.querySelector('#slot-usage-hint');
     const slotUsageOverview = document.querySelector('#slot-usage-overview');
+    const fighterTabs = document.querySelector('#fighter-tabs-wrapper');
 
     if (slotUsageHint) slotUsageHint.remove();
     if (slotUsageOverview) slotUsageOverview.remove();
+    if (fighterTabs) fighterTabs.remove();
 
     this.changeSlotCallback = null;
     this.slotAssignments = new Map();
+    this.fighterNames = [];
+    this.rawFighterNames = [];
+    this.selectedFighterName = null;
+    this.slotUsageByFighter = null;
   }
 
   renderSlotUsageLoading() {
@@ -524,16 +643,233 @@ class ModalManager {
     modalBody.insertBefore(loadingContainer, hintParagraph);
   }
 
-  async scanAllModsForSlotUsage(
-    fighterName: string,
-  ): Promise<Map<string, { mods: { name: string; path: string }[] }>> {
-    const slotUsage = new Map<
-      string,
-      { mods: { name: string; path: string }[] }
-    >();
+  renderFighterTabs() {
+    const modalBody = document.querySelector('#change-slot-modal .modal-body');
+    if (!modalBody) return;
+
+    // Remove existing tabs if any
+    const existingTabs = document.querySelector('#fighter-tabs-wrapper');
+    if (existingTabs) existingTabs.remove();
+
+    const tabsWrapper = document.createElement('div');
+    tabsWrapper.id = 'fighter-tabs-wrapper';
+    tabsWrapper.className = 'slot-usage-fighter-tabs-wrapper';
+
+    const tabsContainer = document.createElement('div');
+    tabsContainer.id = 'fighter-tabs';
+    tabsContainer.className = 'slot-usage-fighter-tabs';
+
+    this.fighterNames.forEach((fighterName) => {
+      const characterName = getFighterDisplayName(fighterName);
+
+      const tab = document.createElement('button');
+      tab.className = 'slot-usage-fighter-tab';
+      tab.textContent = characterName;
+      tab.dataset.fighter = fighterName;
+
+      if (fighterName === this.selectedFighterName) {
+        tab.classList.add('active');
+      }
+
+      tab.addEventListener('click', () => {
+        this.selectFighter(fighterName);
+      });
+
+      tabsContainer.appendChild(tab);
+    });
+
+    tabsWrapper.appendChild(tabsContainer);
+
+    // Update fade masks based on scroll position
+    const updateFadeMasks = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsContainer;
+      const canScrollLeft = scrollLeft > 1;
+      const canScrollRight = scrollLeft < scrollWidth - clientWidth - 1;
+
+      tabsWrapper.classList.toggle('fade-left', canScrollLeft);
+      tabsWrapper.classList.toggle('fade-right', canScrollRight);
+    };
+
+    tabsContainer.addEventListener('scroll', updateFadeMasks);
+    requestAnimationFrame(updateFadeMasks);
+
+    // Insert at the top of modal-body
+    modalBody.insertBefore(tabsWrapper, modalBody.firstChild);
+
+    // Allow vertical scroll wheel to scroll tabs horizontally with smooth momentum
+    let scrollVelocity = 0;
+    let scrollAnimationId: number | null = null;
+
+    const animateScroll = () => {
+      tabsContainer.scrollLeft += scrollVelocity;
+      scrollVelocity *= 0.85;
+
+      if (Math.abs(scrollVelocity) > 0.5) {
+        scrollAnimationId = requestAnimationFrame(animateScroll);
+      } else {
+        scrollVelocity = 0;
+        scrollAnimationId = null;
+      }
+    };
+
+    tabsContainer.addEventListener(
+      'wheel',
+      (e) => {
+        if (e.deltaY !== 0) {
+          e.preventDefault();
+          scrollVelocity += e.deltaY * 0.5;
+
+          if (scrollAnimationId === null) {
+            scrollAnimationId = requestAnimationFrame(animateScroll);
+          }
+        }
+      },
+      { passive: false },
+    );
+  }
+
+  selectFighter(fighterName: string) {
+    this.selectedFighterName = fighterName;
+
+    // Update active tab
+    const tabsContainer = document.querySelector('#fighter-tabs');
+
+    if (tabsContainer) {
+      tabsContainer
+        .querySelectorAll<HTMLElement>('.slot-usage-fighter-tab')
+        .forEach((tab) => {
+          tab.classList.toggle('active', tab.dataset.fighter === fighterName);
+        });
+    }
+
+    // Clean up existing tooltips before re-render
+    document.querySelectorAll('.slot-usage-tooltip').forEach((tooltip) => {
+      tooltip.remove();
+    });
+
+    // Re-render both sections for the selected fighter
+    if (this.slotUsageByFighter) {
+      this.renderSlotUsageForSelectedFighter();
+    }
+
+    this.renderSlotList();
+  }
+
+  renderSlotUsageForSelectedFighter() {
+    if (
+      !this.slotUsageByFighter ||
+      !this.selectedFighterName ||
+      !this.currentMod
+    ) {
+      return;
+    }
+
+    const fighterGroup = getActualFighterNames(
+      this.selectedFighterName,
+      this.rawFighterNames,
+    );
+
+    // Merge slot usage from all fighters in the group
+    const mergedSlotUsage = new Map<string, { mods: SlotUsageMod[] }>();
+
+    for (const fighter of fighterGroup) {
+      const fighterUsage = this.slotUsageByFighter.get(fighter);
+
+      if (!fighterUsage) continue;
+
+      for (const [slot, usage] of fighterUsage) {
+        if (!mergedSlotUsage.has(slot)) {
+          mergedSlotUsage.set(slot, { mods: [] });
+        }
+
+        const existing = mergedSlotUsage.get(slot)!;
+
+        for (const mod of usage.mods) {
+          const existingMod = existing.mods.find((m) => m.path === mod.path);
+
+          if (existingMod) {
+            // Merge files from multiple fighters into same mod entry
+            for (const file of mod.files) {
+              if (!existingMod.files.includes(file)) {
+                existingMod.files.push(file);
+              }
+            }
+          } else {
+            existing.mods.push({ ...mod, files: [...mod.files] });
+          }
+        }
+      }
+    }
+
+    this.renderSlotUsageOverview(mergedSlotUsage, this.currentMod.path);
+  }
+
+  /**
+   * Checks each fighter tab for file-level conflicts involving the current mod
+   * and toggles the 'tab-conflict' CSS class accordingly.
+   */
+  updateFighterTabConflicts() {
+    if (!this.slotUsageByFighter || !this.currentMod) return;
+
+    const currentModPath = this.currentMod.path;
+    const tabs = document.querySelectorAll<HTMLElement>(
+      '.slot-usage-fighter-tab',
+    );
+
+    for (const tab of tabs) {
+      const fighterName = tab.dataset.fighter;
+      if (!fighterName) continue;
+
+      const actualFighters = getActualFighterNames(
+        fighterName,
+        this.rawFighterNames,
+      );
+
+      let hasConflict = false;
+
+      for (const fighter of actualFighters) {
+        const fighterUsage = this.slotUsageByFighter.get(fighter);
+        if (!fighterUsage) continue;
+
+        for (const [, usage] of fighterUsage) {
+          if (usage.mods.length < 2) continue;
+
+          const currentModFiles = usage.mods
+            .filter((m) => m.path === currentModPath)
+            .flatMap((m) => m.files);
+
+          if (currentModFiles.length === 0) continue;
+
+          const currentFileSet = new Set(currentModFiles);
+          const otherMods = usage.mods.filter((m) => m.path !== currentModPath);
+
+          for (const other of otherMods) {
+            if (other.files.some((f) => currentFileSet.has(f))) {
+              hasConflict = true;
+              break;
+            }
+          }
+
+          if (hasConflict) break;
+        }
+
+        if (hasConflict) break;
+      }
+
+      tab.classList.toggle('tab-conflict', hasConflict);
+    }
+  }
+
+  async scanAllModsSlotUsage(): Promise<void> {
+    this.slotUsageByFighter = new Map();
+
+    // Initialize empty maps for each raw fighter
+    for (const fighterName of this.rawFighterNames) {
+      this.slotUsageByFighter.set(fighterName, new Map());
+    }
 
     if (!window.modManager || !window.modManager.mods) {
-      return slotUsage;
+      return;
     }
 
     const activeMods = window.modManager.mods.filter(
@@ -545,21 +881,32 @@ class ModalManager {
 
       try {
         const scanResult = await window.electronAPI.scanMod(mod.path);
+        if (!scanResult.success) continue;
 
-        if (
-          scanResult.success &&
-          scanResult.data.fighterNames.includes(fighterName)
-        ) {
-          const slots = scanResult.data.currentSlots;
+        const modEntry = { name: mod.name, path: mod.path };
 
-          for (const slot of slots) {
-            if (!slotUsage.has(slot)) {
-              slotUsage.set(slot, { mods: [] });
+        for (const fighterName of this.rawFighterNames) {
+          if (!scanResult.data.fighterNames.includes(fighterName)) continue;
+
+          const fighterData = scanResult.data.pathData[fighterName] || {};
+          const fighterSlots = Object.keys(fighterData);
+
+          const fighterUsage = this.slotUsageByFighter.get(fighterName)!;
+
+          for (const slot of fighterSlots) {
+            if (!fighterUsage.has(slot)) {
+              fighterUsage.set(slot, { mods: [] });
             }
 
-            slotUsage.get(slot)!.mods.push({
-              name: mod.name,
-              path: mod.path,
+            const slotData = fighterData[slot];
+
+            const files = (slotData?.filesToBeModified || []).map(
+              (f) => f.original,
+            );
+
+            fighterUsage.get(slot)!.mods.push({
+              ...modEntry,
+              files,
             });
           }
         }
@@ -567,12 +914,10 @@ class ModalManager {
         console.warn(`Failed to scan mod ${mod.name}:`, error);
       }
     }
-
-    return slotUsage;
   }
 
   renderSlotUsageOverview(
-    slotUsage: Map<string, { mods: { name: string; path: string }[] }>,
+    slotUsage: Map<string, { mods: SlotUsageMod[] }>,
     currentModPath: string,
   ) {
     const modalBody = document.querySelector('#change-slot-modal .modal-body');
@@ -606,13 +951,48 @@ class ModalManager {
       const slotString = slotNumberToString(i);
       const usage = slotUsage.get(slotString);
       const isUsed = usage && usage.mods.length > 0;
-      const isConflict = usage && usage.mods.length > 1;
+
+      // Only consider it a conflict if mods have overlapping files, not just the same slot
+      let hasCurrentModConflict = false;
+      let hasOtherModsConflict = false;
+      if (usage && usage.mods.length > 1) {
+        const currentModFiles = usage.mods
+          .filter((m) => m.path === currentModPath)
+          .flatMap((m) => m.files);
+        const currentModFileSet = new Set(currentModFiles);
+
+        const otherMods = usage.mods.filter((m) => m.path !== currentModPath);
+
+        // Check if current mod has file overlaps with any other mod
+        if (currentModFileSet.size > 0) {
+          for (const other of otherMods) {
+            if (other.files.some((f) => currentModFileSet.has(f))) {
+              hasCurrentModConflict = true;
+              break;
+            }
+          }
+        }
+
+        // Check if other mods conflict with each other
+        if (otherMods.length > 1) {
+          const otherFileSets = otherMods.map((m) => new Set(m.files));
+          outer: for (let a = 0; a < otherFileSets.length; a++) {
+            for (let b = a + 1; b < otherFileSets.length; b++) {
+              for (const file of otherFileSets[a]) {
+                if (otherFileSets[b].has(file)) {
+                  hasOtherModsConflict = true;
+                  break outer;
+                }
+              }
+            }
+          }
+        }
+      }
 
       // Check if current mod is involved in the conflict
-      const currentModInvolved =
-        usage?.mods.some((m) => m.path === currentModPath) || false;
-      const isCurrentModConflict = isConflict && currentModInvolved;
-      const isOtherModsConflict = isConflict && !currentModInvolved;
+      const isCurrentModConflict = hasCurrentModConflict;
+      const isOtherModsConflict =
+        hasOtherModsConflict && !hasCurrentModConflict;
 
       const slotItem = document.createElement('div');
       slotItem.className = 'slot-usage-item';
@@ -708,7 +1088,8 @@ class ModalManager {
       '#slot-list-container',
     );
 
-    if (!container || !this.slotAssignments) return;
+    if (!container || !this.slotAssignments || !this.selectedFighterName)
+      return;
 
     const t = (key, params = {}) => {
       return window.i18n && window.i18n.t ? window.i18n.t(key, params) : key;
@@ -716,9 +1097,40 @@ class ModalManager {
 
     container.innerHTML = '';
 
-    for (const [index, [originalSlotString, selectedSlotString]] of Array.from(
-      this.slotAssignments,
-    ).entries()) {
+    // Clean up portaled dropdowns from previous renders
+    document
+      .querySelectorAll('.custom-select-dropdown[data-parent-id]')
+      .forEach((dropdown) => dropdown.remove());
+
+    // Get the actual fighter names for the selected tab (may be a group)
+    const actualFighters = getActualFighterNames(
+      this.selectedFighterName,
+      this.rawFighterNames,
+    );
+
+    // Merge unique slots from all fighters in the group
+    const mergedAssignments = new Map<string, string>();
+
+    for (const fighter of actualFighters) {
+      const assignments = this.slotAssignments.get(fighter);
+
+      if (!assignments) continue;
+
+      for (const [slot, target] of assignments) {
+        if (!mergedAssignments.has(slot)) {
+          mergedAssignments.set(slot, target);
+        }
+      }
+    }
+
+    const sortedAssignments = Array.from(mergedAssignments).sort(
+      ([a], [b]) => slotStringToNumber(a) - slotStringToNumber(b),
+    );
+
+    for (const [
+      index,
+      [originalSlotString, selectedSlotString],
+    ] of sortedAssignments.entries()) {
       const slotItem = document.createElement('div');
 
       slotItem.className = 'slot-item';
@@ -726,6 +1138,16 @@ class ModalManager {
 
       const content = document.createElement('div');
       content.className = 'slot-item-content';
+
+      // Restore deleted state for this slot if any fighter in the group has it marked
+      const isSlotDeleted = actualFighters.some((fighter) => {
+        const fighterDeleted = this.deletedSlots.get(fighter);
+        return fighterDeleted && fighterDeleted.has(originalSlotString);
+      });
+
+      if (isSlotDeleted) {
+        content.classList.add('deleted');
+      }
 
       const info = document.createElement('div');
       info.className = 'slot-item-info';
@@ -786,9 +1208,22 @@ class ModalManager {
 
         option.addEventListener('click', (e) => {
           e.stopPropagation();
-          // Update data
+          // Update data for all fighters in the selected group
+          const selectedActualFighters = getActualFighterNames(
+            this.selectedFighterName!,
+            this.rawFighterNames,
+          );
 
-          this.slotAssignments.set(originalSlotString, slotString);
+          for (const fighter of selectedActualFighters) {
+            const fighterAssignments = this.slotAssignments.get(fighter);
+
+            if (
+              fighterAssignments &&
+              fighterAssignments.has(originalSlotString)
+            ) {
+              fighterAssignments.set(originalSlotString, slotString);
+            }
+          }
 
           // Update UI
           selectedValueSpan.textContent = t('modals.changeSlot.slotOption', {
@@ -913,30 +1348,44 @@ class ModalManager {
       const filesInfo = document.createElement('div');
       filesInfo.className = 'slot-item-files';
 
-      const pathDataForSlot = this.fighterPathData[originalSlotString];
+      // Collect paths from all fighters in the group for this slot
+      const allPathsToBeModified: { original: string; type: string }[] = [];
 
-      if (pathDataForSlot.pathsToBeModified.length > 0) {
+      for (const fighter of actualFighters) {
+        const fighterData = this.pathData[fighter];
+
+        const pathDataForSlot =
+          fighterData && fighterData[originalSlotString]
+            ? fighterData[originalSlotString]
+            : null;
+
+        if (pathDataForSlot) {
+          allPathsToBeModified.push(...pathDataForSlot.pathsToBeModified);
+        }
+      }
+
+      if (allPathsToBeModified.length > 0) {
         const filesList = document.createElement('details');
 
         const summary = document.createElement('summary');
         summary.textContent = t('modals.changeSlot.filesWillBeModified', {
-          count: pathDataForSlot.pathsToBeModified.length,
+          count: allPathsToBeModified.length,
         });
 
         const fileListContainer = document.createElement('div');
         fileListContainer.className = 'slot-file-list';
 
-        pathDataForSlot.pathsToBeModified.forEach((pathDataEntry) => {
+        allPathsToBeModified.forEach((entry) => {
           const fileItem = document.createElement('div');
           fileItem.className = 'slot-file-item';
 
-          const icon = pathDataEntry.type === 'directory' ? '📁' : '📄';
+          const icon = entry.type === 'directory' ? '📁' : '📄';
           const typeLabel =
-            pathDataEntry.type === 'directory'
+            entry.type === 'directory'
               ? t('modals.changeSlot.directory')
               : t('modals.changeSlot.file');
 
-          fileItem.textContent = `${icon} ${typeLabel} ${pathDataEntry.original}`;
+          fileItem.textContent = `${icon} ${typeLabel} ${entry.original}`;
           fileListContainer.appendChild(fileItem);
         });
 
@@ -972,13 +1421,44 @@ class ModalManager {
   }
 
   toggleDeleteSlot(content: HTMLDivElement, slot: string) {
-    if (!this.deletedSlots) return;
+    if (!this.deletedSlots || !this.selectedFighterName) return;
 
-    if (this.deletedSlots.has(slot)) {
-      this.deletedSlots.delete(slot);
+    const actualFighters = getActualFighterNames(
+      this.selectedFighterName,
+      this.rawFighterNames,
+    );
+
+    // Check if the slot is currently marked as deleted for all fighters in this group
+    const isDeleted = actualFighters.every((fighter) => {
+      const fighterDeleted = this.deletedSlots.get(fighter);
+      return fighterDeleted && fighterDeleted.has(slot);
+    });
+
+    if (isDeleted) {
+      // Undelete for all fighters in the group that have this slot
+      for (const fighter of actualFighters) {
+        const fighterDeleted = this.deletedSlots.get(fighter);
+
+        if (fighterDeleted) {
+          fighterDeleted.delete(slot);
+        }
+      }
+
       content.classList.remove('deleted');
     } else {
-      this.deletedSlots.add(slot);
+      // Mark as deleted for all fighters in the group that have this slot
+      for (const fighter of actualFighters) {
+        const assignments = this.slotAssignments.get(fighter);
+
+        if (assignments && assignments.has(slot)) {
+          if (!this.deletedSlots.has(fighter)) {
+            this.deletedSlots.set(fighter, new Set());
+          }
+
+          this.deletedSlots.get(fighter)!.add(slot);
+        }
+      }
+
       content.classList.add('deleted');
     }
   }
@@ -1812,6 +2292,11 @@ if (typeof window !== 'undefined') {
         modalManager.closePluginUpdateModal();
         modalManager.closePluginMarketplaceModal();
 
+        if (window.smartRenameManager) {
+          window.smartRenameManager.closeSelectModal();
+          window.smartRenameManager.closePreviewModal();
+        }
+
         if (window.conflictModalManager) {
           window.conflictModalManager.closeConflictModal();
           window.conflictModalManager.closeSlotChangeModal();
@@ -1830,6 +2315,11 @@ if (typeof window !== 'undefined') {
         modalManager.closeEditInfoModal();
         modalManager.closeAdvancedInfoModal();
         modalManager.closeInstallConfirmModal();
+
+        if (window.smartRenameManager) {
+          window.smartRenameManager.closeSelectModal();
+          window.smartRenameManager.closePreviewModal();
+        }
 
         if (window.conflictModalManager) {
           window.conflictModalManager.closeConflictModal();
