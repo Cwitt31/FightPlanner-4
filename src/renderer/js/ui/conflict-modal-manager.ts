@@ -532,19 +532,29 @@ export class ConflictModalManager {
           continue;
         }
 
-        const slotAssignments = new Map<string, string>();
+        const slotAssignmentsByFighter = new Map<string, Map<string, string>>();
 
-        Array.from(scanModResult.data.currentSlots).forEach((originalSlot) => {
-          slotAssignments.set(originalSlot, availableSlotName);
-        });
+        for (const fighterId of Object.keys(scanModResult.data.pathData)) {
+          const fighterSlots = Object.keys(
+            scanModResult.data.pathData[fighterId],
+          );
 
-        if (slotAssignments.size > 0) {
+          const slotAssignments = new Map<string, string>();
+
+          for (const originalSlot of fighterSlots) {
+            slotAssignments.set(originalSlot, availableSlotName);
+          }
+
+          slotAssignmentsByFighter.set(fighterId, slotAssignments);
+        }
+
+        if (slotAssignmentsByFighter.size > 0) {
           if (window.electronAPI && window.electronAPI.changeSlots) {
             const applyResult = await window.electronAPI.changeSlots(
               mod.path,
               scanModResult.data.pathData,
-              slotAssignments,
-              new Set(),
+              slotAssignmentsByFighter,
+              new Map(),
             );
 
             if (applyResult.success) {
@@ -605,28 +615,34 @@ export class ConflictModalManager {
           5000,
           { count: errorCount },
           {
-            actionButton: {
-              text: t('toasts.viewLogs'),
-              onClick: () => {
-                const settingsBtn = document.querySelector<HTMLElement>(
-                  '[data-tab="settings"]',
-                );
-                if (settingsBtn) {
-                  settingsBtn.click();
-                }
+            actionButton:
+              errorCount > 0
+                ? {
+                    text: t('toasts.viewLogs'),
 
-                setTimeout(() => {
-                  if (window.settingsManager) {
-                    window.settingsManager.switchSettingsTab('logs');
-                    if (window.logsManager) {
+                    onClick: () => {
+                      const settingsBtn = document.querySelector<HTMLElement>(
+                        '[data-tab="settings"]',
+                      );
+
+                      if (settingsBtn) {
+                        settingsBtn.click();
+                      }
+
                       setTimeout(() => {
-                        window.logsManager.reinitialize();
-                      }, 250);
-                    }
+                        if (window.settingsManager) {
+                          window.settingsManager.switchSettingsTab('logs');
+
+                          if (window.logsManager) {
+                            setTimeout(() => {
+                              window.logsManager.reinitialize();
+                            }, 250);
+                          }
+                        }
+                      }, 500);
+                    },
                   }
-                }, 500);
-              },
-            },
+                : undefined,
           },
         );
       }

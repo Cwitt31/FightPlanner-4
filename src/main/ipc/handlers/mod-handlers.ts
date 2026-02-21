@@ -226,13 +226,20 @@ const ModHandlers = {
     common: BaseHandlerArg,
     modPath: string,
     pathData: PathData,
-    slotAssignments: Map<string, string>,
-    deletedSlots: Set<string>,
+    slotAssignments: Map<string, Map<string, string>>,
+    deletedSlots: Map<string, Set<string>>,
   ): HandlerResponse => {
     try {
-      for (const slot of deletedSlots) {
-        await SlotChanger.removeSlot(modPath, slot, pathData);
-        slotAssignments.delete(slot);
+      await SlotChanger.removeSlots(modPath, deletedSlots, pathData);
+
+      for (const [fighterName, slots] of deletedSlots) {
+        for (const slot of slots) {
+          const fighterAssignments = slotAssignments.get(fighterName);
+
+          if (fighterAssignments) {
+            fighterAssignments.delete(slot);
+          }
+        }
       }
 
       await SlotChanger.changeSlots(modPath, slotAssignments, pathData);

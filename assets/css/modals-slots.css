@@ -203,3 +203,36 @@
   border-color: rgba(239, 68, 68, 0.5);
 }
 
+/* Fighter character tabs */
+.slot-usage-fighter-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-hover);
+  padding-bottom: 0;
+}
+
+.slot-usage-fighter-tab {
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 6px 6px 0 0;
+}
+
+.slot-usage-fighter-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-transparent-03);
+}
+
+.slot-usage-fighter-tab.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
+
+
