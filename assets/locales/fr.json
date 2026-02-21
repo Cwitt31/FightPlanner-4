@@ -251,7 +251,7 @@
     "devWarningTitle": "Attention — Options Développeur",
     "devWarningText": "Modifier ces paramètres peut causer un comportement inattendu, casser votre application ou corrompre vos données. Ne changez ces options que si vous savez ce que vous faites. Ces paramètres sont destinés au développement et aux tests uniquement.",
     "posthogTests": "Tests Analytiques PostHog",
-    "posthogTestsHint": "Envoyer des événements de test à PostHog pour vérifier que l'intégration analytique fonctionne correctement. Vérifiez votre tableau de bord PostHog pour confirmer la réception des événements.",
+    "posthogTestsHint": "Envoyer des événements de test à PostHog pour vérifier que l'intégration analytique fonctionne correctement.",
     "sendTestEvent": "Envoyer un Événement Test",
     "sendTestEventDesc": "Envoyer un événement test à PostHog",
     "sendTestError": "Envoyer une Erreur Test",

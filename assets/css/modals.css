@@ -14,11 +14,9 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: linear-gradient(
-    135deg,
-    var(--border-color) 0%,
-    var(--bg-tertiary) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--border-color) 0%,
+      var(--bg-tertiary) 100%);
   border: 1px solid var(--border-hover);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -78,11 +76,9 @@
 }
 
 .conflict-modal-header {
-  background: linear-gradient(
-    135deg,
-    var(--accent-color) 0%,
-    var(--accent-hover) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--accent-color) 0%,
+      var(--accent-hover) 100%);
   border-bottom: none;
   padding: 20px 24px;
   border-radius: 16px 16px 0 0;
@@ -259,11 +255,9 @@
   position: sticky;
   top: 0;
   z-index: 5;
-  background: linear-gradient(
-    135deg,
-    var(--border-color) 0%,
-    var(--bg-tertiary) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--border-color) 0%,
+      var(--bg-tertiary) 100%);
   padding: 12px 12px 12px 12px;
   margin: 0;
   color: var(--text-secondary);
@@ -462,6 +456,52 @@ body.no-animations .context-menu {
 
 /* ── Smart Rename Modals ── */
 
+.smart-rename-search-wrapper {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.smart-rename-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.smart-rename-search-input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-hover);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.smart-rename-search-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
+}
+
+.smart-rename-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.smart-rename-loading-status {
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+  opacity: 0.85;
+}
+
 .smart-rename-filter-buttons {
   display: flex;
   gap: 8px;
@@ -494,7 +534,7 @@ body.no-animations .context-menu {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 50vh;
+  max-height: 40vh;
   overflow-y: auto;
   padding-right: 4px;
 }
@@ -671,4 +711,3 @@ body.no-animations .context-menu {
   font-weight: 600;
   word-break: break-all;
 }
-

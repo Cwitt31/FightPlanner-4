@@ -3,25 +3,32 @@
   <!-- Settings Tabs -->
   <div class="settings-sidebar">
     <button class="settings-tab-btn active" data-settings-tab="general" data-i18n="settings.general">
+      <i class="bi bi-gear"></i>
       General
     </button>
     <button class="settings-tab-btn" data-settings-tab="mods" data-i18n="settings.paths">
+      <i class="bi bi-folder2"></i>
       Paths
     </button>
     <button class="settings-tab-btn" data-settings-tab="customization" data-i18n="settings.customization">
+      <i class="bi bi-palette"></i>
       Customization
     </button>
     <button class="settings-tab-btn" data-settings-tab="advanced" data-i18n="settings.advanced">
+      <i class="bi bi-sliders"></i>
       Advanced
     </button>
     <button class="settings-tab-btn" data-settings-tab="social" data-i18n="settings.social">
-      FightPlanner Social
+      <i class="bi bi-people"></i>
+      Social
     </button>
     <button class="settings-tab-btn" data-settings-tab="logs" data-i18n="settings.logs">
+      <i class="bi bi-terminal"></i>
       Logs
     </button>
     <button class="settings-tab-btn" data-settings-tab="developer" id="settings-tab-developer" style="display: none"
       data-i18n="settings.developer">
+      <i class="bi bi-code-slash"></i>
       Developer
     </button>
   </div>
@@ -33,6 +40,8 @@
       <h2 class="settings-title" data-i18n="settings.title">
         General Settings
       </h2>
+
+      <div class="settings-group-title"><i class="bi bi-brush"></i> Appearance</div>
 
       <div class="settings-section">
         <label class="settings-label" data-i18n="settings.language">Language</label>
@@ -121,6 +130,8 @@
         </p>
       </div>
 
+      <div class="settings-group-title"><i class="bi bi-toggles"></i> Behavior</div>
+
       <div class="settings-section">
         <label class="settings-label" data-i18n="settings.enhancedStatusBar">Enhanced Status Bar</label>
         <div class="settings-input-group">
@@ -133,22 +144,6 @@
         </div>
         <p class="settings-hint" data-i18n="settings.enhancedStatusBarHint">
           Shows a detailed progress bar and information panel for downloads and conflicts.
-        </p>
-      </div>
-
-      <div class="settings-section">
-        <label class="settings-label" data-i18n="settings.tutorial">Tutorial</label>
-        <button class="settings-btn-action" id="restart-tutorial-btn">
-          <i class="bi bi-book"></i>
-          <div class="settings-btn-action-content">
-            <span class="settings-btn-action-title" data-i18n="settings.openTutorial">Open Tutorial</span>
-            <span class="settings-btn-action-desc" data-i18n="settings.openTutorialDesc">Watch the welcome animation
-              again</span>
-          </div>
-          <i class="bi bi-arrow-right"></i>
-        </button>
-        <p class="settings-hint" data-i18n="settings.tutorialHint">
-          Opens a transparent window with the full tutorial animation
         </p>
       </div>
 
@@ -232,6 +227,8 @@
         Paths Configuration
       </h2>
 
+      <div class="settings-group-title"><i class="bi bi-folder2-open"></i> Folders</div>
+
       <div class="settings-section">
         <label class="settings-label" data-i18n="settings.modsFolder">Mods Folder Path</label>
         <div class="settings-input-group">
@@ -261,7 +258,8 @@
         </p>
       </div>
 
-      <!-- New Mod Installation Section -->
+      <div class="settings-group-title"><i class="bi bi-box-seam"></i> Mod Management</div>
+
       <div class="settings-section">
         <label class="settings-label" data-i18n="settings.modInstallation">Mod Installation</label>
         <div class="settings-input-group">
@@ -307,6 +305,8 @@
           making it easy to share your mod list
         </p>
       </div>
+
+      <div class="settings-group-title"><i class="bi bi-controller"></i> Emulator</div>
 
       <div class="settings-section">
         <label class="settings-label" data-i18n="settings.emulatorType">Emulator Type</label>
@@ -776,6 +776,22 @@
       </div>
 
       <div class="settings-section">
+        <label class="settings-label" data-i18n="settings.tutorial">Tutorial</label>
+        <button class="settings-btn-action" id="restart-tutorial-btn">
+          <i class="bi bi-book"></i>
+          <div class="settings-btn-action-content">
+            <span class="settings-btn-action-title" data-i18n="settings.openTutorial">Open Tutorial</span>
+            <span class="settings-btn-action-desc" data-i18n="settings.openTutorialDesc">Watch the welcome animation
+              again</span>
+          </div>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+        <p class="settings-hint" data-i18n="settings.tutorialHint">
+          Opens a transparent window with the full tutorial animation
+        </p>
+      </div>
+
+      <div class="settings-section">
         <label class="settings-label" data-i18n="settings.fakeVersion">Fake App Version</label>
         <div class="settings-input-group">
           <input type="text" id="fake-version-input" class="settings-input" data-i18n="settings.fakeVersionPlaceholder"
@@ -835,7 +851,6 @@
         </label>
         <p class="settings-hint" style="margin-bottom: 12px;" data-i18n="settings.posthogTestsHint">
           Send test events to PostHog to verify analytics integration is working correctly.
-          Check your PostHog dashboard to confirm events are received.
         </p>
         <div class="settings-input-group" style="gap: 10px;">
           <button class="settings-btn-action" id="posthog-test-event-btn" style="flex: 1;">

@@ -6,24 +6,13 @@
         <i class="bi bi-people-fill"></i>
         <span data-i18n="characters.title">Characters</span>
       </h2>
-      <span class="characters-count" id="characters-count"
-        >0 <span data-i18n="characters.charactersCount">characters</span></span
-      >
+      <span class="characters-count" id="characters-count">0 <span
+          data-i18n="characters.charactersCount">characters</span></span>
     </div>
     <div class="characters-actions">
-      <input
-        type="text"
-        class="characters-search"
-        id="characters-search"
-        data-i18n="characters.search"
-        data-i18n-placeholder
-        placeholder="Search characters..."
-      />
-      <button
-        class="characters-refresh-btn"
-        id="refresh-characters-btn"
-        data-i18n="characters.refresh"
-      >
+      <input type="text" class="characters-search" id="characters-search" data-i18n="characters.search"
+        data-i18n-placeholder placeholder="Search characters..." />
+      <button class="characters-refresh-btn" id="refresh-characters-btn" data-i18n="characters.refresh">
         <i class="bi bi-arrow-clockwise"></i>
         Refresh
       </button>
@@ -33,7 +22,7 @@
   <div class="characters-content">
     <div id="characters-grid" class="characters-grid">
       <div class="characters-loading">
-        <i class="bi bi-hourglass-split"></i>
+        <div id="characters-loading-lottie" style="width: 100px; height: 100px;"></div>
         <p data-i18n="characters.loading">Loading characters...</p>
       </div>
     </div>

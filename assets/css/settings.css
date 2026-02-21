@@ -30,6 +30,16 @@
   text-align: left;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-tab-btn i {
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .settings-tab-btn:hover {
@@ -54,6 +64,29 @@
       var(--accent-color) 0%,
       var(--accent-hover) 100%);
   border-radius: 0 3px 3px 0;
+}
+
+.settings-group-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0 16px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--bg-transparent-10);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.settings-group-title:first-of-type {
+  margin-top: 0;
+}
+
+.settings-group-title i {
+  font-size: 14px;
+  color: var(--accent-color);
 }
 
 .settings-content-area {

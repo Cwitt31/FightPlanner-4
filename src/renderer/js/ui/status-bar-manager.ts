@@ -116,9 +116,12 @@ export class StatusBarManager {
       this.preservedStatus = null;
       this.updateDownloadsStatus(statusText);
     } else {
-      // Ensure we're not stuck in 'downloading' state visual
       const bottomBar = document.getElementById('main-status-bar');
-      if (bottomBar && bottomBar.classList.contains('expanded')) {
+      if (
+        bottomBar &&
+        bottomBar.classList.contains('expanded') &&
+        !bottomBar.classList.contains('conflict-mode')
+      ) {
         this.updateExtendedBar({ type: 'none' });
       }
 
@@ -302,6 +305,10 @@ export class StatusBarManager {
   updateExtendedBar(
     update: NoneUpdate | SuccessUpdate | ConflictUpdate | DownloadUpdate,
   ) {
+    if (typeof update === 'string' && update === 'none') {
+      update = { type: 'none' } as NoneUpdate;
+    }
+
     const bottomBar = document.getElementById('main-status-bar');
     if (!bottomBar) return;
 

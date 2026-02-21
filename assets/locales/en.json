@@ -252,7 +252,7 @@
     "devWarningTitle": "Warning — Developer Options",
     "devWarningText": "Modifying these settings can cause unexpected behavior, break your application, or corrupt your data. Only change these options if you know what you are doing. These settings are intended for development and testing purposes only.",
     "posthogTests": "PostHog Analytics Tests",
-    "posthogTestsHint": "Send test events to PostHog to verify analytics integration is working correctly. Check your PostHog dashboard to confirm events are received.",
+    "posthogTestsHint": "Send test events to PostHog to verify analytics integration is working correctly.",
     "sendTestEvent": "Send Test Event",
     "sendTestEventDesc": "Send a test_event to PostHog",
     "sendTestError": "Send Test Error",

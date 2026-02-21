@@ -28,6 +28,7 @@ class CharactersManager {
     }
 
     console.log('Initializing Characters Manager...');
+    this.showLoading();
     await this.scanMods();
     this.setupEventListeners();
     this.renderCharacters();
@@ -115,12 +116,12 @@ class CharactersManager {
 
       this.characters.clear();
 
-      for (const mod of result.activeMods) {
-        await this.scanModForCharacters(mod, 'active');
-      }
+      const allMods = [...result.activeMods.map(m => ({ mod: m, status: 'active' as const })), ...result.disabledMods.map(m => ({ mod: m, status: 'disabled' as const }))];
 
-      for (const mod of result.disabledMods) {
-        await this.scanModForCharacters(mod, 'disabled');
+      for (let i = 0; i < allMods.length; i++) {
+        const { mod, status } = allMods[i];
+        this.updateLoadingStatus(`Scanning ${mod.name} (${i + 1}/${allMods.length})...`);
+        await this.scanModForCharacters(mod, status);
       }
 
       console.log(`Found ${this.characters.size} characters with mods`);
@@ -239,15 +240,15 @@ onerror="this.style.display='none'; this.nextElementSibling.classList.add('show-
 </div>
 <div class="character-mods-list">
 ${char.mods
-  .map(
-    (mod) => `
+        .map(
+          (mod) => `
 <div class="character-mod-item ${mod.status}" data-mod-path="${this.escapeHtml(mod.path)}">
 <span class="mod-status-dot"></span>
 <span class="mod-name">${this.escapeHtml(mod.name)}</span>
 </div>
 `,
-  )
-  .join('')}
+        )
+        .join('')}
 </div>
 </div>
 `;
@@ -290,16 +291,16 @@ ${char.mods
 <p class="character-modal-count">${char.mods.length} mod${char.mods.length > 1 ? 's' : ''} for this character</p>
 <div class="character-modal-mods">
 ${char.mods
-  .map(
-    (mod) => `
+        .map(
+          (mod) => `
 <div class="character-modal-mod-item ${mod.status}" data-mod-path="${this.escapeHtml(mod.path)}">
 <span class="mod-status-indicator ${mod.status}"></span>
 <span class="mod-name">${this.escapeHtml(mod.name)}</span>
 <i class="bi bi-arrow-right-circle"></i>
 </div>
 `,
-  )
-  .join('')}
+        )
+        .join('')}
 </div>
 </div>
 </div>
@@ -426,15 +427,33 @@ ${char.mods
     this.renderCharacters();
   }
 
+  updateLoadingStatus(text: string) {
+    const el = document.getElementById('characters-loading-status');
+    if (el) {
+      el.textContent = text;
+    }
+  }
+
   showLoading() {
     const container = document.querySelector<HTMLElement>('#characters-grid');
     if (container) {
       container.innerHTML = `
 <div class="characters-loading">
-<i class="bi bi-hourglass-split"></i>
+<div id="characters-loading-lottie" style="width: 100px; height: 100px;"></div>
 <p>Loading characters...</p>
+<p id="characters-loading-status" style="font-size: 13px; color: var(--text-muted); margin-top: 8px;"></p>
 </div>
 `;
+      const lottieContainer = document.getElementById('characters-loading-lottie');
+      if (lottieContainer && window.lottie) {
+        window.lottie.loadAnimation({
+          container: lottieContainer,
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          path: '../../assets/images/loading.json',
+        });
+      }
     }
     this.updateCharacterCount(0);
   }

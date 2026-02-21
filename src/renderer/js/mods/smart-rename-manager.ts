@@ -119,9 +119,32 @@ class SmartRenameManager {
 
     this.populateSelectList(mods);
 
+    const searchInput = document.getElementById(
+      'smart-rename-search',
+    ) as HTMLInputElement | null;
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.oninput = () => {
+        const query = searchInput.value.toLowerCase().trim();
+        const items = document.querySelectorAll<HTMLElement>(
+          '#smart-rename-select-list .smart-rename-select-item',
+        );
+        items.forEach((item) => {
+          const name = item
+            .querySelector('.smart-rename-mod-name')
+            ?.textContent?.toLowerCase() || '';
+          item.style.display = name.includes(query) ? '' : 'none';
+        });
+      };
+    }
+
     modal.classList.remove('closing');
     window.modalManager.showOverlay();
     modal.style.display = 'block';
+
+    if (searchInput) {
+      setTimeout(() => searchInput.focus(), 100);
+    }
   }
 
   private populateSelectList(mods: Mod[]) {
@@ -201,6 +224,59 @@ class SmartRenameManager {
 
   // ──────────────── PREVIEW MODAL ────────────────
 
+  private showLoadingOverlay(): HTMLElement {
+    const overlay = document.createElement('div');
+    overlay.id = 'smart-rename-loading-overlay';
+    overlay.style.cssText =
+      'position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10001; opacity: 0; transition: opacity 0.3s ease;';
+
+    const container = document.createElement('div');
+    container.id = 'smart-rename-lottie-container';
+    container.style.cssText = 'width: 120px; height: 120px;';
+    overlay.appendChild(container);
+
+    const statusText = document.createElement('p');
+    statusText.id = 'smart-rename-loading-status';
+    statusText.className = 'smart-rename-loading-status';
+    statusText.textContent = 'Scanning mods...';
+    overlay.appendChild(statusText);
+
+    document.body.appendChild(overlay);
+
+    if (window.lottie) {
+      window.lottie.loadAnimation({
+        container,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: '../../assets/images/loading.json',
+      });
+    }
+
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+    });
+
+    return overlay;
+  }
+
+  private updateLoadingStatus(text: string) {
+    const statusEl = document.getElementById('smart-rename-loading-status');
+    if (statusEl) {
+      statusEl.textContent = text;
+    }
+  }
+
+  private hideLoadingOverlay(overlay: HTMLElement): Promise<void> {
+    return new Promise((resolve) => {
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.remove();
+        resolve();
+      }, 300);
+    });
+  }
+
   async openPreviewModal() {
     const checkboxes = document.querySelectorAll<HTMLInputElement>(
       '#smart-rename-select-list .smart-rename-checkbox:checked',
@@ -218,7 +294,6 @@ class SmartRenameManager {
 
     const mods = window.modManager.mods.filter((m) => selectedIds.has(m.id));
 
-    // Close the select modal (keep overlay)
     const selectModal = document.getElementById('smart-rename-modal');
     if (selectModal) {
       selectModal.classList.add('closing');
@@ -228,10 +303,13 @@ class SmartRenameManager {
       selectModal.classList.remove('closing');
     }
 
-    // Build entries by scanning each mod
+    const loadingOverlay = this.showLoadingOverlay();
+
     this.entries = [];
 
-    for (const mod of mods) {
+    for (let i = 0; i < mods.length; i++) {
+      const mod = mods[i];
+      this.updateLoadingStatus(`Scanning ${mod.name} (${i + 1}/${mods.length})...`);
       let baseName = mod.name;
       let hadInfoToml = false;
       let existingInfo: any = null;
@@ -254,7 +332,6 @@ class SmartRenameManager {
       try {
         const scanResult = await window.electronAPI.scanMod(mod.path);
         if (scanResult.success && scanResult.data) {
-          // Get character display names
           if (
             scanResult.data.fighterNames &&
             scanResult.data.fighterNames.length > 0
@@ -262,7 +339,6 @@ class SmartRenameManager {
             characterNames = scanResult.data.fighterNames.map(
               getCharacterDisplayName,
             );
-            // Deduplicate
             characterNames = [...new Set(characterNames)];
           }
 
@@ -295,6 +371,8 @@ class SmartRenameManager {
     }
 
     this.renderPreviewTable();
+
+    await this.hideLoadingOverlay(loadingOverlay);
 
     const previewModal = document.getElementById('smart-rename-preview-modal');
     if (previewModal) {

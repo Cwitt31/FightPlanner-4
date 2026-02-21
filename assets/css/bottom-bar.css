@@ -652,8 +652,8 @@ body.reduced-animations .bottom-text-left.status-changing {
 }
 
 .ext-card-icon-container.icon-warning {
-  background: rgba(var(--warning-rgb), 0.08);
-  border-color: rgba(var(--warning-rgb), 0.15);
+  background: rgba(var(--warning-color-rgb), 0.08);
+  border-color: rgba(var(--warning-color-rgb), 0.15);
 }
 
 .ext-card-icon i {
@@ -695,9 +695,9 @@ body.reduced-animations .bottom-text-left.status-changing {
 }
 
 .ext-status-badge.badge-warning {
-  background: rgba(var(--warning-rgb), 0.12);
+  background: rgba(var(--warning-color-rgb), 0.12);
   color: var(--warning-color);
-  border-color: rgba(var(--warning-rgb), 0.2);
+  border-color: rgba(var(--warning-color-rgb), 0.2);
 }
 
 .ext-filename {
@@ -773,8 +773,8 @@ body.reduced-animations .bottom-text-left.status-changing {
 }
 
 .ext-action-btn {
-  background: rgba(var(--warning-rgb), 0.15);
-  border: 1px solid rgba(var(--warning-rgb), 0.3);
+  background: rgba(var(--warning-color-rgb), 0.15);
+  border: 1px solid rgba(var(--warning-color-rgb), 0.3);
   padding: 8px 20px;
   border-radius: 8px;
   color: var(--warning-color);
@@ -786,8 +786,8 @@ body.reduced-animations .bottom-text-left.status-changing {
 }
 
 .ext-action-btn:hover {
-  background: rgba(var(--warning-rgb), 0.25);
-  border-color: rgba(var(--warning-rgb), 0.5);
+  background: rgba(var(--warning-color-rgb), 0.25);
+  border-color: rgba(var(--warning-color-rgb), 0.5);
   transform: translateY(-1px);
 }
 
