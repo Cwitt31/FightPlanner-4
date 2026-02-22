@@ -264,8 +264,10 @@ export class SlotChanger {
 
       // Update msg_name.xmsbt with custom names if provided (for all slots)
       if (
-        (fighterName && hasAnySlotAboveC07) ||
-        (slotCustomNames && Object.keys(slotCustomNames).length > 0)
+        fighterName &&
+        hasAnySlotAboveC07 &&
+        slotCustomNames &&
+        Object.keys(slotCustomNames).length > 0
       ) {
         await SlotChanger.updateMsgName(
           modPath,
@@ -273,6 +275,11 @@ export class SlotChanger {
           finalSlots,
           slotCustomNames,
           defaultCustomNames,
+        );
+      } else {
+        await ModFileOperations.deleteModFile(
+          modPath,
+          '/ui/message/msg_name.xmsbt',
         );
       }
 

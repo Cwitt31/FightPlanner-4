@@ -134,6 +134,15 @@ export class ModFileOperations {
     }
   }
 
+  static async readBinaryModFile(filePath: string): Promise<Buffer> {
+    try {
+      return await fsp.readFile(filePath);
+    } catch (error) {
+      console.error('Error reading binary mod file:', error);
+      throw error;
+    }
+  }
+
   static async readModFile(filePath: string): Promise<string> {
     try {
       // Read first few bytes as buffer to detect encoding
