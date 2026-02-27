@@ -20,7 +20,7 @@ jobs:
 
           # Use jq to safely serialize the changelog into JSON and prevent quoting errors
           PAYLOAD=$(jq -n \
-            --arg content "@everyone  **New FightPlanner beta Release!**" \
+            --arg content "@Testers  **New FightPlanner beta Release!**" \
             --arg title "${{ github.event.release.name || github.event.release.tag_name }}" \
             --arg url "${{ github.event.release.html_url }}" \
             --arg desc "${{ github.event.release.body }}" \
