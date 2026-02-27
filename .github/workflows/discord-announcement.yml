@@ -1,0 +1,48 @@
+name: Discord Release Announcement
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  announce:
+    name: Send Discord Notification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Announcement
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "::warning title=Missing Secret::No DISCORD_WEBHOOK_URL secret found. Skipping announcement."
+            exit 0
+          fi
+
+          # Use jq to safely serialize the changelog into JSON and prevent quoting errors
+          PAYLOAD=$(jq -n \
+            --arg content "@everyone  **New FightPlanner beta Release!**" \
+            --arg title "${{ github.event.release.name || github.event.release.tag_name }}" \
+            --arg url "${{ github.event.release.html_url }}" \
+            --arg desc "${{ github.event.release.body }}" \
+            --arg color "16723325" \
+            --arg author_name "FightPlanner Updates" \
+            --arg icon_url "https://raw.githubusercontent.com/FIREXDF/FightPlanner-4/main/assets/images/logo.png" \
+            '{
+              content: $content,
+              embeds: [{
+                title: $title,
+                url: $url,
+                description: $desc,
+                color: ($color | tonumber),
+                author: {
+                   name: $author_name,
+                   icon_url: $icon_url
+                }
+              }]
+            }')
+
+          echo "Sending payload to Discord..."
+          
+          curl -H "Content-Type: application/json" \
+               -d "$PAYLOAD" \
+               $DISCORD_WEBHOOK_URL
