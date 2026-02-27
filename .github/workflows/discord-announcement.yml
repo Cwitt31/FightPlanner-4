@@ -23,4 +23,4 @@ jobs:
               "color": 16723325
             }]
         with:
-          args: "@Testers **New FightPlanner Beta Release!**\nDownload it here: ${{ github.event.release.html_url }}"
+          args: "<@&1356347899637928018> **New FightPlanner Beta Release!**\nDownload it here: ${{ github.event.release.html_url }}"
