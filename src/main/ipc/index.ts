@@ -13,6 +13,7 @@ import { registerDiscordHandlers } from './handlers/discord-handlers';
 import { registerAppHandlers } from './handlers/app-handlers';
 import { registerUpdateHandlers } from './handlers/update-handlers';
 import { registerAnalyticsHandlers } from './handlers/analytics-handlers';
+import { registerFppHandlers } from './handlers/fpp-handlers';
 import DiscordRPCManager from '../discord-rpc';
 
 /**
@@ -38,4 +39,5 @@ export function registerAllHandlers(
   registerAppHandlers(ipcMain);
   registerUpdateHandlers(ipcMain);
   registerAnalyticsHandlers(ipcMain);
+  registerFppHandlers(ipcMain);
 }

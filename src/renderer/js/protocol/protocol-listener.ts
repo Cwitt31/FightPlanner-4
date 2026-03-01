@@ -19,6 +19,8 @@ class ProtocolListener {
         const rendererId = window.downloadManager.startDownload(
           data.url,
           data.downloadId,
+          data.statusText,
+          data.subItems,
         );
         this.idMap.set(data.downloadId, rendererId);
 
@@ -45,6 +47,10 @@ class ProtocolListener {
           data.receivedBytes,
           data.totalBytes,
         );
+
+        if (data.statusText !== undefined || data.subItems !== undefined) {
+          window.downloadManager.updateStatus(rendererId, data.statusText, data.subItems);
+        }
       }
     });
 

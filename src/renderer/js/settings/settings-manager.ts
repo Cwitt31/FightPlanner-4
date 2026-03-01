@@ -25,6 +25,7 @@ class SettingsManager {
       autoDisableNewMods: false,
       disableAllModsOnDownload: false,
       devMode: false,
+      devShowModHash: false,
       theme: 'dark',
       enhancedStatusBar: true,
     };
@@ -714,6 +715,19 @@ class SettingsManager {
       });
     }
 
+    const devShowModHashToggle = document.querySelector<HTMLInputElement>(
+      '#developer-show-mod-hash',
+    );
+    if (devShowModHashToggle) {
+      devShowModHashToggle.addEventListener('change', (e) => {
+        this.settings.devShowModHash = devShowModHashToggle.checked;
+        this.saveSettings();
+        if (window.modManager) {
+          window.modManager.renderModList();
+        }
+      });
+    }
+
     const fakeVersionInput = document.querySelector<HTMLInputElement>(
       '#fake-version-input',
     );
@@ -1013,6 +1027,13 @@ class SettingsManager {
 
     if (devModeToggle) {
       devModeToggle.checked = this.settings.devMode;
+    }
+
+    const devShowModHashToggle = document.querySelector<HTMLInputElement>(
+      '#developer-show-mod-hash',
+    );
+    if (devShowModHashToggle) {
+      devShowModHashToggle.checked = this.settings.devShowModHash || false;
     }
 
     if (devTabBtn) {

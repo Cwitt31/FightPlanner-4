@@ -2375,12 +2375,8 @@ body.no-animations .mod-info-item {
 }
 
 .credits-version {
-  background: linear-gradient(135deg,
-      var(--danger-color) 0%,
-      var(--danger-hover) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-muted);
+  margin-left: 8px;
 }
 
 .credits-subtitle {

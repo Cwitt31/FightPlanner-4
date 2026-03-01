@@ -161,6 +161,13 @@ class ModDragDropHandler {
       }
 
       for (const filePath of filePaths) {
+        if (filePath.toLowerCase().endsWith('.fpp')) {
+          if ((window as any).fppManager) {
+            (window as any).fppManager.openInstallModal(filePath);
+          }
+          continue;
+        }
+
         try {
           const result = await window.electronAPI.installModFromPath(
             filePath,
