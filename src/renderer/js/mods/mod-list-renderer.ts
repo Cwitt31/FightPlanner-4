@@ -93,12 +93,26 @@ class ModListRenderer {
     }
     statusIcon.innerHTML = svgHTML;
 
+    const textContainer = document.createElement('div');
+    textContainer.style.display = 'flex';
+    textContainer.style.flexDirection = 'column';
+
     const modName = document.createElement('span');
     modName.classList.add('mod-name');
     modName.textContent = mod.name || 'Unknown Mod';
 
+    textContainer.appendChild(modName);
+
+    if (mod.hash && window.settingsManager?.settings?.devShowModHash) {
+      const modHash = document.createElement('span');
+      modHash.style.fontSize = '11px';
+      modHash.style.color = 'var(--text-muted)';
+      modHash.textContent = '#' + mod.hash;
+      textContainer.appendChild(modHash);
+    }
+
     modItem.appendChild(statusIcon);
-    modItem.appendChild(modName);
+    modItem.appendChild(textContainer);
 
     modItem.addEventListener('click', () => this.modManager.selectMod(mod.id));
     modItem.addEventListener('contextmenu', (e) => {

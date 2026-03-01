@@ -238,6 +238,17 @@ function createWindow(options: CreateWindowOptions = {}) {
   autoUpdater.setMainWindow(mainWindow);
   autoUpdater.checkForUpdatesOnStartup();
 
+  const fppArg = process.argv.find(arg => arg.endsWith('.fpp'));
+  if (fppArg && fs.existsSync(fppArg)) {
+    mainWindow.webContents.once('did-finish-load', () => {
+      setTimeout(() => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('open-fpp-file', { filePath: fppArg });
+        }
+      }, 2000);
+    });
+  }
+
   return mainWindow;
 }
 
@@ -246,6 +257,15 @@ const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
   app.quit();
 } else {
+  app.on('second-instance', (event, commandLine) => {
+    const fppFile = commandLine.find(arg => arg.endsWith('.fpp'));
+    if (fppFile && fs.existsSync(fppFile) && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('open-fpp-file', { filePath: fppFile });
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
   app.whenReady().then(async () => {
     registerAllHandlers(ipcMain, discordRPC);
 

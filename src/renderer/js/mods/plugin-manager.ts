@@ -598,7 +598,7 @@ ${plugin.status === 'active'
       this.pluginsPath = pluginsPath;
       if (pluginsPath) {
         console.log('Loading plugins from saved path:', pluginsPath);
-        this.loadPluginsFromFolder(pluginsPath);
+        await this.loadPluginsFromFolder(pluginsPath);
         return;
       }
     } else {

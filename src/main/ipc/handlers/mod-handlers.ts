@@ -1,15 +1,17 @@
-import { IpcMain } from 'electron';
+import { shell, dialog, ipcMain, IpcMainInvokeEvent, app, IpcMain, BrowserWindow } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 
 import ModUtils, { Mod } from '../../mod-utils';
 import store from '../../store';
+import downloadsStore from '../../store-downloads';
+import ProtocolHandler from '../../protocol-handler';
 import {
   handleError,
   createErrorResponse,
   ErrorCodes,
 } from '../../utils/error-handler';
-import { ModInstallResult } from '../../plugin-update-installer';
+import FppHandler from '../../fpp-handler';
 import { HandlerResponse } from '../../types/common';
 import { BaseHandlerArg, GenericHandler } from '../../types/common';
 import {
@@ -116,6 +118,56 @@ const ModHandlers = {
     } catch (error) {
       handleError(error, 'save-mod-info-raw');
       return createErrorResponse(ErrorCodes.MOD_SAVE_ERROR, error.message);
+    }
+  },
+
+  ['createFpp']: async (
+    _common: BaseHandlerArg,
+    name: string,
+    fppVersion: string,
+    thumbnailPath: string | null,
+    modPaths: string[],
+  ): HandlerResponse<{ filePath?: string }> => {
+    try {
+      if (!name || !modPaths || !Array.isArray(modPaths) || modPaths.length === 0) {
+        return createErrorResponse(
+          ErrorCodes.UNKNOWN_ERROR,
+          'Name and modPaths array are required',
+        );
+      }
+
+      const mainWindow = BrowserWindow.fromWebContents(_common.event.sender);
+      if (!mainWindow) {
+        return createErrorResponse(
+          ErrorCodes.UNKNOWN_ERROR,
+          'No main window found',
+        );
+      }
+
+      const safeName = name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+      const saveResult = await dialog.showSaveDialog(mainWindow, {
+        title: 'Save FPP File',
+        defaultPath: `${safeName}.fpp`,
+        filters: [{ name: 'FightPlanner Pack', extensions: ['fpp'] }],
+      });
+
+      if (saveResult.canceled || !saveResult.filePath) {
+        return { success: false, canceled: true };
+      }
+
+      console.log(`Creating FPP pack: ${name} (v${fppVersion}) with ${modPaths.length} mods`);
+
+      const outputPath = saveResult.filePath;
+      const result = await FppHandler.createFpp(name, fppVersion, thumbnailPath, modPaths, outputPath, mainWindow);
+
+      return {
+        success: result.success,
+        filePath: result.filePath,
+      };
+    } catch (error) {
+      handleError(error, 'create-fpp');
+      return createErrorResponse(ErrorCodes.UNKNOWN_ERROR, error.message);
     }
   },
 
@@ -321,7 +373,7 @@ const ModHandlers = {
 
       const results: {
         filePath: string;
-        result: ModInstallResult;
+        result: any;
       }[] = [];
 
       for (const filePath of filePaths) {

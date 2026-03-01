@@ -11,6 +11,8 @@ interface Download {
   modName?: string;
   folderPath?: string | null;
   error?: string;
+  statusText?: string;
+  subItems?: string[];
 }
 
 class DownloadManager {
@@ -117,7 +119,7 @@ class DownloadManager {
   /**
    * Start a new download
    */
-  startDownload(url: string, forcedId: string) {
+  startDownload(url: string, forcedId: string, statusText?: string, subItems?: string[]) {
     const downloadId = forcedId || Date.now().toString();
 
     const download: Download = {
@@ -129,6 +131,8 @@ class DownloadManager {
       receivedBytes: 0,
       totalBytes: 0,
       startTime: Date.now(),
+      statusText: statusText,
+      subItems: subItems,
     };
 
     this.activeDownloads.set(downloadId, download);
@@ -180,6 +184,60 @@ class DownloadManager {
         progressText.textContent = `${progress}% (${this.formatBytes(
           receivedBytes,
         )} / ${this.formatBytes(totalBytes)})`;
+      }
+    }
+  }
+
+  /**
+   * Update download status and subitems
+   */
+  updateStatus(downloadId: string, statusText?: string, subItems?: string[]) {
+    const download = this.activeDownloads.get(downloadId);
+    if (!download) return;
+
+    if (statusText !== undefined) {
+      download.statusText = statusText;
+    }
+    if (subItems !== undefined) {
+      download.subItems = subItems;
+    }
+
+    const element = document.querySelector<HTMLElement>(
+      `[data-download-id="${downloadId}"]`,
+    );
+
+    if (element) {
+      // Update status text
+      const statusTextEl = element.querySelector<HTMLElement>('.download-status-text');
+      if (statusTextEl && download.statusText) {
+        statusTextEl.textContent = download.statusText;
+      }
+
+      // Update subitems
+      const infoContainer = element.querySelector<HTMLElement>('.download-info');
+      let subItemsContainer = element.querySelector<HTMLElement>('.download-subitems');
+
+      if (download.subItems && download.subItems.length > 0) {
+        const subItemsHtml = download.subItems.map(item =>
+          `<span style="background: rgba(255, 255, 255, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 10px; color: var(--text-light); text-transform: uppercase;">${item}</span>`
+        ).join('');
+
+        if (subItemsContainer) {
+          subItemsContainer.innerHTML = subItemsHtml;
+        } else if (infoContainer) {
+          // Find the URL element to insert after
+          const urlEl = infoContainer.querySelector('.download-url');
+          if (urlEl) {
+            urlEl.insertAdjacentHTML('afterend', `
+              <div class="download-subitems" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;">
+                 ${subItemsHtml}
+              </div>
+            `);
+          }
+        }
+      } else if (subItemsContainer) {
+        // Remove container if no subitems left
+        subItemsContainer.remove();
       }
     }
   }
@@ -319,6 +377,13 @@ class DownloadManager {
     const element = document.createElement('div');
     element.className = 'download-item download-active';
     element.setAttribute('data-download-id', download.id);
+
+    const subItemsHtml = download.subItems && download.subItems.length > 0
+      ? `<div class="download-subitems" style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;">
+             ${download.subItems.map(item => `<span style="background: rgba(255, 255, 255, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 10px; color: var(--text-light); text-transform: uppercase;">${item}</span>`).join('')}
+           </div>`
+      : '';
+
     element.innerHTML = `
 <div class="download-icon">
 <i class="bi bi-download"></i>
@@ -326,13 +391,14 @@ class DownloadManager {
 <div class="download-info">
 <div class="download-name">${download.fileName}</div>
 <div class="download-url">${this.shortenUrl(download.url)}</div>
+${subItemsHtml}
 <div class="download-progress-container">
 <div class="download-progress-bar">
 <div class="download-progress-fill" style="width: ${download.progress}%"></div>
 </div>
 <div class="download-progress-text">0%</div>
 </div>
-<div class="download-status-text">Downloading...</div>
+<div class="download-status-text">${download.statusText || 'Downloading...'}</div>
 </div>
 <div class="download-actions">
   <button class="download-action-btn" data-action="cancel" title="Cancel"><i class="bi bi-x-circle"></i></button>

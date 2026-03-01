@@ -9,6 +9,7 @@ import { RequestOptions } from 'https';
 
 import ModUtils from './mod-utils';
 import sharedStore from './store';
+import downloadsStore from './store-downloads';
 
 const packageJson = require('../../package.json');
 
@@ -27,12 +28,16 @@ export interface ProtocolHandlerEvents {
     progress: number;
     receivedBytes: number;
     totalBytes: number;
+    statusText?: string;
+    subItems?: string[];
   };
 
   'mod-install-start': {
     url: string;
     downloadId: string;
     modName: string | null;
+    statusText?: string;
+    subItems?: string[];
   };
 
   'mod-extract-start': {
@@ -77,7 +82,7 @@ export default class ProtocolHandler {
   >;
   pendingInstalls: Map<
     string,
-    { url: string; modId: string | null; downloadId: string; modType: string }
+    { url: string; modId: string | null; downloadId: string; modType: string; protocolUrl: string }
   >;
   processingUrls: Set<string>;
   pollingIntervalId: NodeJS.Timeout | null = null;
@@ -408,6 +413,7 @@ export default class ProtocolHandler {
         modId,
         downloadId,
         modType,
+        protocolUrl: cleanUrl,
       });
     } catch (error) {
       console.error('Error handling deep link:', error);
@@ -533,7 +539,7 @@ export default class ProtocolHandler {
       return;
     }
 
-    const { url: downloadUrl, modId, modType = 'Mod' } = installData;
+    const { url: downloadUrl, modId, modType = 'Mod', protocolUrl } = installData;
 
     const _handleSaveError = (error: Error) => {
       console.error('Error during installation:', error);
@@ -616,6 +622,13 @@ export default class ProtocolHandler {
           await this.fetchAndSaveModMetadata(modId, modData.modPath, modType);
         }
 
+        const dls = (downloadsStore.get('downloads') as Record<string, string>) || {};
+        for (const modData of modInstallResult.resultingMods) {
+          const modHash = crypto.createHash('sha256').update(modData.modName).digest('hex').substring(0, 12);
+          dls[modHash] = protocolUrl || downloadUrl;
+        }
+        downloadsStore.set('downloads', dls);
+
         this.sendToRenderer('mod-install-success', {
           url: downloadUrl,
           resultingMods: modInstallResult.resultingMods,
@@ -674,7 +687,7 @@ export default class ProtocolHandler {
     }
   }
 
-  async downloadMod(url: string, downloadId: string): Promise<string> {
+  async downloadMod(url: string, downloadId: string, onProgress?: (progress: number, receivedBytes: number, totalBytes: number) => void): Promise<string> {
     return new Promise((resolve, reject) => {
       const tempDir = path.join(app.getPath('temp'), 'fightplanner-downloads');
 
@@ -803,12 +816,16 @@ export default class ProtocolHandler {
           if (totalBytes > 0) {
             const progress = Math.round((receivedBytes / totalBytes) * 100);
 
-            this.sendToRenderer('mod-download-progress', {
-              downloadId,
-              progress,
-              receivedBytes,
-              totalBytes,
-            });
+            if (onProgress) {
+              onProgress(progress, receivedBytes, totalBytes);
+            } else {
+              this.sendToRenderer('mod-download-progress', {
+                downloadId,
+                progress,
+                receivedBytes,
+                totalBytes,
+              });
+            }
           }
         });
 
@@ -1024,17 +1041,155 @@ export default class ProtocolHandler {
     console.log('✓ info.toml created');
   }
 
-  sendToRenderer(
-    channel: keyof ProtocolHandlerEvents,
-    data: ProtocolHandlerEvents[typeof channel],
-  ) {
+  sendToRenderer(channel, data) {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.webContents.send(channel, data);
     }
   }
 
   showError(message) {
-    dialog.showErrorBox('FightPlanner - Installation Error', message);
+    dialog.showErrorBox('FightPlanner Protocol Error', message);
+  }
+
+  async handleFppBatchDownload(packName: string, urls: string[], fppPath: string) {
+    const downloadId = `fpp_batch_${Date.now()}`;
+    const modsPath = sharedStore.get('modsPath') as string | null;
+
+    if (!modsPath) {
+      console.error('[protocol] Mods folder not configured for batch download');
+      return;
+    }
+
+    const subItems = urls.map((url) => {
+      const idMatch = url.match(/mmdl\/(\d+)/) || url.match(/(\d+)/);
+      return idMatch ? `Mod #${idMatch[1]}` : 'Unknown Mod';
+    });
+
+    this.sendToRenderer('mod-install-start', {
+      url: fppPath,
+      downloadId,
+      modName: `${packName} (FPP)`,
+      statusText: 'Downloading .FPP',
+      subItems,
+    });
+
+    const totalMods = urls.length;
+    const resultingMods: { modPath: string; modName: string; }[] = [];
+
+    // We treat errors per-file but proceed with the rest
+    let hasError = false;
+    let lastError = '';
+    let completedCount = 0;
+
+    const fileProgresses = new Array(totalMods).fill(0);
+    const extractStatuses = new Array(totalMods).fill(false);
+
+    const updateGlobalProgress = () => {
+      let totalProgressSum = 0;
+      let extractingCount = 0;
+
+      for (let i = 0; i < totalMods; i++) {
+        if (extractStatuses[i]) {
+          totalProgressSum += 100;
+          extractingCount++;
+        } else {
+          totalProgressSum += fileProgresses[i];
+        }
+      }
+
+      const overallProgress = Math.round(totalProgressSum / totalMods);
+
+      if (extractingCount === totalMods) {
+        this.sendToRenderer('mod-extract-start', { downloadId });
+      } else {
+        this.sendToRenderer('mod-download-progress', {
+          downloadId,
+          progress: overallProgress,
+          receivedBytes: 0,
+          totalBytes: 0,
+          statusText: `Downloading .FPP (${completedCount}/${totalMods})`,
+          subItems: subItems,
+        });
+      }
+    };
+
+    const downloadPromises = urls.map(async (originalUrl, i) => {
+      const downloadUrl = this.parseGameBananaUrl(originalUrl) || originalUrl;
+
+      try {
+        const onProgress = (progress: number) => {
+          fileProgresses[i] = progress;
+          updateGlobalProgress();
+        };
+
+        const filePath = await this.downloadMod(downloadUrl, downloadId, onProgress);
+        if (!filePath) return;
+
+        fileProgresses[i] = 100;
+        extractStatuses[i] = true;
+        updateGlobalProgress();
+
+        const modInstallResult = await ModUtils.installModFromPath(filePath, modsPath);
+
+        completedCount++;
+
+        // Remove this installed item from subItems if present
+        const idMatch = originalUrl.match(/mmdl\/(\d+)/) || originalUrl.match(/(\d+)/);
+        if (idMatch) {
+          const modBadge = `Mod #${idMatch[1]}`;
+          const badgeIndex = subItems.indexOf(modBadge);
+          if (badgeIndex !== -1) {
+            subItems.splice(badgeIndex, 1);
+          }
+        }
+
+        // Force an update to show x/y progress even if nothing else is moving
+        updateGlobalProgress();
+
+        if (modInstallResult.success) {
+          resultingMods.push(...modInstallResult.resultingMods);
+
+          const dls = (downloadsStore.get('downloads') as Record<string, string>) || {};
+          for (const modData of modInstallResult.resultingMods) {
+            const modHash = crypto.createHash('sha256').update(modData.modName).digest('hex').substring(0, 12);
+            dls[modHash] = originalUrl;
+          }
+          downloadsStore.set('downloads', dls);
+        } else {
+          console.error(`[protocol] Batch install error for ${originalUrl}: ${modInstallResult.error}`);
+          hasError = true;
+          lastError = modInstallResult.error || 'Unknown error during extraction';
+        }
+      } catch (error) {
+        console.error(`[protocol] Batch download error for ${originalUrl}:`, error);
+        hasError = true;
+        lastError = error.message;
+      }
+    });
+
+    await Promise.all(downloadPromises);
+
+    this.sendToRenderer('mod-extract-complete', { downloadId });
+
+    // After all downloads in batch complete
+    if (resultingMods.length > 0) {
+      this.sendToRenderer('mod-install-success', {
+        url: fppPath,
+        resultingMods,
+        downloadId,
+      });
+
+      // Let the renderer finish FPP parsing success status
+      this.sendToRenderer('fpp-install-progress', {
+        step: 'complete',
+        progress: 100,
+      });
+    } else {
+      this.sendToRenderer('mod-install-error', {
+        downloadId,
+        error: lastError || 'Failed to install any mods in the FPP pack',
+      });
+    }
   }
 
   cancelDownload(downloadId: string) {

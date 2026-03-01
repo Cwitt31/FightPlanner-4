@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import * as crypto from 'crypto';
 import { app } from 'electron';
 
 import { ModInstallResult } from '../plugin-update-installer';
@@ -39,6 +40,7 @@ export interface Mod {
   name: string;
   path: string;
   status: 'active' | 'disabled';
+  hash?: string;
 }
 
 export default class ModUtils {
@@ -114,10 +116,12 @@ export default class ModUtils {
       entries.forEach((entry) => {
         if (entry.isDirectory()) {
           const modPath = path.join(folderPath, entry.name);
+          const hash = crypto.createHash('sha256').update(entry.name).digest('hex').substring(0, 12);
           mods.push({
             name: entry.name,
             path: modPath,
             status: status,
+            hash
           });
         }
       });

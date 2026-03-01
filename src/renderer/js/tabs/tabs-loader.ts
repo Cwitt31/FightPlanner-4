@@ -74,6 +74,18 @@ function initializeTabFeatures(tabName) {
       });
     }
 
+    const createFppBtn = document.querySelector<HTMLElement>('#create-fpp-btn');
+    if (createFppBtn) {
+      const newCreateFppBtn = createFppBtn.cloneNode(true);
+      createFppBtn.parentNode!.replaceChild(newCreateFppBtn, createFppBtn);
+
+      newCreateFppBtn.addEventListener('click', () => {
+        if ((window as any).fppManager) {
+          (window as any).fppManager.openCreateModal();
+        }
+      });
+    }
+
     const openFolderBtn =
       document.querySelector<HTMLElement>('#open-folder-btn');
     if (openFolderBtn) {

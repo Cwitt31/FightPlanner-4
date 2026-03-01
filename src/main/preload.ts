@@ -11,6 +11,7 @@ import { FtpHandlers } from './ipc/handlers/ftp-handlers';
 import { UpdateHandlers } from './ipc/handlers/update-handlers';
 import { TutorialHandlers } from './ipc/handlers/tutorial-handlers';
 import { MigrationHandlers } from './ipc/handlers/migration-handlers';
+import { FppHandlers } from './ipc/handlers/fpp-handlers';
 import { ParamsWithoutFirstArg } from './types/common';
 import { WindowHandlers } from './ipc/handlers/window-handlers';
 import { DiscordHandlers } from './ipc/handlers/discord-handlers';
@@ -78,6 +79,7 @@ const invokeMigrationHandler = wrapInvoke<MigrationHandlers>();
 const invokeWindowHandler = wrapInvoke<WindowHandlers>();
 const invokeDiscordHandler = wrapInvoke<DiscordHandlers>();
 const invokeAnalyticsHandler = wrapInvoke<AnalyticsHandlers>();
+const invokeFppHandler = wrapInvoke<FppHandlers>();
 
 const registerProtocolCallback = wrapEventCallback<ProtocolHandlerEvents>();
 const registerMainCallback = wrapEventCallback<MainEvents>();
@@ -155,8 +157,12 @@ const electronAPI = {
   getAnalyticsEnabled: invokeAnalyticsHandler('analytics-get-enabled'),
   setAnalyticsEnabled: invokeAnalyticsHandler('analytics-set-enabled'),
 
-  // Config File
   openConfigFile: invokeSystemHandler('open-config-file'),
+
+  createFpp: (name: string, fppVersion: string, thumbnailPath: string | null, modPaths: string[]) => ipcRenderer.invoke('createFpp', name, fppVersion, thumbnailPath, modPaths),
+  readFpp: (fppPath: string) => ipcRenderer.invoke('read-fpp', fppPath),
+  installFpp: invokeFppHandler('install-fpp'),
+  selectFppFile: invokeFppHandler('select-fpp-file'),
 
   store: {
     get: invokeStoreHandler('store-get'),
@@ -187,6 +193,15 @@ const electronAPI = {
   ),
 
   onStartIntroAnimation: registerAnimationCallback('start-intro-animation'),
+
+  onFppInstallProgress: (callback: (data: any) => void) =>
+    ipcRenderer.on('fpp-install-progress', (event, data) => callback(data)),
+  onFppCreateProgress: (callback: (data: any) => void) =>
+    ipcRenderer.on('fpp-create-progress', (event, data) => callback(data)),
+  onFppDownloadLink: (callback: (data: any) => void) =>
+    ipcRenderer.on('fpp-download-link', (event, data) => callback(data)),
+  onOpenFppFile: (callback: (data: { filePath: string }) => void) =>
+    ipcRenderer.on('open-fpp-file', (event, data) => callback(data)),
 
   onUpdateChecking: registerRendererCallback('update-checking'),
   onUpdateAvailable: registerRendererCallback('update-available'),

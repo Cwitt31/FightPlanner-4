@@ -23,7 +23,10 @@
     "i18n:sync": "npm run i18n:upload && npm run i18n:download"
   },
   "dependencies": {
+    "@types/archiver": "^7.0.0",
+    "archiver": "^7.0.1",
     "basic-ftp": "^5.2.0",
+    "core-util-is": "^1.0.3",
     "discord-rpc": "^4.0.1",
     "electron-store": "^8.2.0",
     "electron-updater": "^6.3.9",

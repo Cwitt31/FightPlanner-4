@@ -13,6 +13,7 @@ export interface Mod {
   category?: string | null;
   path: string;
   status: 'active' | 'disabled' | 'conflict';
+  hash?: string;
 }
 
 export interface SimpleMod {
@@ -460,6 +461,7 @@ class ModManager {
           status: 'active',
           path: mod.path,
           category: null,
+          hash: mod.hash,
         };
 
         allMods.push(modData);
@@ -476,6 +478,7 @@ class ModManager {
           status: 'disabled',
           path: mod.path,
           category: null,
+          hash: mod.hash,
         };
 
         allMods.push(modData);
