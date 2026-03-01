@@ -37,7 +37,11 @@ export class FileExtractor {
         throw new Error('7zip not found and no bundled version for this OS');
     }
 
-    return path.join(app.getAppPath(), 'tools', sevenZipBin);
+    if (app.isPackaged) {
+      return path.join(process.resourcesPath, 'tools', sevenZipBin);
+    } else {
+      return path.join(app.getAppPath(), 'tools', sevenZipBin);
+    }
   }
 
   private static async extractWith7Zip(filePath: string, extractTo: string) {
